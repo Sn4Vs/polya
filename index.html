@@ -32,6 +32,11 @@
     overflow: hidden;
   }
 
+  /* === Пока не нажали "начать" — все анимации сцены на паузе === */
+  .scene:not(.started) * {
+    animation-play-state: paused !important;
+  }
+
   /* Пульсация фонового свечения */
   .glow-pulse {
     position: absolute;
@@ -187,9 +192,55 @@
     0%, 100% { opacity: 0; transform: scale(0.4); }
     50% { opacity: 1; transform: scale(1.3); }
   }
+
+  /* === Экран запуска (нужен, чтобы браузер разрешил звук) === */
+  .start-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    background:
+      radial-gradient(circle at 50% 45%, rgba(120, 20, 60, 0.5) 0%, transparent 60%),
+      linear-gradient(160deg, #14081a 0%, #0a0410 100%);
+    cursor: pointer;
+    transition: opacity 0.8s ease;
+  }
+  .start-overlay.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .start-heart {
+    font-size: clamp(60px, 18vw, 110px);
+    animation: pulseHeart 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 24px rgba(255, 80, 130, 0.7));
+  }
+  .start-text {
+    color: #ffd0e0;
+    font-size: clamp(18px, 5vw, 26px);
+    letter-spacing: 1px;
+    text-shadow: 0 0 18px rgba(255, 120, 160, 0.6);
+    animation: hintFade 2s ease-in-out infinite;
+  }
+  @keyframes hintFade {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
 </style>
 </head>
 <body>
+  <!-- ФОНОВАЯ МУЗЫКА: положите файл music.mp3 рядом с index.html -->
+  <audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+
+  <!-- Экран запуска -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="start-heart">❤️</div>
+    <div class="start-text">нажмите, чтобы начать</div>
+  </div>
+
   <div class="scene" id="scene">
     <div class="glow-pulse"></div>
 
@@ -212,7 +263,7 @@
   </div>
 
 <script>
-  // Текст: "не грусти, Звёздочка" — "Звёздочка" со звёздочкой-акцентом
+  // Текст: "не грусти, Звёздочка"
   const line1 = document.getElementById('line1');
   const text = "не грусти, Звёздочка";
   let delay = 0.3;
@@ -241,19 +292,9 @@
   line1.appendChild(star);
 
   const scene = document.getElementById('scene');
-
-  // После появления всего текста — рисуем сердце
   const textDone = (delay + 1.4) * 1000;
-  setTimeout(() => {
-    scene.classList.add('draw');
-  }, textDone);
 
-  // Включаем биение после прорисовки + заливки
-  setTimeout(() => {
-    scene.classList.add('beat');
-  }, textDone + 4600);
-
-  // Генерация парящих сердечек
+  // Декоративные искры и сердечки создаём заранее (они на паузе до старта)
   function spawnParticles() {
     const symbols = ['❤', '♥', '💕', '✦', '❤'];
     for (let i = 0; i < 22; i++) {
@@ -270,8 +311,6 @@
       scene.appendChild(p);
     }
   }
-
-  // Генерация мерцающих искр
   function spawnSparkles() {
     for (let i = 0; i < 35; i++) {
       const s = document.createElement('div');
@@ -283,11 +322,37 @@
       scene.appendChild(s);
     }
   }
-
   spawnSparkles();
-  // Сердечки запускаем вместе с текстом, усиливаем после прорисовки сердца
   spawnParticles();
-  setTimeout(spawnParticles, textDone + 1000);
+
+  // === Запуск по нажатию: музыка + анимации синхронно ===
+  let started = false;
+  function start() {
+    if (started) return;
+    started = true;
+
+    // Запускаем музыку
+    const bgm = document.getElementById('bgm');
+    bgm.volume = 0.7;
+    bgm.play().catch(() => {});
+
+    // Снимаем паузу со всех анимаций сцены
+    scene.classList.add('started');
+
+    // Прячем экран запуска
+    const overlay = document.getElementById('startOverlay');
+    overlay.classList.add('hide');
+
+    // Прорисовка сердца после появления текста
+    setTimeout(() => { scene.classList.add('draw'); }, textDone);
+    // Биение после прорисовки + заливки
+    setTimeout(() => { scene.classList.add('beat'); }, textDone + 4600);
+    // Дополнительная волна сердечек
+    setTimeout(spawnParticles, textDone + 1000);
+  }
+
+  document.getElementById('startOverlay').addEventListener('click', start);
+  document.getElementById('startOverlay').addEventListener('touchstart', start, { passive: true });
 </script>
 </body>
 </html>
