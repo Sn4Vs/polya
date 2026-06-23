@@ -239,6 +239,7 @@
   <div class="start-overlay" id="startOverlay">
     <div class="start-heart">❤️</div>
     <div class="start-text">нажмите, чтобы начать</div>
+    <div class="start-text" id="dbg" style="font-size:13px;opacity:0.7;max-width:80%;"></div>
   </div>
 
   <div class="scene" id="scene">
@@ -326,22 +327,50 @@
   spawnParticles();
 
   // === Запуск по нажатию: музыка + анимации синхронно ===
+  const dbg = document.getElementById('dbg');
+  const bgm = document.getElementById('bgm');
+
+  bgm.addEventListener('error', () => {
+    const codes = {1:'ABORTED', 2:'NETWORK (файл не загрузился)', 3:'DECODE (формат не поддержан)', 4:'SRC_NOT_SUPPORTED (файл не найден или не mp3)'};
+    const c = bgm.error ? bgm.error.code : 0;
+    dbg.textContent = 'Ошибка аудио: ' + (codes[c] || c);
+  });
+
   let started = false;
   function start() {
     if (started) return;
     started = true;
 
-    // Запускаем музыку
-    const bgm = document.getElementById('bgm');
-    bgm.volume = 0.7;
-    bgm.play().catch(() => {});
+    dbg.textContent = 'запуск…';
+
+    // Принудительно перезагружаем источник и пробуем играть
+    bgm.volume = 1.0;
+    bgm.muted = false;
+    try { bgm.load(); } catch (e) {}
+
+    const p = bgm.play();
+    if (p && p.then) {
+      p.then(() => {
+        dbg.textContent = '♪ играет';
+      }).catch((err) => {
+        // Звук не пошёл — показываем причину и оставляем кнопку
+        started = false;
+        dbg.textContent = 'Не запустилось: ' + (err && err.name ? err.name : err) +
+          '. Нажмите ещё раз.';
+      });
+    }
 
     // Снимаем паузу со всех анимаций сцены
     scene.classList.add('started');
 
-    // Прячем экран запуска
-    const overlay = document.getElementById('startOverlay');
-    overlay.classList.add('hide');
+    // Прячем экран запуска только после успешного старта звука
+    if (p && p.then) {
+      p.then(() => {
+        document.getElementById('startOverlay').classList.add('hide');
+      });
+    } else {
+      document.getElementById('startOverlay').classList.add('hide');
+    }
 
     // Прорисовка сердца после появления текста
     setTimeout(() => { scene.classList.add('draw'); }, textDone);
@@ -352,7 +381,7 @@
   }
 
   document.getElementById('startOverlay').addEventListener('click', start);
-  document.getElementById('startOverlay').addEventListener('touchstart', start, { passive: true });
+  document.getElementById('startOverlay').addEventListener('touchend', start, { passive: true });
 </script>
 </body>
 </html>
