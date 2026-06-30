@@ -230,17 +230,47 @@
     50% { opacity: 1; }
   }
 
-  /* ====================== МИНИ-ИГРА «СОБЕРИ ПАРЫ» ====================== */
-
-  /* Кнопка-приглашение, появляется после анимации сердца */
-  .play-btn {
+  /* ====================== НИЖНИЕ КНОПКИ ====================== */
+  .bottom-actions {
     position: fixed;
     left: 50%;
-    bottom: calc(env(safe-area-inset-bottom) + 34px);
-    transform: translateX(-50%) translateY(12px);
+    transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom) + 26px);
     z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: max-content;
+    max-width: 92vw;
+  }
+
+  /* Счётчик-сердечки «соскучилась» */
+  .miss-tally {
     opacity: 0;
-    pointer-events: none;
+    transition: opacity 0.5s ease;
+    text-align: center;
+    max-width: 88vw;
+  }
+  .miss-tally.show { opacity: 1; }
+  .mt-hearts {
+    display: block;
+    font-size: 16px;
+    line-height: 1.55;
+    letter-spacing: 2px;
+    word-break: break-word;
+    filter: drop-shadow(0 0 6px rgba(255, 90, 130, 0.5));
+  }
+  .mt-num {
+    display: block;
+    margin-top: 3px;
+    font-size: 13px;
+    color: #e8b8cd;
+    letter-spacing: 0.4px;
+  }
+
+  /* Кнопка-приглашение к игре */
+  .play-btn {
     font-family: 'Georgia', serif;
     font-size: clamp(16px, 4.6vw, 20px);
     letter-spacing: 1px;
@@ -251,21 +281,67 @@
     padding: 14px 30px;
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(255, 90, 130, 0.45), inset 0 0 0 1px rgba(255,255,255,0.2);
-    transition: opacity 0.9s ease, transform 0.9s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.9s ease, transform 0.3s ease;
   }
   .play-btn.show {
     opacity: 1;
     pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     animation: gBtnPulse 2.2s ease-in-out 1s infinite;
   }
-  .play-btn:active { transform: translateX(-50%) scale(0.97); }
+  .play-btn:active { transform: scale(0.97); }
   @keyframes gBtnPulse {
     0%, 100% { box-shadow: 0 10px 30px rgba(255, 90, 130, 0.45); }
     50% { box-shadow: 0 10px 42px rgba(255, 150, 180, 0.85); }
   }
 
-  /* Экран игры */
+  /* Кнопка «соскучилась» — открывает набор номера */
+  .miss-btn {
+    text-decoration: none;
+    font-family: 'Georgia', serif;
+    font-size: clamp(16px, 4.6vw, 20px);
+    letter-spacing: 1px;
+    color: #fff3f8;
+    background: linear-gradient(160deg, rgba(255,90,130,0.96), rgba(190,35,85,0.96));
+    border: 1px solid rgba(255,180,200,0.4);
+    border-radius: 999px;
+    padding: 14px 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255, 60, 110, 0.45), inset 0 0 0 1px rgba(255,255,255,0.15);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.9s ease, transform 0.3s ease;
+  }
+  .miss-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .miss-btn:active { transform: scale(0.96); }
+  .miss-emoji { display: inline-block; animation: pulseHeart 1.4s ease-in-out infinite; }
+
+  /* Сердечко, вылетающее при нажатии «соскучилась» */
+  .miss-float {
+    position: fixed;
+    z-index: 95;
+    pointer-events: none;
+    font-size: 24px;
+    transform: translate(-50%, -50%);
+    animation: missFloat 1.4s ease-out forwards;
+  }
+  @keyframes missFloat {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.6); }
+    100% { opacity: 0; transform: translate(-50%, -180px) scale(1.4); }
+  }
+
+  /* ====================== МИНИ-ИГРА «СОБЕРИ ПАРЫ» ====================== */
   .game-screen {
     position: fixed;
     inset: 0;
@@ -437,8 +513,14 @@
     </div>
   </div>
 
-  <!-- Кнопка-приглашение к игре -->
-  <button class="play-btn" id="playBtn" aria-label="Поиграть">поиграть ✦</button>
+  <!-- Нижние кнопки: «поиграть» и «соскучилась» + счётчик -->
+  <div class="bottom-actions">
+    <div class="miss-tally" id="missTally" aria-live="polite"></div>
+    <button class="play-btn" id="playBtn" aria-label="Поиграть">поиграть ✦</button>
+    <a class="miss-btn" id="missBtn" href="tel:89042360018" aria-label="Соскучилась — позвонить">
+      соскучилась <span class="miss-emoji">❤️</span>
+    </a>
+  </div>
 
   <!-- Экран мини-игры -->
   <div class="game-screen" id="game">
@@ -591,12 +673,69 @@
     setTimeout(() => { scene.classList.add('beat'); }, textDone + 4600);
     // Дополнительная волна сердечек
     setTimeout(spawnParticles, textDone + 1000);
-    // Появление кнопки-приглашения к игре
-    setTimeout(() => { document.getElementById('playBtn').classList.add('show'); }, textDone + 5200);
+    // Появление нижних кнопок
+    setTimeout(() => {
+      document.getElementById('playBtn').classList.add('show');
+      document.getElementById('missBtn').classList.add('show');
+      renderTally();
+    }, textDone + 5200);
   }
 
   document.getElementById('startOverlay').addEventListener('click', start);
   document.getElementById('startOverlay').addEventListener('touchend', start, { passive: true });
+
+
+  /* ====================== СЧЁТЧИК «СОСКУЧИЛАСЬ» ======================
+     Считает нажатия на этом устройстве/в этом браузере и хранит их,
+     чтобы число не сбрасывалось между визитами.
+     =================================================================== */
+  const MISS_KEY = 'missCount_v1';
+  const missBtn = document.getElementById('missBtn');
+  const missTally = document.getElementById('missTally');
+
+  function getMiss() {
+    try { return parseInt(localStorage.getItem(MISS_KEY) || '0', 10) || 0; }
+    catch (e) { return 0; }
+  }
+  function setMiss(n) {
+    try { localStorage.setItem(MISS_KEY, String(n)); } catch (e) {}
+  }
+  function plural(n) {
+    const a = n % 100, b = n % 10;
+    if (a > 10 && a < 20) return 'раз';
+    if (b === 1) return 'раз';
+    if (b >= 2 && b <= 4) return 'раза';
+    return 'раз';
+  }
+  function renderTally() {
+    const n = getMiss();
+    if (n <= 0) { missTally.classList.remove('show'); missTally.innerHTML = ''; return; }
+    const cap = 20;
+    const hearts = '❤️'.repeat(Math.min(n, cap)) + (n > cap ? ' …' : '');
+    missTally.innerHTML =
+      '<span class="mt-hearts">' + hearts + '</span>' +
+      '<span class="mt-num">ты скучала ' + n + ' ' + plural(n) + '</span>';
+    missTally.classList.add('show');
+  }
+
+  function floatMissHeart() {
+    const r = missBtn.getBoundingClientRect();
+    const h = document.createElement('div');
+    h.className = 'miss-float';
+    h.textContent = '❤️';
+    h.style.left = (r.left + r.width / 2) + 'px';
+    h.style.top  = (r.top) + 'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1500);
+  }
+
+  // Нажатие: считаем, обновляем сердечки, вылетает сердечко.
+  // Переход по tel: происходит сам (preventDefault не вызываем).
+  missBtn.addEventListener('click', () => {
+    setMiss(getMiss() + 1);
+    renderTally();
+    floatMissHeart();
+  });
 
 
   /* ====================== МИНИ-ИГРА «СОБЕРИ ПАРЫ» ======================
