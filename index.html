@@ -764,8 +764,15 @@
       if (it.type === 'photo') {
         f.innerHTML =
           `<div class="pf-tape" style="--tape:${tape};--tr:${tr}deg"></div>` +
-          `<div class="pf-inner" style="${dim}"><img src="${it.src}" alt="" loading="lazy"></div>` +
+          `<div class="pf-inner" style="${dim}"><img src="${it.src}" alt=""></div>` +
           `<div class="pf-cap">${it.cap}</div>`;
+        // если фото не загрузилось — показываем милую заглушку вместо «битого» значка
+        const img = f.querySelector('img');
+        img.addEventListener('error', () => {
+          const box = f.querySelector('.pf-inner');
+          box.classList.add('pf-empty-photo');
+          box.textContent = '🌸';
+        });
       } else {
         f.innerHTML =
           `<div class="pf-tape" style="--tape:${tape};--tr:${tr}deg"></div>` +
