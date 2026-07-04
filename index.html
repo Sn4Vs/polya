@@ -535,6 +535,11 @@
     color: #c79bb2; letter-spacing: 0.3px;
     animation: hintFade 2.6s ease-in-out infinite;
   }
+  .g-mistakes {
+    position: relative; z-index: 2; text-align: center;
+    margin: 14px 0 0; font-size: 13px; color: #e8b8cd; letter-spacing: 0.4px;
+  }
+  .g-mistakes.over { color: #ff8aa5; }
   .g-card { aspect-ratio: 3 / 4; perspective: 800px; background: none; border: 0; padding: 0; cursor: pointer; }
   .g-card-inner {
     position: relative; width: 100%; height: 100%;
@@ -702,6 +707,7 @@
 
     <div class="g-progress" id="gprogress" aria-label="Найдено пар"></div>
     <div class="g-board" id="gboard"></div>
+    <p class="g-mistakes" id="gMistakes">ошибок: 0</p>
     <p class="g-hint">пройди аккуратно — в конце спрятан секрет ✦</p>
 
     <!-- Записка пары -->
@@ -1076,7 +1082,7 @@
   ];
   const WIN_TEXT = "Ты собрала все звёздочки ✦ Не грусти — ты особенная, Звёздочка.";
   const DREAM_TEXT = "мечтаю, чтобы ты сказала, что любишь меня";
-  const MAX_MISTAKES = 6; // кнопка мечты появится, если ошибок меньше этого числа
+  const MAX_MISTAKES = 6; // кнопка мечты появится, если ошибок меньше этого числа (т.е. до 5 включительно)
   /* ===================== дальше менять не нужно ======================== */
 
   const gboard = document.getElementById('gboard');
@@ -1088,6 +1094,12 @@
   const gwinText = document.getElementById('gwinText');
   const gDream = document.getElementById('gDream');
   const gDreamText = document.getElementById('gDreamText');
+  const gMistEl = document.getElementById('gMistakes');
+
+  function gRenderMistakes(){
+    gMistEl.textContent = 'ошибок: ' + gmistakes;
+    gMistEl.classList.toggle('over', gmistakes >= MAX_MISTAKES);
+  }
 
   let gfirst = null, glock = false, gfound = 0, gbuilt = false, gmistakes = 0;
 
@@ -1103,6 +1115,7 @@
     gskyInit();
     gboard.innerHTML=''; gprog.innerHTML=''; gfound=0; gfirst=null; glock=false; gmistakes=0;
     gDream.style.display='none'; gDreamText.classList.remove('show'); gDreamText.textContent='';
+    gRenderMistakes();
     const deck = gshuffle(NOTES.flatMap((p,i)=>[{...p,id:i},{...p,id:i}]));
     NOTES.forEach(()=>gprog.insertAdjacentHTML('beforeend','<i></i>'));
     deck.forEach((c)=>{
@@ -1127,6 +1140,7 @@
       gfirst=null; glock=false;
     } else {
       gmistakes++;
+      gRenderMistakes();
       setTimeout(()=>{ gfirst.b.classList.remove('flipped'); b.classList.remove('flipped'); gfirst=null; glock=false; },820);
     }
   }
