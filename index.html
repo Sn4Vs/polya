@@ -272,6 +272,57 @@
   }
   .pf-cap.empty { font-size: 13px; color: #b0466b; }
 
+  /* Фото-полароид кликабелен (пустые — нет) */
+  .photo-frame.mem { pointer-events: auto; cursor: pointer; }
+
+  /* Окно раскрытого воспоминания */
+  .mem-view {
+    position: fixed; inset: 0; z-index: 45;   /* выше кнопок(20), ниже старт-оверлея(50) и игры(60) */
+    display: none; align-items: center; justify-content: center;
+    padding: 26px; background: rgba(10,4,16,0.82);
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+    cursor: pointer;
+  }
+  .mem-view.show { display: flex; animation: gFade 0.35s ease; }
+  .mem-card {
+    max-width: 330px; width: 100%;
+    background: linear-gradient(160deg, #fffdfb, #fff2f6);
+    border-radius: 6px; padding: 16px 16px 0;
+    box-shadow: 0 26px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.7);
+    animation: memPop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  }
+  @keyframes memPop {
+    0%   { opacity: 0; transform: scale(0.35) rotate(-6deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+  .mem-photo {
+    width: 100%; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 3px; background: #f5e8ef;
+  }
+  .mem-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .mem-story {
+    font-family: 'Segoe Script', 'Bradley Hand', 'Snell Roundhand', 'Comic Sans MS', 'Georgia', cursive;
+    text-align: center; padding: 16px 8px 6px; font-size: 18px; line-height: 1.5; color: #8a2f52;
+  }
+  .mem-hint { text-align: center; color: #c79bb2; font-size: 12px; padding: 8px 0 14px; }
+
+  /* Искры при раскрытии + каретка печати */
+  .mem-spark {
+    position: absolute; width: 5px; height: 5px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 8px 2px rgba(255,220,240,0.9);
+    opacity: 0; pointer-events: none; z-index: 1;
+    animation: memSpark 1.7s ease-in-out forwards;
+  }
+  @keyframes memSpark {
+    0%   { opacity: 0; transform: scale(0.3); }
+    40%  { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(0.5) translateY(-18px); }
+  }
+  .mem-story .caret {
+    display: inline-block; width: 2px; height: 1em; margin-left: 1px;
+    background: #b0466b; vertical-align: -2px; animation: memCaret 0.8s step-end infinite;
+  }
+  @keyframes memCaret { 50% { opacity: 0; } }
+
   /* === Экран запуска (нужен, чтобы браузер разрешил звук) === */
   .start-overlay {
     position: fixed;
@@ -478,6 +529,12 @@
     position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 12px; width: 100%; max-width: 380px; margin: 14px auto 0;
   }
+  .g-hint {
+    position: relative; z-index: 2; text-align: center;
+    margin: 14px 0 0; font-size: 12.5px; font-style: italic;
+    color: #c79bb2; letter-spacing: 0.3px;
+    animation: hintFade 2.6s ease-in-out infinite;
+  }
   .g-card { aspect-ratio: 3 / 4; perspective: 800px; background: none; border: 0; padding: 0; cursor: pointer; }
   .g-card-inner {
     position: relative; width: 100%; height: 100%;
@@ -549,6 +606,25 @@
   }
   .g-btn:active { transform: scale(0.97); }
 
+  /* Кнопка «узнать мечту» и текст мечты */
+  .g-btn.dream {
+    display: block; margin: 0 auto 16px;
+    background: linear-gradient(160deg, #ff9ec0, #ff5e8a); color: #2a0714;
+    box-shadow: 0 10px 26px rgba(255,94,138,0.55);
+    animation: gBtnGlow 2s ease-in-out infinite;
+  }
+  @keyframes gBtnGlow {
+    0%,100% { box-shadow: 0 10px 26px rgba(255,94,138,0.5); }
+    50%     { box-shadow: 0 10px 40px rgba(255,150,185,0.9); }
+  }
+  .g-dream {
+    display: none;
+    font-style: italic; font-size: 20px; line-height: 1.5;
+    color: #fff; margin: 0 0 22px;
+    text-shadow: 0 0 22px rgba(255,150,185,0.7);
+  }
+  .g-dream.show { display: block; animation: gRise 0.6s ease; }
+
   .g-heart { position: fixed; bottom: -40px; z-index: 90; pointer-events: none; animation: gFloat linear forwards; }
   @keyframes gFloat { to { transform: translateY(-112vh) rotate(40deg); opacity: 0; } }
   @keyframes gFade { from { opacity: 0; } to { opacity: 1; } }
@@ -601,6 +677,15 @@
     </a>
   </div>
 
+  <!-- Раскрытое воспоминание (тап по летающему фото) -->
+  <div class="mem-view" id="memView">
+    <div class="mem-card">
+      <div class="mem-photo"><img id="memImg" src="" alt=""></div>
+      <p class="mem-story" id="memStory"></p>
+      <p class="mem-hint">нажми, чтобы закрыть</p>
+    </div>
+  </div>
+
   <!-- Экран мини-игры -->
   <div class="game-screen" id="game">
     <div class="game-sky" id="gsky" aria-hidden="true"></div>
@@ -617,6 +702,7 @@
 
     <div class="g-progress" id="gprogress" aria-label="Найдено пар"></div>
     <div class="g-board" id="gboard"></div>
+    <p class="g-hint">пройди аккуратно — в конце спрятан секрет ✦</p>
 
     <!-- Записка пары -->
     <div class="g-note" id="gnote">
@@ -632,6 +718,8 @@
       <div class="g-win-card">
         <h2>Все звёздочки зажглись ✦</h2>
         <p id="gwinText"></p>
+        <button class="g-btn dream" id="gDream" style="display:none">узнать мечту ✦</button>
+        <p class="g-dream" id="gDreamText"></p>
         <button class="g-btn" id="gAgain">Сыграть ещё раз</button>
       </div>
     </div>
@@ -704,8 +792,10 @@
      PLACEHOLDER  — текст в пустых рамках.
      ====================================================== */
   const PHOTOS = [
-    { src: "photo1.jpg", cap: "моя любимая ❤️" },
-    { src: "photo2.jpg", cap: "с тобой тепло ✦" }
+    { src: "photo1.jpg", cap: "моя любимая ❤️",
+      story: "ты пришла на один из важных моментов в моей жизни. я безумно рад, что ты у меня есть." },
+    { src: "photo2.jpg", cap: "с тобой тепло ✦",
+      story: "это наша первая совместная фотография, где мы вдвоём — и последней она не будет." }
   ];
   const EMPTY_CAPTIONS = [
     "будем пополнять коллекцию, Звёздочка ❤️",
@@ -726,9 +816,73 @@
   const EMPTY_ICONS = ["✦", "❤", "🌸", "📷", "💫"];
   const CAP_COLORS  = ["#8a2f52", "#a13a63", "#7a3a86", "#b0466b"];
 
+  // Раскрытие воспоминания
+  const memView  = document.getElementById('memView');
+  const memImg   = document.getElementById('memImg');
+  const memStory = document.getElementById('memStory');
+  const memReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let memTimer = null, memFull = '';
+
+  function memClearSparks() {
+    memView.querySelectorAll('.mem-spark').forEach(s => s.remove());
+  }
+  function memSparkles(n) {
+    memClearSparks();
+    if (memReduce) return;
+    const hues = ['#ffffff', '#ffd86b', '#ff9ec0'];
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('div');
+      s.className = 'mem-spark';
+      s.style.left = (8 + Math.random() * 84) + '%';
+      s.style.top  = (12 + Math.random() * 74) + '%';
+      s.style.background = hues[(Math.random() * hues.length) | 0];
+      s.style.animationDelay = (Math.random() * 0.8).toFixed(2) + 's';
+      memView.appendChild(s);
+      setTimeout(() => s.remove(), 2700);
+    }
+  }
+
+  function memFinishText() {
+    if (memTimer) { clearInterval(memTimer); memTimer = null; }
+    memStory.textContent = memFull;
+  }
+  function memType(text) {
+    if (memTimer) { clearInterval(memTimer); memTimer = null; }
+    memFull = text;
+    if (memReduce) { memStory.textContent = text; return; }
+    memStory.textContent = '';
+    const caret = document.createElement('span');
+    caret.className = 'caret';
+    memStory.appendChild(caret);
+    let i = 0;
+    memTimer = setInterval(() => {
+      i++;
+      memStory.textContent = text.slice(0, i);
+      if (i < text.length) { memStory.appendChild(caret); }
+      else { clearInterval(memTimer); memTimer = null; }
+    }, 34);
+  }
+
+  function openMem(src, story) {
+    memImg.src = src;
+    memView.classList.add('show');
+    memSparkles(12);
+    memType(story);
+  }
+  function closeMem() {
+    if (memTimer) { clearInterval(memTimer); memTimer = null; }
+    memClearSparks();
+    memView.classList.remove('show');
+  }
+  // тап: пока печатается — показать текст сразу; иначе — закрыть
+  memView.addEventListener('click', () => {
+    if (memTimer) memFinishText();
+    else closeMem();
+  });
+
   function spawnFrames() {
     const items = [];
-    PHOTOS.forEach(p => items.push({ type: 'photo', src: p.src, cap: p.cap }));
+    PHOTOS.forEach(p => items.push({ type: 'photo', src: p.src, cap: p.cap, story: p.story }));
     for (let i = 0; i < EMPTY_FRAMES; i++) {
       items.push({ type: 'empty', cap: EMPTY_CAPTIONS[i % EMPTY_CAPTIONS.length], icon: EMPTY_ICONS[i % EMPTY_ICONS.length] });
     }
@@ -762,6 +916,7 @@
 
       const dim = `width:${size}px;height:${size}px`;
       if (it.type === 'photo') {
+        f.classList.add('mem');   // делает рамку кликабельной
         f.innerHTML =
           `<div class="pf-tape" style="--tape:${tape};--tr:${tr}deg"></div>` +
           `<div class="pf-inner" style="${dim}"><img src="${it.src}" alt=""></div>` +
@@ -773,6 +928,8 @@
           box.classList.add('pf-empty-photo');
           box.textContent = '🌸';
         });
+        // тап по полароиду — раскрыть воспоминание
+        if (it.story) f.addEventListener('click', () => openMem(it.src, it.story));
       } else {
         f.innerHTML =
           `<div class="pf-tape" style="--tape:${tape};--tr:${tr}deg"></div>` +
@@ -918,6 +1075,8 @@
     { sym: "💫", note: "Ты мне очень-очень нравишься." }
   ];
   const WIN_TEXT = "Ты собрала все звёздочки ✦ Не грусти — ты особенная, Звёздочка.";
+  const DREAM_TEXT = "мечтаю, чтобы ты сказала, что любишь меня";
+  const MAX_MISTAKES = 3; // кнопка мечты появится, если ошибок меньше этого числа
   /* ===================== дальше менять не нужно ======================== */
 
   const gboard = document.getElementById('gboard');
@@ -927,8 +1086,10 @@
   const gnoteText = document.getElementById('gnoteText');
   const gwin = document.getElementById('gwin');
   const gwinText = document.getElementById('gwinText');
+  const gDream = document.getElementById('gDream');
+  const gDreamText = document.getElementById('gDreamText');
 
-  let gfirst = null, glock = false, gfound = 0, gbuilt = false;
+  let gfirst = null, glock = false, gfound = 0, gbuilt = false, gmistakes = 0;
 
   function gshuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
@@ -940,7 +1101,8 @@
 
   function buildGame(){
     gskyInit();
-    gboard.innerHTML=''; gprog.innerHTML=''; gfound=0; gfirst=null; glock=false;
+    gboard.innerHTML=''; gprog.innerHTML=''; gfound=0; gfirst=null; glock=false; gmistakes=0;
+    gDream.style.display='none'; gDreamText.classList.remove('show'); gDreamText.textContent='';
     const deck = gshuffle(NOTES.flatMap((p,i)=>[{...p,id:i},{...p,id:i}]));
     NOTES.forEach(()=>gprog.insertAdjacentHTML('beforeend','<i></i>'));
     deck.forEach((c)=>{
@@ -964,6 +1126,7 @@
       setTimeout(()=>gshowNote(c),420);
       gfirst=null; glock=false;
     } else {
+      gmistakes++;
       setTimeout(()=>{ gfirst.b.classList.remove('flipped'); b.classList.remove('flipped'); gfirst=null; glock=false; },820);
     }
   }
@@ -975,7 +1138,19 @@
     if(gfound===NOTES.length) setTimeout(gwinShow,250);
   });
 
-  function gwinShow(){ gwinText.textContent=WIN_TEXT; gwin.classList.add('show'); grain(); }
+  function gwinShow(){
+    gwinText.textContent=WIN_TEXT;
+    gDreamText.classList.remove('show'); gDreamText.textContent='';
+    gDream.style.display = (gmistakes < MAX_MISTAKES) ? 'block' : 'none';
+    gwin.classList.add('show'); grain();
+  }
+
+  gDream.addEventListener('click',()=>{
+    gDreamText.textContent = DREAM_TEXT;
+    gDreamText.classList.add('show');
+    gDream.style.display='none';
+    grain();
+  });
 
   function grain(){
     const set=['💖','✦','💫','🌟','💕'];
