@@ -639,6 +639,178 @@
     .game-screen * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
     .g-card-inner { transition: transform 0.2s ease; }
   }
+
+  /* ==================== ДЖЕКПОТ: КНОПКА, БАРАБАН, ФИНАЛ ==================== */
+
+  /* Кнопка-приглашение поймать джекпот */
+  .jackpot-btn {
+    position: relative; overflow: hidden;
+    font-family: 'Georgia', serif; font-size: clamp(16px, 4.6vw, 20px);
+    letter-spacing: 1px; color: #3a1204;
+    background: linear-gradient(160deg, #ffe9a8, #ffd15e 45%, #ff9d5c);
+    border: 0; border-radius: 999px; padding: 14px 30px; cursor: pointer;
+    box-shadow: 0 10px 32px rgba(255,180,70,0.5), inset 0 0 0 1px rgba(255,255,255,0.35);
+    opacity: 0; pointer-events: none; transform: translateY(12px);
+    transition: opacity 0.9s ease, transform 0.3s ease;
+  }
+  .jackpot-btn.show { opacity: 1; pointer-events: auto; transform: translateY(0);
+    animation: jpBtnGlow 2.2s ease-in-out 1s infinite; }
+  .jackpot-btn:active { transform: scale(0.97); }
+  .jackpot-btn::after {
+    content: ""; position: absolute; top: 0; left: -60%; width: 45%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.85), transparent);
+    transform: skewX(-18deg); animation: jpShine 2.8s ease-in-out infinite;
+  }
+  @keyframes jpShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+  @keyframes jpBtnGlow {
+    0%, 100% { box-shadow: 0 10px 32px rgba(255,180,70,0.5); }
+    50% { box-shadow: 0 12px 46px rgba(255,215,120,0.95); }
+  }
+
+  /* Экран с барабаном */
+  .slot-screen {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    flex-direction: column; align-items: center; justify-content: center; overflow-y: auto;
+    padding: calc(env(safe-area-inset-top) + 54px) 16px calc(env(safe-area-inset-bottom) + 24px);
+    background:
+      radial-gradient(circle at 50% 30%, rgba(120,20,60,0.55) 0%, transparent 60%),
+      linear-gradient(160deg, #14081a 0%, #1c0a1e 55%, #0a0410 100%);
+    color: #fff3f8; font-family: 'Georgia', serif;
+  }
+  .slot-screen.show { display: flex; animation: gFade 0.5s ease; }
+  .slot-top { position: absolute; top: calc(env(safe-area-inset-top) + 12px); left: 16px; z-index: 4; }
+  .slot-head { text-align: center; margin-bottom: 16px; position: relative; z-index: 2; }
+  .slot-head h1 {
+    font-size: clamp(24px, 7vw, 36px); font-weight: 400; font-style: italic; margin: 0;
+    color: #ffd86b; text-shadow: 0 0 24px rgba(255,200,90,0.6);
+  }
+  .slot-head p { margin: 8px 0 0; color: #e8b8cd; font-size: 14px; }
+
+  .slot-machine {
+    position: relative; padding: 18px; border-radius: 22px;
+    background: linear-gradient(160deg, #2a1030, #160820);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6),
+      inset 0 0 0 2px rgba(255,200,110,0.5), inset 0 0 30px rgba(255,120,160,0.15);
+  }
+  .slot-reels {
+    display: flex; gap: 10px; padding: 12px; border-radius: 14px; position: relative;
+    background: linear-gradient(160deg, #0d0512, #1a0a20);
+    box-shadow: inset 0 4px 18px rgba(0,0,0,0.7);
+  }
+  .jp-window {
+    position: relative; width: 84px; height: 84px; overflow: hidden; border-radius: 10px;
+    background: linear-gradient(180deg, #fff6fb, #ffe6f0);
+    box-shadow: inset 0 0 0 2px rgba(255,200,110,0.6);
+  }
+  .jp-window::before, .jp-window::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 26px; z-index: 2; pointer-events: none;
+  }
+  .jp-window::before { top: 0; background: linear-gradient(180deg, rgba(20,6,26,0.55), transparent); }
+  .jp-window::after { bottom: 0; background: linear-gradient(0deg, rgba(20,6,26,0.55), transparent); }
+  .jp-strip { display: flex; flex-direction: column; will-change: transform; }
+  .jp-sym {
+    width: 84px; height: 84px; display: flex; align-items: center; justify-content: center;
+    font-size: 46px; line-height: 1;
+  }
+  .jp-window.settle .jp-strip { animation: jpSettle 0.2s ease; }
+  @keyframes jpSettle {
+    0% { transform: translateY(var(--y)); }
+    50% { transform: translateY(calc(var(--y) + 5px)); }
+    100% { transform: translateY(var(--y)); }
+  }
+  .slot-payline {
+    position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent, rgba(255,200,110,0.85), transparent);
+    z-index: 3; pointer-events: none;
+  }
+
+  .slot-spin {
+    margin-top: 18px; width: 100%; font-family: 'Georgia', serif;
+    font-size: clamp(17px, 5vw, 21px); letter-spacing: 1px; color: #3a1204;
+    background: linear-gradient(160deg, #ffe9a8, #ffd15e 45%, #ff9d5c);
+    border: 0; border-radius: 999px; padding: 15px 30px; cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255,180,70,0.5), inset 0 0 0 1px rgba(255,255,255,0.35);
+  }
+  .slot-spin:active { transform: scale(0.97); }
+  .slot-spin:disabled { filter: grayscale(0.3) brightness(0.85); cursor: default; }
+  .slot-hint { margin-top: 12px; color: #c79bb2; font-size: 13px; text-align: center; max-width: 300px; }
+
+  /* Карточка обычного приза */
+  .slot-prize {
+    position: fixed; inset: 0; z-index: 65; display: none; align-items: center; justify-content: center;
+    padding: 26px; background: rgba(10,4,16,0.82);
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  }
+  .slot-prize.show { display: flex; animation: gFade 0.35s ease; }
+  .slot-prize-card {
+    max-width: 320px; width: 100%; text-align: center; padding: 28px 22px;
+    background: linear-gradient(160deg, #fffdfb, #fff2f6); border-radius: 16px;
+    box-shadow: 0 26px 64px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.7);
+    animation: memPop 0.55s cubic-bezier(0.2,0.9,0.3,1.25);
+  }
+  .slot-prize-ico { font-size: 56px; }
+  .slot-prize-lbl { margin: 6px 0 10px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #b0466b; opacity: 0.7; }
+  .slot-prize-txt {
+    font-family: 'Segoe Script', 'Bradley Hand', 'Snell Roundhand', 'Comic Sans MS', 'Georgia', cursive;
+    font-size: 19px; line-height: 1.5; color: #8a2f52; margin-bottom: 20px;
+  }
+  .slot-prize-again {
+    font-family: 'Georgia', serif; font-size: 16px; color: #fff;
+    background: linear-gradient(160deg, #ff5a82, #be2355); border: 0; border-radius: 999px;
+    padding: 12px 26px; cursor: pointer;
+  }
+  .slot-prize-again:active { transform: scale(0.97); }
+
+  /* Финал — джекпот на весь экран */
+  .jp-final {
+    position: fixed; inset: 0; z-index: 70; display: none;
+    align-items: center; justify-content: center; padding: 30px; overflow: hidden; text-align: center;
+  }
+  .jp-final.show { display: flex; }
+  .jp-final-bg {
+    position: absolute; inset: -20%; z-index: 0;
+    background: linear-gradient(120deg, #3a0a2a, #7a1246, #c02a6a, #ff6f9d, #7a1246, #3a0a2a);
+    background-size: 300% 300%; animation: jpBg 9s ease-in-out infinite; filter: saturate(1.1);
+  }
+  @keyframes jpBg { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .jp-final-veil {
+    position: absolute; inset: 0; z-index: 1;
+    background: radial-gradient(circle at 50% 42%, transparent 0%, rgba(10,4,16,0.35) 70%, rgba(10,4,16,0.75) 100%);
+  }
+  .jp-final-content { position: relative; z-index: 2; max-width: 640px; }
+  .jp-tease {
+    font-size: clamp(26px, 8vw, 52px); color: #fff; font-style: italic;
+    text-shadow: 0 0 30px rgba(255,150,190,0.9); opacity: 0;
+    animation: jpTeaseIn 0.8s ease 0.1s forwards, jpTeaseOut 0.7s ease 2.2s forwards;
+  }
+  @keyframes jpTeaseIn {
+    from { opacity: 0; transform: scale(0.7) translateY(10px); filter: blur(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+  }
+  @keyframes jpTeaseOut { to { opacity: 0; transform: translateY(-30px) scale(0.92); filter: blur(4px); } }
+  .jp-lines { margin-top: 6px; }
+  .jp-line {
+    font-size: clamp(20px, 5.4vw, 34px); color: #fff; line-height: 1.4; margin: 6px 0;
+    opacity: 0; transform: translateY(24px) scale(0.92); filter: blur(7px);
+    text-shadow: 0 0 22px rgba(255,140,180,0.8), 0 2px 14px rgba(0,0,0,0.4);
+    animation: jpLineIn 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  .jp-line.gold { color: #ffe08a; font-style: italic; text-shadow: 0 0 26px rgba(255,205,110,1); }
+  @keyframes jpLineIn { to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+  .jp-final-heart {
+    font-size: clamp(46px, 14vw, 84px); margin-top: 14px; opacity: 0; transform: scale(0);
+    animation: heartPop 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards, pulseHeart 1.4s ease-in-out infinite;
+  }
+  .jp-close {
+    display: block; margin: 26px auto 0; font-family: 'Georgia', serif; font-size: 16px; color: #fff;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,210,225,0.5); border-radius: 999px;
+    padding: 12px 28px; cursor: pointer; opacity: 0; animation: jpLineIn 0.8s ease forwards;
+  }
+  .jp-close:active { transform: scale(0.96); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slot-screen *, .jp-final * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+  }
 </style>
 </head>
 <body>
@@ -677,6 +849,7 @@
   <div class="bottom-actions">
     <div class="miss-tally" id="missTally" aria-live="polite"></div>
     <button class="play-btn" id="playBtn" aria-label="Поиграть">поиграть ✦</button>
+    <button class="jackpot-btn" id="jackpotBtn" aria-label="Поймать джекпот">поймать джекпот 🎰</button>
     <a class="miss-btn" id="missBtn" href="tel:89042360018" aria-label="Соскучилась — позвонить">
       соскучилась <span class="miss-emoji">❤️</span>
     </a>
@@ -689,6 +862,44 @@
       <p class="mem-story" id="memStory"></p>
       <p class="mem-hint">нажми, чтобы закрыть</p>
     </div>
+  </div>
+
+  <!-- Экран с барабаном (джекпот) -->
+  <div class="slot-screen" id="slot">
+    <div class="slot-top">
+      <button class="g-icon" id="slotBack" aria-label="Назад">‹ назад</button>
+    </div>
+    <div class="slot-head">
+      <h1>Поймай джекпот, Звёздочка</h1>
+      <p>крути барабан — тут спрятаны сюрпризы ✦</p>
+    </div>
+    <div class="slot-machine">
+      <div class="slot-reels">
+        <div class="jp-window"></div>
+        <div class="jp-window"></div>
+        <div class="jp-window"></div>
+        <div class="slot-payline"></div>
+      </div>
+      <button class="slot-spin" id="slotSpin">крутить 🎰</button>
+    </div>
+    <p class="slot-hint">три одинаковых — и откроется настоящий джекпот ✦</p>
+  </div>
+
+  <!-- Карточка обычного выигрыша -->
+  <div class="slot-prize" id="slotPrize">
+    <div class="slot-prize-card">
+      <div class="slot-prize-ico" id="slotPrizeIco">🎁</div>
+      <div class="slot-prize-lbl">твой выигрыш</div>
+      <p class="slot-prize-txt" id="slotPrizeTxt"></p>
+      <button class="slot-prize-again" id="slotPrizeAgain">крутить ещё ✦</button>
+    </div>
+  </div>
+
+  <!-- Финал: настоящий джекпот -->
+  <div class="jp-final" id="jpFinal">
+    <div class="jp-final-bg"></div>
+    <div class="jp-final-veil"></div>
+    <div class="jp-final-content" id="jpContent"></div>
   </div>
 
   <!-- Экран мини-игры -->
@@ -1005,6 +1216,7 @@
     // Появление нижних кнопок
     setTimeout(() => {
       document.getElementById('playBtn').classList.add('show');
+      document.getElementById('jackpotBtn').classList.add('show');
       document.getElementById('missBtn').classList.add('show');
       renderTally();
     }, textDone + 5200);
@@ -1193,6 +1405,186 @@
     gmuted=!gmuted; bgm.muted=gmuted;
     document.getElementById('gMute').textContent = gmuted ? '♪ без звука' : '♪ музыка';
   });
+
+
+  /* ====================== ДЖЕКПОТ: БАРАБАН + ФИНАЛ ======================
+     МЕНЯТЬ МОЖНО ТОЛЬКО ДВА БЛОКА НИЖЕ:
+       PRIZES   — сюрпризы/подарки/фразы для обычного выигрыша
+       JP_TEASE и JP_LINES — текст настоящего джекпота на весь экран
+     ===================================================================== */
+
+  // Обычные выигрыши (сюрпризы, подарки, красивые фразы)
+  const PRIZES = [
+    { ico: "🌹", txt: "Букет твоих любимых цветов — с меня, на этой неделе." },
+    { ico: "🍫", txt: "Плитка шоколада и вечер только для нас двоих." },
+    { ico: "🎬", txt: "Свидание по твоему выбору — куда скажешь, туда и идём." },
+    { ico: "☕", txt: "Уютное утро и кофе в постель. Ты заслужила." },
+    { ico: "💌", txt: "Ты делаешь меня лучше. Это правда, а не просто слова." },
+    { ico: "⭐", txt: "Ты — самое красивое, что случилось в моей жизни." },
+    { ico: "🤗", txt: "Купон на тысячу обнимашек. Срок годности — бесконечность." },
+    { ico: "🌙", txt: "Каждую ночь засыпаю с мыслью о тебе." },
+    { ico: "💫", txt: "С тобой даже обычный день похож на праздник." },
+    { ico: "🎁", txt: "Маленький сюрприз уже ждёт тебя. Спроси меня лично ❤️" }
+  ];
+
+  // Настоящий джекпот — текст на весь экран (строки появляются по очереди)
+  const JP_TEASE = "Думаешь, это и есть джекпот?";
+  const JP_LINES = [
+    { t: "Нет, Роднулька." },
+    { t: "Настоящий джекпот — это встретить именно тебя" },
+    { t: "среди миллиардов людей на этой земле." },
+    { t: "И остаться рядом. До самого конца." },
+    { t: "Ты — мой главный выигрыш,", gold: true },
+    { t: "который я не отпущу никогда. ❤️", gold: true }
+  ];
+  /* ===================== дальше менять не нужно ======================== */
+
+  const SLOT_SYMS = ['❤️','⭐','🎁','🌹','💫','🍫','💎','🌙','✨'];
+  const SLOT_JACK = 6;            // индекс 💎 — символ джекпота
+  const SLOT_REPEAT = 16;
+  const SLOT_H = 84;             // высота символа (должна совпадать с CSS)
+
+  const slotEl   = document.getElementById('slot');
+  const slotSpinBtn = document.getElementById('slotSpin');
+  const jpFinal  = document.getElementById('jpFinal');
+  let slotStrips = [], slotBuilt = false, slotBusy = false, slotSpinCount = 0;
+
+  function slotBuild(){
+    slotStrips = [];
+    document.querySelectorAll('#slot .jp-window').forEach((w, ri) => {
+      const strip = document.createElement('div');
+      strip.className = 'jp-strip';
+      for (let r = 0; r < SLOT_REPEAT; r++)
+        for (const s of SLOT_SYMS){
+          const d = document.createElement('div');
+          d.className = 'jp-sym'; d.textContent = s;
+          strip.appendChild(d);
+        }
+      w.innerHTML = ''; w.appendChild(strip);
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(' + (-(ri * SLOT_H)) + 'px)';
+      slotStrips.push(strip);
+    });
+  }
+
+  function slotSpin(){
+    if (slotBusy) return;
+    slotBusy = true; slotSpinBtn.disabled = true;
+    document.querySelectorAll('#slot .jp-window').forEach(w => w.classList.remove('settle'));
+
+    slotSpinCount++;
+    // джекпот гарантированно выпадет к 4-й прокрутке, а до этого — с вероятностью ~22%
+    const jackpot = slotSpinCount >= 4 || Math.random() < 0.22;
+
+    const rnd = () => (Math.random() * SLOT_SYMS.length) | 0;
+    let targets;
+    if (jackpot) {
+      targets = [SLOT_JACK, SLOT_JACK, SLOT_JACK];
+    } else {
+      targets = [rnd(), rnd(), rnd()];
+      // не допускаем случайного тройного джекпота
+      if (targets[0] === SLOT_JACK && targets[1] === SLOT_JACK && targets[2] === SLOT_JACK)
+        targets[2] = (SLOT_JACK + 1) % SLOT_SYMS.length;
+    }
+
+    const durs = [2.4, 2.95, 3.5];
+    slotStrips.forEach((strip, ri) => {
+      const idx = (SLOT_REPEAT - 1) * SLOT_SYMS.length + targets[ri];
+      const y = -(idx * SLOT_H);
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(0px)';
+      void strip.offsetHeight; // reflow, чтобы прокрутка стартовала заново
+      strip.style.transition = 'transform ' + durs[ri] + 's cubic-bezier(0.15,0.85,0.22,1)';
+      strip.style.transform = 'translateY(' + y + 'px)';
+      strip.dataset.y = y;
+    });
+
+    const total = Math.max.apply(null, durs) * 1000 + 130;
+    setTimeout(() => {
+      document.querySelectorAll('#slot .jp-window').forEach((w, ri) => {
+        w.style.setProperty('--y', slotStrips[ri].dataset.y + 'px');
+        w.classList.add('settle');
+      });
+      slotBusy = false; slotSpinBtn.disabled = false;
+      if (jackpot) { slotSpinCount = 0; setTimeout(showJackpot, 500); }
+      else { setTimeout(showPrize, 380); }
+    }, total);
+  }
+
+  function showPrize(){
+    const p = PRIZES[(Math.random() * PRIZES.length) | 0];
+    document.getElementById('slotPrizeIco').textContent = p.ico;
+    document.getElementById('slotPrizeTxt').textContent = p.txt;
+    document.getElementById('slotPrize').classList.add('show');
+  }
+
+  function jpRain(){
+    const set = ['💖','✦','💫','🌟','💕','❤️'];
+    for (let i = 0; i < 26; i++) {
+      const h = document.createElement('div');
+      h.className = 'g-heart'; h.textContent = set[i % set.length];
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.animationDuration = (3 + Math.random() * 3) + 's';
+      h.style.animationDelay = (Math.random() * 1.4) + 's';
+      h.style.fontSize = (18 + Math.random() * 22) + 'px';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 7000);
+    }
+  }
+
+  function showJackpot(){
+    const c = document.getElementById('jpContent');
+    c.innerHTML = '';
+
+    const tease = document.createElement('div');
+    tease.className = 'jp-tease'; tease.textContent = JP_TEASE;
+    c.appendChild(tease);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'jp-lines'; c.appendChild(wrap);
+
+    const base = 2.6, step = 0.5;
+    JP_LINES.forEach((ln, i) => {
+      const d = document.createElement('div');
+      d.className = 'jp-line' + (ln.gold ? ' gold' : '');
+      d.textContent = ln.t;
+      d.style.animationDelay = (base + i * step) + 's';
+      wrap.appendChild(d);
+    });
+
+    const lastLine = base + (JP_LINES.length - 1) * step;
+    const heart = document.createElement('div');
+    heart.className = 'jp-final-heart'; heart.textContent = '❤️';
+    const hp = lastLine + 0.7;
+    heart.style.animationDelay = hp + 's, ' + (hp + 0.9) + 's'; // pop, затем пульс
+    c.appendChild(heart);
+
+    const btn = document.createElement('button');
+    btn.className = 'jp-close'; btn.textContent = 'оставить это себе ✦';
+    btn.style.animationDelay = (hp + 0.6) + 's';
+    btn.addEventListener('click', closeJackpot);
+    c.appendChild(btn);
+
+    jpFinal.classList.add('show');
+    setTimeout(jpRain, base * 1000);
+    setTimeout(jpRain, hp * 1000);
+  }
+
+  function closeJackpot(){
+    jpFinal.classList.remove('show');
+    document.getElementById('slotPrize').classList.remove('show');
+    slotEl.classList.remove('show'); // возвращаемся к главному экрану
+  }
+
+  // Кнопки
+  document.getElementById('jackpotBtn').addEventListener('click', () => {
+    if (!slotBuilt) { slotBuild(); slotBuilt = true; }
+    slotEl.classList.add('show');
+  });
+  document.getElementById('slotBack').addEventListener('click', () => slotEl.classList.remove('show'));
+  slotSpinBtn.addEventListener('click', slotSpin);
+  document.getElementById('slotPrizeAgain').addEventListener('click', () =>
+    document.getElementById('slotPrize').classList.remove('show'));
 </script>
 </body>
 </html>
