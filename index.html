@@ -811,6 +811,149 @@
   @media (prefers-reduced-motion: reduce) {
     .slot-screen *, .jp-final * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
   }
+
+  /* ==================== СЕКРЕТНЫЙ ВОПРОС «???» ==================== */
+
+  /* Загадочная круглая кнопка с вопросиками */
+  .date-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 14px);
+    right: 14px;
+    z-index: 22;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,170,200,0.55);
+    background: radial-gradient(circle at 30% 25%, rgba(255,110,150,0.4), rgba(30,8,26,0.92) 72%);
+    box-shadow: 0 8px 26px rgba(255,80,130,0.35), inset 0 0 14px rgba(255,120,160,0.25);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 1px;
+    opacity: 0; pointer-events: none; transform: translateY(-10px);
+    transition: opacity 0.9s ease, transform 0.3s ease;
+  }
+  .date-btn.show {
+    opacity: 1; pointer-events: auto; transform: translateY(0);
+    animation: dqGlow 2.4s ease-in-out 1.2s infinite;
+  }
+  .date-btn:active { transform: scale(0.9); }
+  .date-btn span {
+    font-family: 'Georgia', serif; font-size: 21px; font-weight: bold; line-height: 1;
+    background: linear-gradient(160deg, #ffd86b, #ff7ea5);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: dqJump 1.6s ease-in-out infinite;
+  }
+  .date-btn span:nth-child(2) { animation-delay: 0.18s; }
+  .date-btn span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes dqJump { 0%, 55%, 100% { transform: translateY(0); } 25% { transform: translateY(-4px); } }
+  @keyframes dqGlow {
+    0%, 100% { box-shadow: 0 8px 26px rgba(255,80,130,0.35), inset 0 0 14px rgba(255,120,160,0.25); }
+    50% { box-shadow: 0 10px 40px rgba(255,140,180,0.8), inset 0 0 20px rgba(255,150,190,0.45); }
+  }
+
+  /* Окно с главным вопросом */
+  .date-modal {
+    position: fixed; inset: 0; z-index: 110; display: none;
+    align-items: center; justify-content: center; padding: 26px;
+    background: rgba(10,4,16,0.85);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .date-modal.show { display: flex; animation: gFade 0.4s ease; }
+  .date-card {
+    position: relative; max-width: 340px; width: 100%; text-align: center;
+    padding: 24px 22px 26px;
+    background: linear-gradient(160deg, #fffdfb, #ffeef4);
+    border-radius: 22px;
+    box-shadow: 0 26px 64px rgba(0,0,0,0.65), inset 0 0 0 1px rgba(255,255,255,0.7);
+    animation: memPop 0.55s cubic-bezier(0.2,0.9,0.3,1.25);
+  }
+
+  /* Минипиг */
+  .date-pig { width: 112px; height: auto; display: block; margin: 0 auto 4px; animation: pigBob 2.6s ease-in-out infinite; }
+  @keyframes pigBob {
+    0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+    50% { transform: translateY(-6px) rotate(1.5deg); }
+  }
+  .pig-heart { transform-box: fill-box; transform-origin: center; animation: pulseHeart 1.4s ease-in-out infinite; }
+
+  .date-q {
+    font-size: clamp(20px, 5.6vw, 25px); line-height: 1.35; color: #7c2547;
+    margin: 6px 0 18px; text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .date-answers { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; min-height: 50px; }
+
+  /* «Да» */
+  .date-yes {
+    font-family: 'Georgia', serif; font-size: 19px; letter-spacing: 1px; color: #1a0610;
+    background: linear-gradient(160deg, #ffd86b, #ff7ea5);
+    border: 0; border-radius: 999px; padding: 13px 34px; cursor: pointer;
+    box-shadow: 0 10px 28px rgba(255,90,130,0.5), inset 0 0 0 1px rgba(255,255,255,0.25);
+    animation: gBtnPulse 2s ease-in-out infinite;
+  }
+  .date-yes:active { transform: scale(0.95); }
+  .date-yes.solo { font-size: 21px; padding: 15px 42px; animation: gBtnPulse 1.1s ease-in-out infinite; }
+
+  /* «Нет» — та самая, которая убегает */
+  .date-no {
+    font-family: 'Georgia', serif; font-size: 17px; letter-spacing: 1px; color: #9a7386;
+    background: #f4e3ea; border: 1px solid #e3c3d1; border-radius: 999px;
+    padding: 12px 28px; cursor: pointer;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    box-shadow: 0 6px 18px rgba(150,60,100,0.2);
+    transition: left 0.45s cubic-bezier(0.25,1.3,0.35,1), top 0.45s cubic-bezier(0.25,1.3,0.35,1),
+                transform 0.3s ease, opacity 0.45s ease;
+  }
+  .date-no.gone { opacity: 0; transform: scale(0) rotate(220deg) !important; pointer-events: none; }
+
+  .date-hint { margin-top: 16px; font-size: 13px; color: #b0466b; opacity: 0.75; letter-spacing: 0.4px; min-height: 17px; }
+
+  /* Летающие сердечки и поцелуйчики */
+  .date-float {
+    position: fixed; z-index: 112; pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: dateFloat var(--dur, 1.6s) ease-out forwards;
+  }
+  @keyframes dateFloat {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+    12%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% - var(--dy, 130px))) scale(1.25) rotate(var(--rot, 0deg)); }
+  }
+
+  /* Финал: салют */
+  .date-final {
+    position: fixed; inset: 0; z-index: 120; display: none;
+    align-items: center; justify-content: center; overflow: hidden; text-align: center;
+    background: radial-gradient(circle at 50% 112%, #2a0a26 0%, #14061c 45%, #070310 100%);
+  }
+  .date-final.show { display: flex; }
+  .date-final canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .df-back { position: absolute; top: calc(env(safe-area-inset-top) + 12px); left: 16px; z-index: 3; }
+  .df-content { position: relative; z-index: 2; padding: 0 24px; }
+  .df-wow {
+    font-size: clamp(38px, 12vw, 76px); color: #fff; letter-spacing: 2px;
+    text-shadow: 0 0 34px rgba(255,150,190,1), 0 0 70px rgba(255,200,120,0.6);
+    opacity: 0; transform: translateY(24px) scale(0.9); filter: blur(7px);
+    animation: jpLineIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+  }
+  .df-line {
+    font-size: clamp(22px, 6.4vw, 40px); color: #ffe3ee; margin-top: 12px;
+    text-shadow: 0 0 24px rgba(255,120,160,0.9);
+    opacity: 0; transform: translateY(24px) scale(0.92); filter: blur(7px);
+    animation: jpLineIn 0.9s cubic-bezier(0.22,1,0.36,1) 0.8s forwards;
+  }
+  .df-sub {
+    font-size: clamp(15px, 4.2vw, 20px); color: #ffd9a6; font-style: italic; margin-top: 14px;
+    opacity: 0; animation: jpLineIn 0.9s ease 1.5s forwards;
+  }
+  .df-heart {
+    font-size: clamp(44px, 13vw, 80px); margin-top: 16px; opacity: 0; transform: scale(0);
+    animation: heartPop 0.9s cubic-bezier(0.34,1.56,0.64,1) 1.9s forwards, pulseHeart 1.4s ease-in-out 2.9s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .date-btn, .date-btn span, .date-pig, .pig-heart, .date-yes, .date-float,
+    .df-wow, .df-line, .df-sub, .df-heart {
+      animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -853,6 +996,56 @@
     <a class="miss-btn" id="missBtn" href="tel:89042360018" aria-label="Соскучилась — позвонить">
       соскучилась <span class="miss-emoji">❤️</span>
     </a>
+  </div>
+
+  <!-- Секретная кнопка с вопросиками -->
+  <button class="date-btn" id="dateBtn" aria-label="Секретный вопрос">
+    <span>?</span><span>?</span><span>?</span>
+  </button>
+
+  <!-- Окно с главным вопросом -->
+  <div class="date-modal" id="dateModal" role="dialog" aria-modal="true" aria-label="Главный вопрос">
+    <div class="date-card">
+      <!-- Минипиг -->
+      <svg class="date-pig" viewBox="0 0 120 104" aria-hidden="true">
+        <path d="M23 36 Q13 8 36 15 Q43 20 40 33 Z" fill="#ff9db8"/>
+        <path d="M26 32 Q21 16 34 20 Q38 23 36 31 Z" fill="#ff7fa3"/>
+        <path d="M97 36 Q107 8 84 15 Q77 20 80 33 Z" fill="#ff9db8"/>
+        <path d="M94 32 Q99 16 86 20 Q82 23 84 31 Z" fill="#ff7fa3"/>
+        <ellipse cx="60" cy="60" rx="42" ry="39" fill="#ffc4d6" stroke="#f0a4bd" stroke-width="1.5"/>
+        <ellipse cx="44" cy="42" rx="14" ry="8" fill="rgba(255,255,255,0.55)"/>
+        <ellipse cx="29" cy="68" rx="8" ry="5" fill="rgba(255,110,150,0.4)"/>
+        <ellipse cx="91" cy="68" rx="8" ry="5" fill="rgba(255,110,150,0.4)"/>
+        <circle cx="43" cy="54" r="5" fill="#47202e"/>
+        <circle cx="45" cy="52" r="1.8" fill="#fff"/>
+        <circle cx="77" cy="54" r="5" fill="#47202e"/>
+        <circle cx="79" cy="52" r="1.8" fill="#fff"/>
+        <ellipse cx="60" cy="70" rx="16" ry="11" fill="#ff93b4" stroke="#e876a0" stroke-width="1.5"/>
+        <ellipse cx="54" cy="70" rx="2.6" ry="4.2" fill="#c2537d"/>
+        <ellipse cx="66" cy="70" rx="2.6" ry="4.2" fill="#c2537d"/>
+        <path d="M51 87 Q60 93 69 87" fill="none" stroke="#c2537d" stroke-width="2.4" stroke-linecap="round"/>
+        <path class="pig-heart" d="M104 12 c-2.8-3.4 -8.4-1.4 -8.4 3 c0 3.6 4.6 6.8 8.4 9.6 c3.8-2.8 8.4-6 8.4-9.6 c0-4.4 -5.6-6.4 -8.4-3 Z" fill="#ff5a82"/>
+      </svg>
+      <p class="date-q">Пойдёшь со мной на свидание, Звёздочка?</p>
+      <div class="date-answers">
+        <button class="date-yes" id="dateYes">Да ❤️</button>
+        <button class="date-no" id="dateNo">Нет</button>
+        <span id="dateNoPh" style="display:none;"></span>
+      </div>
+      <p class="date-hint" id="dateHint">выбери ответ ✦</p>
+    </div>
+  </div>
+
+  <!-- Финал: салют -->
+  <div class="date-final" id="dateFinal">
+    <canvas id="fwCanvas"></canvas>
+    <button class="g-icon df-back" id="dfBack" aria-label="Назад">‹ назад</button>
+    <div class="df-content">
+      <div class="df-wow">Ураааа! 🎉</div>
+      <div class="df-line">Это свидание, Звёздочка</div>
+      <div class="df-sub">самый лучший ответ на свете ✦</div>
+      <div class="df-heart">❤️</div>
+    </div>
   </div>
 
   <!-- Раскрытое воспоминание (тап по летающему фото) -->
@@ -1218,6 +1411,7 @@
       document.getElementById('playBtn').classList.add('show');
       document.getElementById('jackpotBtn').classList.add('show');
       document.getElementById('missBtn').classList.add('show');
+      document.getElementById('dateBtn').classList.add('show');
       renderTally();
     }, textDone + 5200);
   }
@@ -1585,6 +1779,240 @@
   slotSpinBtn.addEventListener('click', slotSpin);
   document.getElementById('slotPrizeAgain').addEventListener('click', () =>
     document.getElementById('slotPrize').classList.remove('show'));
+
+
+  /* ====================== СЕКРЕТНЫЙ ВОПРОС «???» ====================== */
+  const dateBtnEl = document.getElementById('dateBtn');
+  const dateModal = document.getElementById('dateModal');
+  const dateYes   = document.getElementById('dateYes');
+  const dateNoEl  = document.getElementById('dateNo');
+  const dateNoPh  = document.getElementById('dateNoPh');
+  const dateHint  = document.getElementById('dateHint');
+  const dateFinal = document.getElementById('dateFinal');
+  const dfReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const KISS = ['❤️','💕','💖','💗','😘','💋','✨'];
+  let kissTimer = null;
+
+  // Сердечки и поцелуйчики вокруг кнопки «Да»
+  function spawnKiss() {
+    if (!dateModal.classList.contains('show')) return;
+    const r = dateYes.getBoundingClientRect();
+    const e = document.createElement('span');
+    e.className = 'date-float';
+    e.textContent = KISS[Math.floor(Math.random() * KISS.length)];
+    e.style.left = (r.left + Math.random() * r.width) + 'px';
+    e.style.top  = (r.top + r.height * 0.4) + 'px';
+    e.style.fontSize = (15 + Math.random() * 14) + 'px';
+    e.style.setProperty('--dx', (Math.random() * 90 - 45) + 'px');
+    e.style.setProperty('--dy', (100 + Math.random() * 90) + 'px');
+    e.style.setProperty('--rot', (Math.random() * 50 - 25) + 'deg');
+    e.style.setProperty('--dur', (1.4 + Math.random() * 0.8) + 's');
+    document.body.appendChild(e);
+    setTimeout(() => e.remove(), 2400);
+  }
+
+  dateBtnEl.addEventListener('click', () => {
+    dateModal.classList.add('show');
+    if (!dfReduced) {
+      clearInterval(kissTimer);
+      kissTimer = setInterval(spawnKiss, 240);
+      for (let i = 0; i < 4; i++) setTimeout(spawnKiss, 150 * i);
+    }
+  });
+
+  /* «Нет» убегает, а если поймали — уменьшается, пока не исчезнет */
+  let noHits = 0, noFlying = false, noGone = false;
+  const NO_MAX = 6;
+  const noScale = () => Math.max(0.12, 1 - noHits * 0.16);
+
+  function flyNo() {
+    if (noGone) return;
+    if (!noFlying) {
+      // Отвязываем кнопку от карточки и отпускаем в свободный полёт
+      const b = dateNoEl.getBoundingClientRect();
+      dateNoPh.style.display = 'inline-block';
+      dateNoPh.style.width  = b.width + 'px';
+      dateNoPh.style.height = b.height + 'px';
+      dateNoEl.style.position = 'fixed';
+      dateNoEl.style.left = b.left + 'px';
+      dateNoEl.style.top  = b.top + 'px';
+      dateNoEl.style.margin = '0';
+      dateNoEl.style.zIndex = '115';
+      document.body.appendChild(dateNoEl);
+      noFlying = true;
+    }
+    const pad = 14;
+    const w = dateNoEl.offsetWidth  || 90;
+    const h = dateNoEl.offsetHeight || 46;
+    const x = pad + Math.random() * Math.max(10, window.innerWidth  - w - pad * 2);
+    const y = pad + Math.random() * Math.max(10, window.innerHeight - h - pad * 2);
+    requestAnimationFrame(() => {
+      dateNoEl.style.left = x + 'px';
+      dateNoEl.style.top  = y + 'px';
+      dateNoEl.style.transform = 'scale(' + noScale() + ') rotate(' + (Math.random() * 24 - 12) + 'deg)';
+    });
+  }
+
+  // Мышь: убегает от наведения. Палец: чаще всего успевает удрать, но иногда даёт себя поймать
+  dateNoEl.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && !noGone) flyNo(); });
+  dateNoEl.addEventListener('touchstart', (e) => {
+    if (noGone) return;
+    if (Math.random() < 0.6) { e.preventDefault(); flyNo(); }
+  }, { passive: false });
+
+  dateNoEl.addEventListener('click', () => {
+    if (noGone) return;
+    noHits++;
+    if (noHits >= NO_MAX) {
+      noGone = true;
+      dateNoEl.classList.add('gone');
+      dateHint.textContent = 'ну вот, остался только один ответ 😏';
+      dateYes.classList.add('solo');
+      setTimeout(() => dateNoEl.remove(), 600);
+    } else {
+      dateHint.textContent = [
+        'ой, она уменьшилась…',
+        'ловкая ты! но она тоже 🙈',
+        'она тает на глазах ✨',
+        'почти исчезла!',
+        'ещё чуть-чуть — и выбора не останется 😄'
+      ][Math.min(noHits - 1, 4)];
+      flyNo();
+    }
+  });
+
+  /* «Да» — салют и радостная надпись */
+  dateYes.addEventListener('click', () => {
+    clearInterval(kissTimer);
+    if (dateNoEl.parentNode) dateNoEl.remove();
+    dateNoPh.style.display = 'none';
+    dateModal.classList.remove('show');
+    dateFinal.classList.add('show');
+    startFireworks();
+    dfHeartsStart();
+  });
+
+  // Сердечки, взлетающие на финальном экране
+  let dfTimer = null;
+  function dfHeartsStart() {
+    if (dfReduced) return;
+    clearInterval(dfTimer);
+    dfTimer = setInterval(() => {
+      if (!dateFinal.classList.contains('show')) return;
+      const e = document.createElement('span');
+      e.className = 'date-float';
+      e.textContent = KISS[Math.floor(Math.random() * KISS.length)];
+      e.style.zIndex = '125';
+      e.style.left = (Math.random() * window.innerWidth) + 'px';
+      e.style.top  = (window.innerHeight * 0.78 + Math.random() * window.innerHeight * 0.18) + 'px';
+      e.style.fontSize = (18 + Math.random() * 16) + 'px';
+      e.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+      e.style.setProperty('--dy', (170 + Math.random() * 120) + 'px');
+      e.style.setProperty('--rot', (Math.random() * 40 - 20) + 'deg');
+      e.style.setProperty('--dur', (2 + Math.random()) + 's');
+      document.body.appendChild(e);
+      setTimeout(() => e.remove(), 3300);
+    }, 380);
+  }
+
+  /* Салют на canvas */
+  const fwCanvas = document.getElementById('fwCanvas');
+  const fwCtx = fwCanvas.getContext('2d');
+  const FW_HUES = [335, 345, 320, 300, 50, 42, 275];
+  let fwRAF = null, fwTimer = null, rockets = [], sparks = [];
+
+  function fwResize() {
+    fwCanvas.width  = window.innerWidth;
+    fwCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', fwResize);
+
+  function fwLaunch() {
+    rockets.push({
+      x: window.innerWidth * (0.15 + Math.random() * 0.7),
+      y: window.innerHeight + 10,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: -(window.innerHeight * 0.014 + Math.random() * window.innerHeight * 0.004),
+      ty: window.innerHeight * (0.16 + Math.random() * 0.3),
+      hue: FW_HUES[Math.floor(Math.random() * FW_HUES.length)]
+    });
+  }
+
+  function fwExplode(r) {
+    const n = (dfReduced ? 34 : 66) + Math.floor(Math.random() * 40);
+    for (let i = 0; i < n; i++) {
+      const a  = Math.random() * Math.PI * 2;
+      const sp = Math.pow(Math.random(), 0.8) * (4.6 + Math.random() * 1.6);
+      sparks.push({
+        x: r.x, y: r.y,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+        life: 1, decay: 0.008 + Math.random() * 0.013,
+        hue: r.hue + (Math.random() * 22 - 11),
+        size: 1.4 + Math.random() * 1.7
+      });
+    }
+  }
+
+  function fwFrame() {
+    const W = fwCanvas.width, H = fwCanvas.height;
+    fwCtx.globalCompositeOperation = 'source-over';
+    fwCtx.fillStyle = 'rgba(7,3,16,0.22)';
+    fwCtx.fillRect(0, 0, W, H);
+    fwCtx.globalCompositeOperation = 'lighter';
+
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.x += r.vx; r.y += r.vy; r.vy += 0.03;
+      fwCtx.strokeStyle = 'hsla(' + r.hue + ',100%,72%,0.9)';
+      fwCtx.lineWidth = 2;
+      fwCtx.beginPath();
+      fwCtx.moveTo(r.x, r.y);
+      fwCtx.lineTo(r.x - r.vx * 2.5, r.y - r.vy * 2.5);
+      fwCtx.stroke();
+      if (r.y <= r.ty || r.vy >= -1) { fwExplode(r); rockets.splice(i, 1); }
+    }
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.vx *= 0.985; s.vy = s.vy * 0.985 + 0.05;
+      s.x += s.vx; s.y += s.vy;
+      s.life -= s.decay;
+      if (s.life <= 0) { sparks.splice(i, 1); continue; }
+      if (s.life < 0.35 && Math.random() < 0.22) continue; // мерцание в конце
+      fwCtx.fillStyle = 'hsla(' + s.hue + ',100%,' + (58 + s.life * 14) + '%,' + s.life + ')';
+      fwCtx.beginPath();
+      fwCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      fwCtx.fill();
+    }
+
+    fwRAF = requestAnimationFrame(fwFrame);
+  }
+
+  function startFireworks() {
+    fwResize();
+    fwCtx.fillStyle = '#070310';
+    fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+    rockets = []; sparks = [];
+    for (let i = 0; i < 3; i++) setTimeout(fwLaunch, i * 260);
+    clearInterval(fwTimer);
+    fwTimer = setInterval(() => { if (rockets.length < 4) fwLaunch(); }, dfReduced ? 1300 : 620);
+    cancelAnimationFrame(fwRAF);
+    fwFrame();
+  }
+
+  function stopFireworks() {
+    clearInterval(fwTimer);
+    cancelAnimationFrame(fwRAF);
+    clearInterval(dfTimer);
+    rockets = []; sparks = [];
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+  }
+
+  document.getElementById('dfBack').addEventListener('click', () => {
+    stopFireworks();
+    dateFinal.classList.remove('show');
+  });
 </script>
 </body>
 </html>
