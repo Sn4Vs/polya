@@ -1096,7 +1096,7 @@
   /* ==================== СКРЫТАЯ ИГРА «НОЧНОЙ ПРУД» ==================== */
   .pond-btn {
     position: fixed;
-    top: calc(env(safe-area-inset-top) + 14px);
+    top: calc(env(safe-area-inset-top) + 82px);
     left: 14px;
     z-index: 22;
     width: 54px;
@@ -1240,6 +1240,357 @@
       animation-duration: 0.001ms !important;
       animation-iteration-count: 1 !important;
     }
+  }
+
+  /* ==================== ШУТОЧНЫЙ ДОГОВОР «ОЧЕНЬ ВАЖНО» ==================== */
+  .contract-btn {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 14px);
+    left: 14px;
+    z-index: 55; /* выше стартового экрана: договор виден сразу */
+    min-height: 54px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 15px 8px 11px;
+    border: 1px solid rgba(255,225,158,0.52);
+    border-radius: 17px;
+    color: #fff3cf;
+    background:
+      linear-gradient(145deg, rgba(102,55,64,0.96), rgba(37,13,35,0.96)),
+      #321326;
+    box-shadow: 0 9px 28px rgba(0,0,0,0.34), inset 0 0 18px rgba(255,210,135,0.12);
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: opacity 0.8s ease, transform 0.45s cubic-bezier(0.2,1.2,0.3,1);
+    animation: contractBtnGlow 3.2s ease-in-out 1s infinite;
+  }
+  .contract-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    animation: contractBtnGlow 3.2s ease-in-out 1s infinite;
+  }
+  .contract-btn:active { transform: scale(0.96); }
+  .contract-btn-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 36px;
+    border-radius: 5px 5px 8px 8px;
+    color: #774627;
+    background: linear-gradient(150deg, #fff5c9, #e9c98a);
+    box-shadow: 0 3px 9px rgba(0,0,0,0.25);
+    font-size: 19px;
+    transform: rotate(-4deg);
+  }
+  .contract-btn-icon::after {
+    content: "";
+    position: absolute;
+    right: -4px; bottom: -4px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ef8094, #9f2845 70%);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.28);
+  }
+  .contract-btn-copy { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.08; }
+  .contract-btn-copy small { color: #d8b98c; font-size: 9px; letter-spacing: 1.6px; text-transform: uppercase; }
+  .contract-btn-copy strong { margin-top: 3px; font-size: 14px; font-weight: 400; letter-spacing: 0.35px; white-space: nowrap; }
+  @keyframes contractBtnGlow {
+    0%, 100% { box-shadow: 0 9px 28px rgba(0,0,0,0.34), inset 0 0 18px rgba(255,210,135,0.12); }
+    50% { box-shadow: 0 10px 38px rgba(255,190,105,0.38), inset 0 0 23px rgba(255,220,155,0.2); }
+  }
+
+  .contract-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 28%, rgba(150,72,92,0.34), transparent 48%),
+      rgba(8,3,12,0.91);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .contract-modal.show { display: flex; animation: gFade 0.35s ease; }
+  .contract-ambient {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    background: conic-gradient(from 0deg at 50% 50%, transparent, rgba(255,215,140,0.07), transparent 24%, rgba(255,150,185,0.07), transparent 52%);
+    animation: contractAmbient 18s linear infinite;
+  }
+  @keyframes contractAmbient { to { transform: rotate(360deg); } }
+
+  .contract-shell {
+    position: relative;
+    z-index: 2;
+    width: min(680px, 100%);
+    max-height: calc(100vh - 28px);
+    max-height: calc(100dvh - 28px);
+    border-radius: 8px 8px 20px 20px;
+    filter: drop-shadow(0 26px 55px rgba(0,0,0,0.62));
+    transform-origin: 50% 0;
+  }
+  .contract-modal.show .contract-shell { animation: contractUnroll 1s cubic-bezier(0.18,0.9,0.28,1.08) both; }
+  @keyframes contractUnroll {
+    0% { opacity: 0; transform: perspective(900px) rotateX(-72deg) scaleY(0.08) translateY(-80px); filter: blur(8px) drop-shadow(0 0 0 transparent); }
+    55% { opacity: 1; transform: perspective(900px) rotateX(5deg) scaleY(1.03) translateY(4px); filter: blur(0) drop-shadow(0 26px 55px rgba(0,0,0,0.62)); }
+    100% { opacity: 1; transform: perspective(900px) rotateX(0) scaleY(1) translateY(0); }
+  }
+  .contract-sheet {
+    position: relative;
+    max-height: calc(100vh - 28px);
+    max-height: calc(100dvh - 28px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 38px clamp(20px, 6vw, 58px) 44px;
+    border-radius: 8px 8px 20px 20px;
+    color: #4b342b;
+    background:
+      radial-gradient(circle at 16% 8%, rgba(255,255,255,0.7), transparent 18%),
+      repeating-linear-gradient(0deg, rgba(107,73,41,0.025) 0 1px, transparent 1px 5px),
+      linear-gradient(150deg, #fff9df 0%, #f4dfb8 53%, #efd3a6 100%);
+    border: 1px solid #dfbd82;
+    box-shadow: inset 0 0 50px rgba(128,77,34,0.12), inset 0 0 0 5px rgba(255,249,221,0.42);
+    scrollbar-color: #b68355 rgba(92,53,30,0.08);
+    scrollbar-width: thin;
+  }
+  .contract-sheet::before,
+  .contract-sheet::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 15px;
+    pointer-events: none;
+    background: linear-gradient(90deg, #d2a66a, #ffeab7 14%, #d7aa69 42%, #f4d494 75%, #c9975b);
+    box-shadow: 0 3px 9px rgba(91,54,29,0.25);
+  }
+  .contract-sheet::before { top: 0; border-radius: 8px 8px 3px 3px; }
+  .contract-sheet::after { bottom: 0; border-radius: 3px 3px 18px 18px; box-shadow: 0 -3px 9px rgba(91,54,29,0.2); }
+  .contract-close {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    float: right;
+    margin: -22px -40px 0 12px;
+    width: 38px; height: 38px;
+    border: 1px solid rgba(106,66,43,0.24);
+    border-radius: 50%;
+    color: #684737;
+    background: rgba(255,247,219,0.9);
+    box-shadow: 0 5px 14px rgba(70,39,23,0.17);
+    font-size: 21px;
+    cursor: pointer;
+  }
+  .contract-kicker { text-align: center; color: #916a48; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; }
+  .contract-title {
+    clear: both;
+    margin: 8px 0 4px;
+    text-align: center;
+    color: #5e2f35;
+    font-size: clamp(27px, 7vw, 43px);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: 0.5px;
+  }
+  .contract-subtitle { text-align: center; color: #87584c; font-size: 14px; font-style: italic; line-height: 1.45; }
+  .contract-number {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    margin: 22px 0 20px;
+    padding: 9px 0;
+    border-top: 1px solid rgba(96,58,38,0.22);
+    border-bottom: 1px solid rgba(96,58,38,0.22);
+    color: #6e5141;
+    font-size: 12px;
+  }
+  .contract-lead {
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.68;
+    text-align: justify;
+  }
+  .contract-article {
+    position: relative;
+    margin: 0 0 21px;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .contract-modal.show .contract-article { animation: contractClauseIn 0.55s ease forwards; animation-delay: calc(0.38s + var(--i, 0) * 0.07s); }
+  @keyframes contractClauseIn { to { opacity: 1; transform: translateY(0); } }
+  .contract-article h3 {
+    margin: 0 0 8px;
+    color: #6a3640;
+    font-size: 15px;
+    letter-spacing: 0.45px;
+    text-transform: uppercase;
+  }
+  .contract-article p,
+  .contract-article li { font-size: 14px; line-height: 1.62; }
+  .contract-article p + p { margin-top: 8px; }
+  .contract-article ol,
+  .contract-article ul { margin: 7px 0 0 20px; }
+  .contract-article li + li { margin-top: 6px; }
+  .contract-fineprint {
+    margin: 26px 0 0;
+    padding: 14px 16px;
+    border: 1px dashed rgba(112,65,47,0.38);
+    border-radius: 11px;
+    background: rgba(255,255,255,0.22);
+    color: #715346;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+  .contract-question {
+    margin: 28px 0 0;
+    padding: 22px 18px;
+    border-radius: 16px;
+    color: #5e2737;
+    background: linear-gradient(150deg, rgba(255,255,255,0.45), rgba(225,176,155,0.2));
+    border: 1px solid rgba(115,55,65,0.24);
+    text-align: center;
+    font-size: clamp(18px, 5vw, 23px);
+    line-height: 1.5;
+    box-shadow: inset 0 0 24px rgba(255,255,255,0.25);
+  }
+  .contract-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .contract-sign,
+  .contract-reread {
+    font-family: 'Georgia', serif;
+    border-radius: 999px;
+    padding: 12px 22px;
+    cursor: pointer;
+  }
+  .contract-sign {
+    border: 0;
+    color: #fff9e7;
+    background: linear-gradient(150deg, #b84262, #74253e);
+    box-shadow: 0 9px 22px rgba(123,38,64,0.3), inset 0 0 0 1px rgba(255,255,255,0.16);
+    animation: contractSignGlow 2.2s ease-in-out infinite;
+  }
+  .contract-reread { color: #65483b; background: rgba(255,250,226,0.55); border: 1px solid rgba(100,64,43,0.28); }
+  @keyframes contractSignGlow {
+    0%, 100% { box-shadow: 0 9px 22px rgba(123,38,64,0.3); }
+    50% { box-shadow: 0 10px 31px rgba(190,65,98,0.52); }
+  }
+  .contract-signature {
+    max-height: 0;
+    margin: 0 auto;
+    overflow: hidden;
+    opacity: 0;
+    text-align: center;
+    transition: max-height 0.65s ease, opacity 0.45s ease, margin 0.65s ease;
+  }
+  .contract-modal.signed .contract-signature {
+    max-height: 170px;
+    margin-top: 18px;
+    opacity: 1;
+  }
+  .signature-svg { display: block; width: min(100%, 520px); height: auto; margin: 0 auto; overflow: visible; }
+  .signature-name {
+    fill: transparent;
+    stroke: #713047;
+    stroke-width: 1.25px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    font-family: 'Segoe Script', 'Snell Roundhand', 'Bradley Hand', 'Comic Sans MS', cursive;
+    font-size: 45px;
+    font-style: italic;
+  }
+  .signature-flourish {
+    fill: none;
+    stroke: #713047;
+    stroke-width: 2.4px;
+    stroke-linecap: round;
+    stroke-dasharray: 620;
+    stroke-dashoffset: 620;
+  }
+  .contract-modal.signed .signature-name {
+    animation: signatureWrite 3.1s ease-in-out 0.25s forwards, signatureInk 0.8s ease 2.65s forwards;
+  }
+  .contract-modal.signed .signature-flourish { animation: signatureWrite 1.45s ease 2.15s forwards; }
+  @keyframes signatureWrite { to { stroke-dashoffset: 0; } }
+  @keyframes signatureInk { to { fill: #713047; stroke: rgba(113,48,71,0.45); } }
+  .signature-consent {
+    margin-top: -13px;
+    color: #9d2948;
+    font-family: 'Segoe Script', 'Snell Roundhand', 'Bradley Hand', 'Comic Sans MS', cursive;
+    font-size: clamp(20px, 5vw, 27px);
+    opacity: 0;
+    transform: translateY(9px) scale(0.9);
+  }
+  .contract-modal.signed .signature-consent { animation: signatureConsent 0.65s cubic-bezier(0.2,1.2,0.3,1) 3.25s forwards; }
+  @keyframes signatureConsent { to { opacity: 1; transform: translateY(0) scale(1); } }
+  .contract-stamp {
+    width: 148px;
+    margin: 22px auto 4px;
+    padding: 9px 8px 7px;
+    border: 4px double #9d2948;
+    border-radius: 9px;
+    color: #9d2948;
+    font-family: 'Georgia', serif;
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-align: center;
+    opacity: 0;
+    transform: rotate(-8deg) scale(2.8);
+  }
+  .contract-modal.signed .contract-stamp { animation: contractStamp 0.55s cubic-bezier(0.15,0.82,0.3,1.15) 3.65s forwards; }
+  .contract-modal.signed .contract-sign { opacity: 0.6; pointer-events: none; animation: none; }
+  @keyframes contractStamp {
+    0% { opacity: 0; transform: rotate(-8deg) scale(3.2); }
+    65% { opacity: 1; transform: rotate(-8deg) scale(0.9); }
+    100% { opacity: 0.9; transform: rotate(-8deg) scale(1); }
+  }
+  .contract-glint {
+    position: fixed;
+    z-index: 151;
+    pointer-events: none;
+    color: #ffe39a;
+    text-shadow: 0 0 10px rgba(255,222,130,0.9);
+    animation: contractGlint var(--dur, 1.8s) ease-out forwards;
+  }
+  @keyframes contractGlint {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0); }
+    18% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.35) rotate(140deg); }
+  }
+
+  @media (max-width: 520px) {
+    .contract-btn { padding-right: 12px; }
+    .contract-btn-copy small { display: none; }
+    .contract-btn-copy strong { font-size: 12px; }
+    .contract-sheet { padding: 34px 20px 40px; }
+    .contract-close { margin: -18px -6px 0 8px; }
+    .contract-number { flex-direction: column; gap: 4px; text-align: center; }
+    .contract-lead { text-align: left; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contract-btn, .contract-shell, .contract-ambient, .contract-article,
+    .contract-sign, .contract-stamp, .contract-glint, .signature-name,
+    .signature-flourish, .signature-consent {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .contract-article { opacity: 1 !important; transform: none !important; }
+    .contract-modal.signed .signature-name { fill: #713047 !important; stroke-dashoffset: 0 !important; }
+    .contract-modal.signed .signature-flourish { stroke-dashoffset: 0 !important; }
+    .contract-modal.signed .signature-consent { opacity: 1 !important; transform: none !important; }
+    .contract-modal.signed .contract-stamp { opacity: 0.9 !important; transform: rotate(-8deg) scale(1) !important; animation-delay: 0ms !important; }
   }
 
   /* ==================== СЕКРЕТНЫЙ ВОПРОС «???» ==================== */
@@ -1436,9 +1787,186 @@
     <span>?</span><span>?</span><span>?</span>
   </button>
 
+  <!-- Шуточный договор -->
+  <button class="contract-btn show" id="contractBtn" aria-label="Открыть очень важный договор">
+    <span class="contract-btn-icon" aria-hidden="true">§</span>
+    <span class="contract-btn-copy"><small>договор</small><strong>Очень важно</strong></span>
+  </button>
+
   <!-- Появится только после раскрытия секретной игры -->
   <button class="pond-btn" id="pondBtn" aria-label="Открыть тайный ночной пруд">🌙</button>
   <div class="secret-toast" id="secretToast" role="status" aria-live="polite"></div>
+
+  <!-- Полноэкранный анимированный договор -->
+  <div class="contract-modal" id="contractModal" role="dialog" aria-modal="true" aria-labelledby="contractTitle">
+    <div class="contract-ambient" aria-hidden="true"></div>
+    <div class="contract-shell">
+      <article class="contract-sheet" id="contractSheet">
+        <button class="contract-close" id="contractClose" aria-label="Закрыть договор">×</button>
+        <div class="contract-kicker">документ исключительной сердечной важности</div>
+        <h1 class="contract-title" id="contractTitle">Договор о пожизненном зацеловывании</h1>
+        <p class="contract-subtitle">с элементами заботы, обнимательной юриспруденции и безусловной нежности</p>
+
+        <div class="contract-number">
+          <span>Договор № ∞/ЗП</span>
+          <span>Место заключения: там, где рядом мы</span>
+        </div>
+
+        <p class="contract-lead">
+          Звёздочка Семёновна, именуемая в дальнейшем «Любимая Сторона», с одной стороны,
+          и Пиявка Павлович, именуемый в дальнейшем «Целующая Сторона», с другой стороны,
+          совместно именуемые «Стороны», а по отдельности — «тот, кого хочется обнять» и
+          «тот, кто уже идёт обнимать», находясь в здравом уме, тёплом сердце и состоянии
+          добровольной влюблённости, заключили настоящий Договор о нижеследующем.
+        </p>
+
+        <section class="contract-article" style="--i:0">
+          <h3>1. Предмет договора</h3>
+          <p>
+            1.1. Целующая Сторона принимает на себя бессрочное обязательство окружать Любимую
+            Сторону поцелуями, заботой, вниманием и иными проявлениями нежности, не запрещёнными
+            совестью, хорошим настроением и законами здравого смысла.
+          </p>
+          <p>
+            1.2. Поцелуи могут быть утренними, вечерними, внезапными, примирительными,
+            поздравительными, «просто так», а также экстренными — в случаях грусти,
+            усталости, холода, плохой погоды или недостаточного количества Пиявки поблизости.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:1">
+          <h3>2. Основные обязанности Пиявки Павловича</h3>
+          <ol>
+            <li>Целовать Звёздочку Семёновну бережно, искренне и с надлежащим уровнем обожания.</li>
+            <li>Обнимать до наступления состояния «ещё пять минуточек» и не оспаривать его продление.</li>
+            <li>Своевременно сообщать, что Звёздочка красивая, милая и любимая, даже если она сама временно придерживается другого юридически несостоятельного мнения.</li>
+            <li>Поддерживать в важных делах, приносить вкусное, делиться пледом и предоставлять плечо, ладонь или всю Пиявку целиком по первому требованию.</li>
+            <li>Хранить совместные воспоминания с осторожностью, сопоставимой с охраной государственной тайны, но разрешать их пересматривать и умиляться без ограничений.</li>
+          </ol>
+        </section>
+
+        <section class="contract-article" style="--i:2">
+          <h3>3. Права Звёздочки Семёновны</h3>
+          <p>Любимая Сторона вправе в любое время и без предварительного письменного уведомления:</p>
+          <ul>
+            <li>требовать объятие обычное, усиленное либо максимально крепкое;</li>
+            <li>назначать дополнительный поцелуй за хорошее поведение и десять — за особенно хорошее;</li>
+            <li>выбирать фильм, маршрут прогулки, сторону кровати и степень укутывания в плед;</li>
+            <li>говорить «я не грущу», сохраняя право быть немедленно обнятой на всякий случай;</li>
+            <li>пользоваться прозвищами «Звёздочка» и «Пиявка» как объектами особой совместной собственности.</li>
+          </ul>
+        </section>
+
+        <section class="contract-article" style="--i:3">
+          <h3>4. Порядок исполнения обязательств</h3>
+          <p>
+            4.1. Исполнение производится лично Пиявкой Павловичем преимущественно при личной
+            встрече. При временном отсутствии непосредственного доступа к щёчкам допускается
+            авансовое направление сердечек, голосовых сообщений, пожеланий спокойной ночи и
+            виртуальных поцелуев с последующим обязательным погашением задолженности при встрече.
+          </p>
+          <p>
+            4.2. Лимит нежности по настоящему Договору отсутствует. Любые попытки определить
+            верхнюю границу количества поцелуев признаются математически бесперспективными.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:4">
+          <h3>5. Контроль качества</h3>
+          <p>
+            Каждый поцелуй должен соответствовать стандарту «муа», редакция вечная. Если Любимая
+            Сторона посчитает поцелуй слишком коротким, Целующая Сторона обязана без споров,
+            экспертиз и апелляций повторить процедуру необходимое количество раз. Доказательством
+            надлежащего исполнения признаются улыбка, румянец, довольное молчание или попытка
+            спрятать лицо от смущения.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:5">
+          <h3>6. Ответственность сторон</h3>
+          <p>
+            6.1. За пропущенный поцелуй начисляется неустойка в размере двух поцелуев за каждый
+            пропущенный, а при наличии отягчающих обстоятельств — ещё одного в носик.
+          </p>
+          <p>
+            6.2. За умышленное сокрытие грусти Звёздочка Семёновна не наказывается, но подлежит
+            мягкому заворачиванию в объятия до момента возвращения ощущения безопасности.
+            За чрезмерную милоту ответственность не предусмотрена ввиду невозможности устранить
+            данное обстоятельство.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:6">
+          <h3>7. Обстоятельства непреодолимой силы</h3>
+          <p>
+            К обстоятельствам непреодолимой силы относятся расстояние, работа, сон, разряженный
+            телефон и внезапно закончившийся шоколад. Указанные обстоятельства не прекращают
+            обязательств, а только переносят их исполнение. Накопившиеся поцелуи выдаются при
+            первой возможности с процентами, объятиями и словами «я очень скучал».
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:7">
+          <h3>8. Конфиденциальность и особые сведения</h3>
+          <p>
+            Сведения о том, насколько сильно Пиявка Павлович любит Звёздочку Семёновну,
+            конфиденциальными не являются и могут быть обнародованы улыбкой, поступками,
+            цветами, сообщениями и сиянием глаз. При этом точное значение указанной любви
+            составляет бесконечность плюс ещё немножко и разглашению в числовой форме не подлежит.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:8">
+          <h3>9. Срок действия и территория</h3>
+          <p>
+            9.1. Договор вступает в силу с момента подписания и действует всю жизнь Сторон,
+            каждый дополнительный день, все возможные счастливые продолжения и тот самый
+            духовный мир, где настоящие чувства не нуждаются в календарях.
+          </p>
+          <p>
+            9.2. Территория действия: дом, улица, поезд, самолёт, любое свидание, любое расстояние,
+            вся планета, видимая Вселенная и иные места, в которых одна Сторона сможет найти другую.
+          </p>
+        </section>
+
+        <section class="contract-article" style="--i:9">
+          <h3>10. Заключительные положения</h3>
+          <p>
+            Настоящий Договор составлен в двух сердечных экземплярах равной юридико-романтической
+            силы: один хранится у Звёздочки Семёновны, второй — в сердце Пиявки Павловича.
+            Исправления допускаются исключительно в сторону увеличения заботы, продолжительности
+            объятий и количества совместных счастливых дней. Расторжение по причине «разлюбил»
+            конструкцией настоящего документа не предусмотрено.
+          </p>
+        </section>
+
+        <p class="contract-fineprint">
+          Мелкий шрифт, который обычно никто не читает: нажатием кнопки ниже Стороны подтверждают,
+          что счастье не является налогооблагаемой базой, объятия не требуют нотариального
+          удостоверения, а поцелуи могут поставляться без упаковки, предупреждения и выходных.
+          Любые сомнения толкуются в пользу дополнительной нежности.
+        </p>
+
+        <p class="contract-question">
+          Обязываетесь ли вы Звёздочка Семёновна дать согласие на то чтобы Пиявка Павлович вас зацеловывал всю жизнь и делал это до конца вашей жизни а так же в духовном мире
+        </p>
+
+        <div class="contract-actions">
+          <button class="contract-sign" id="contractSign">подписать договор ✒️</button>
+          <button class="contract-reread" id="contractReread">прочитать ещё раз</button>
+        </div>
+
+        <div class="contract-signature" id="contractSignature" aria-live="polite">
+          <svg class="signature-svg" viewBox="0 0 560 118" role="img" aria-label="Подпись Звёздочки Семёновны">
+            <text class="signature-name" x="280" y="66" text-anchor="middle">Звёздочка Семёновна</text>
+            <path class="signature-flourish" d="M72 84 C150 106, 215 78, 286 88 S421 102, 494 78 C465 94, 450 106, 482 104"/>
+          </svg>
+          <div class="signature-consent">Согласна ❤️💋</div>
+        </div>
+        <div class="contract-stamp" id="contractStamp">СОГЛАСОВАНО<br>НАВЕЧНО</div>
+      </article>
+    </div>
+  </div>
 
   <!-- Окно с главным вопросом -->
   <div class="date-modal" id="dateModal" role="dialog" aria-modal="true" aria-label="Главный вопрос">
@@ -2481,6 +3009,112 @@
     pondEl.classList.remove('show');
   });
   document.getElementById('pondAgain').addEventListener('click', buildPond);
+
+
+  /* ====================== ДОГОВОР «ОЧЕНЬ ВАЖНО» ======================
+     Пергамент разворачивается при открытии, а после подписания
+     каллиграфическая подпись рисуется штрих за штрихом.
+     ================================================================= */
+  const CONTRACT_KEY = 'loveContractSigned_v1';
+  const contractBtn = document.getElementById('contractBtn');
+  const contractModal = document.getElementById('contractModal');
+  const contractSheet = document.getElementById('contractSheet');
+  const contractClose = document.getElementById('contractClose');
+  const contractSign = document.getElementById('contractSign');
+  const contractSignature = document.getElementById('contractSignature');
+  let contractSigned = false;
+  let contractLastFocus = null;
+
+  try { contractSigned = localStorage.getItem(CONTRACT_KEY) === 'yes'; }
+  catch (e) { contractSigned = false; }
+
+  function contractGlints(amount, romantic) {
+    const symbols = romantic ? ['❤️', '💋', '💕', '✦', '💖'] : ['✦', '❦', '✧', '♥'];
+    const rect = contractSheet.getBoundingClientRect();
+    for (let i = 0; i < amount; i++) {
+      const sparkle = document.createElement('span');
+      sparkle.className = 'contract-glint';
+      sparkle.textContent = symbols[i % symbols.length];
+      sparkle.style.left = (rect.left + Math.random() * Math.max(40, rect.width)) + 'px';
+      sparkle.style.top = (rect.top + 20 + Math.random() * Math.max(60, Math.min(rect.height, window.innerHeight) - 40)) + 'px';
+      sparkle.style.fontSize = (10 + Math.random() * (romantic ? 20 : 12)) + 'px';
+      sparkle.style.setProperty('--dx', (Math.random() * 130 - 65) + 'px');
+      sparkle.style.setProperty('--dy', (-45 - Math.random() * 125) + 'px');
+      sparkle.style.setProperty('--dur', (1.25 + Math.random() * 1.25) + 's');
+      sparkle.style.animationDelay = (Math.random() * 0.45) + 's';
+      document.body.appendChild(sparkle);
+      setTimeout(() => sparkle.remove(), 3300);
+    }
+  }
+
+  function openContract() {
+    contractLastFocus = document.activeElement;
+    contractModal.classList.remove('signed');
+    contractModal.classList.add('show');
+    contractSheet.scrollTop = 0;
+    contractSign.textContent = contractSigned ? 'подписано навечно ❤️' : 'подписать договор ✒️';
+    contractSign.setAttribute('aria-disabled', contractSigned ? 'true' : 'false');
+    contractSign.disabled = contractSigned;
+    setTimeout(() => {
+      if (contractModal.classList.contains('show')) contractGlints(22, false);
+    }, 260);
+    if (contractSigned) {
+      // Повторяем красивую прорисовку при каждом открытии уже подписанного экземпляра.
+      setTimeout(() => {
+        if (contractModal.classList.contains('show')) contractModal.classList.add('signed');
+      }, 520);
+    }
+    setTimeout(() => {
+      if (contractModal.classList.contains('show')) contractClose.focus();
+    }, 260);
+  }
+
+  function closeContract() {
+    contractModal.classList.remove('show', 'signed');
+    document.querySelectorAll('.contract-glint').forEach(item => item.remove());
+    if (contractLastFocus && typeof contractLastFocus.focus === 'function') contractLastFocus.focus();
+  }
+
+  function signContract() {
+    if (contractSigned) return;
+    contractSigned = true;
+    try { localStorage.setItem(CONTRACT_KEY, 'yes'); } catch (e) {}
+    contractModal.classList.remove('signed');
+    void contractSignature.offsetHeight;
+    contractModal.classList.add('signed');
+    contractSign.textContent = 'подписано навечно ❤️';
+    contractSign.setAttribute('aria-disabled', 'true');
+    contractSign.disabled = true;
+    contractGlints(42, true);
+    setTimeout(() => {
+      if (typeof contractSignature.scrollIntoView === 'function') {
+        contractSignature.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'center'
+        });
+      }
+    }, 140);
+  }
+
+  contractBtn.addEventListener('click', openContract);
+  contractClose.addEventListener('click', closeContract);
+  contractSign.addEventListener('click', signContract);
+  document.getElementById('contractReread').addEventListener('click', () => {
+    if (typeof contractSheet.scrollTo === 'function') {
+      contractSheet.scrollTo({
+        top: 0,
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+      });
+    } else {
+      contractSheet.scrollTop = 0;
+    }
+  });
+  contractModal.addEventListener('click', event => {
+    if (!event.target.closest('.contract-shell')) closeContract();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && contractModal.classList.contains('show')) closeContract();
+  });
 
 
   /* ====================== СЕКРЕТНЫЙ ВОПРОС «???» ====================== */
