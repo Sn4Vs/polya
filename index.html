@@ -1242,6 +1242,254 @@
     }
   }
 
+
+  /* ==================== КОЛЬЦО С ИЗУМРУДОМ — ПРЕДЛОЖЕНИЕ ==================== */
+  .proposal-btn {
+    position: fixed;
+    right: 14px;
+    top: calc(env(safe-area-inset-top) + 84px);
+    z-index: 23;
+    width: 62px;
+    height: 62px;
+    border: 1px solid rgba(194,255,226,0.55);
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 28%, rgba(255,255,255,0.22), rgba(13,47,37,0.96) 58%, rgba(5,20,15,0.98));
+    color: #d8fff0;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px) scale(.82);
+    transition: opacity .8s ease, transform .45s cubic-bezier(.2,1.25,.3,1);
+    box-shadow: 0 8px 26px rgba(39,255,167,.25), inset 0 0 18px rgba(102,255,192,.14);
+  }
+  .proposal-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    animation: emeraldGlow 2.3s ease-in-out infinite;
+  }
+  .proposal-btn:active { transform: scale(.9); }
+  .proposal-ring {
+    position: relative;
+    display: block;
+    width: 35px;
+    height: 35px;
+    margin: auto;
+    border: 5px solid #e7d6aa;
+    border-bottom-color: #a88a58;
+    border-radius: 50%;
+    transform: rotate(-12deg);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+  }
+  .proposal-gem {
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    width: 18px;
+    height: 18px;
+    transform: translateX(-50%) rotate(45deg);
+    border-radius: 4px 6px 4px 6px;
+    background: linear-gradient(145deg,#d8fff0 0%,#57e6ae 25%,#0ba56c 62%,#064c35 100%);
+    border: 1px solid rgba(225,255,244,.85);
+    box-shadow: 0 0 9px #45f0ad, 0 0 22px rgba(42,255,168,.72), inset 2px 2px 3px rgba(255,255,255,.7);
+    animation: gemShine 1.6s ease-in-out infinite;
+  }
+  .proposal-gem::after {
+    content:"";
+    position:absolute;
+    width:5px;height:5px;border-radius:50%;
+    top:2px;left:3px;background:rgba(255,255,255,.9);
+    filter:blur(.2px);
+  }
+  @keyframes emeraldGlow {
+    0%,100% { box-shadow:0 8px 26px rgba(39,255,167,.25), inset 0 0 18px rgba(102,255,192,.14); }
+    50% { box-shadow:0 10px 42px rgba(39,255,167,.62), 0 0 22px rgba(145,255,215,.2), inset 0 0 25px rgba(102,255,192,.28); }
+  }
+  @keyframes gemShine {
+    0%,100% { filter:drop-shadow(0 0 4px rgba(69,240,173,.65)); transform:translateX(-50%) rotate(45deg) scale(1); }
+    50% { filter:drop-shadow(0 0 13px rgba(125,255,205,1)); transform:translateX(-50%) rotate(45deg) scale(1.16); }
+  }
+
+  .proposal-warning,
+  .proposal-letter,
+  .proposal-sad {
+    position: fixed;
+    inset: 0;
+    z-index: 170;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    overflow: hidden;
+    background: rgba(8,4,12,.78);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .proposal-warning.show,
+  .proposal-letter.show,
+  .proposal-sad.show { display:flex; animation:gFade .35s ease; }
+
+  .proposal-warning-card {
+    width:min(390px,100%);
+    padding:31px 25px 26px;
+    text-align:center;
+    border-radius:28px;
+    background:linear-gradient(160deg,#fffef9,#eefaf4);
+    border:1px solid rgba(82,173,132,.32);
+    box-shadow:0 28px 80px rgba(0,0,0,.55), 0 0 45px rgba(53,220,144,.12);
+    color:#25483a;
+    animation:memPop .6s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .proposal-warning-icon {
+    width:72px;height:72px;margin:0 auto 15px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:linear-gradient(145deg,#eafff5,#bff6db);
+    color:#17825a;
+    font-size:34px;
+    box-shadow:0 0 30px rgba(54,220,145,.3);
+  }
+  .proposal-warning-card h2 {
+    margin:0 0 10px;
+    font-size:clamp(25px,7vw,34px);
+    font-weight:400;
+    font-style:italic;
+    color:#23533e;
+  }
+  .proposal-warning-card p { font-size:16px; line-height:1.55; margin:0; }
+  .proposal-warning-card .warning-small {
+    margin-top:12px;font-size:12px;color:#7a9c8d;font-style:italic;
+  }
+  .proposal-warning-actions { display:flex; gap:10px; justify-content:center; margin-top:23px; }
+  .proposal-continue,.proposal-cancel {
+    font-family:'Georgia',serif;
+    border-radius:999px;padding:12px 22px;cursor:pointer;
+  }
+  .proposal-continue {
+    border:0;color:#fff;background:linear-gradient(145deg,#1bb879,#08744e);
+    box-shadow:0 10px 25px rgba(21,173,111,.32);
+  }
+  .proposal-cancel { border:1px solid #cfe5db;color:#587568;background:#f5fbf8; }
+
+  .proposal-letter {
+    align-items:flex-start;
+    padding: max(18px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 50% 0%,rgba(61,230,158,.12),transparent 38%),
+      rgba(7,12,11,.86);
+  }
+  .proposal-letter-card {
+    position:relative;
+    width:min(720px,100%);
+    max-height:calc(100vh - 28px);
+    max-height:calc(100dvh - 28px);
+    overflow-y:auto;
+    border-radius:24px;
+    padding:34px clamp(20px,6vw,58px) 30px;
+    background:
+      radial-gradient(circle at 14% 8%,rgba(255,255,255,.7),transparent 18%),
+      repeating-linear-gradient(0deg,rgba(65,95,72,.025) 0 1px,transparent 1px 5px),
+      linear-gradient(150deg,#fffef7 0%,#eef8ee 55%,#e0f1e4 100%);
+    border:1px solid #b9d9c5;
+    box-shadow:0 28px 85px rgba(0,0,0,.62),inset 0 0 50px rgba(44,145,94,.07);
+    color:#294838;
+    animation:proposalLetterIn .8s cubic-bezier(.18,.9,.28,1.08);
+  }
+  @keyframes proposalLetterIn {
+    from { opacity:0; transform:translateY(30px) scale(.96) rotateX(4deg); filter:blur(6px); }
+    to { opacity:1; transform:none; filter:none; }
+  }
+  .proposal-letter-close {
+    position:sticky;top:0;float:right;z-index:5;
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid #c5ddd0;background:rgba(255,255,255,.82);
+    color:#426553;font-size:21px;cursor:pointer;
+  }
+  .proposal-kicker {
+    text-align:center;color:#4d8b6b;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+    clear:both;
+  }
+  .proposal-title {
+    text-align:center;margin:10px 0 5px;
+    font-size:clamp(27px,7vw,43px);font-weight:400;font-style:italic;color:#22553d;
+  }
+  .proposal-subtitle { text-align:center;color:#739486;font-size:13px;line-height:1.5; }
+  .proposal-divider { height:1px;background:linear-gradient(90deg,transparent,#afd0bd,transparent);margin:22px 0; }
+  .proposal-text {
+    font-family:'Georgia','Times New Roman',serif;
+    font-size:clamp(16px,4.3vw,19px);
+    line-height:1.78;
+    white-space:pre-wrap;
+    min-height:300px;
+    color:#304e3d;
+  }
+  .proposal-text .caret {
+    display:inline-block;width:2px;height:1em;margin-left:2px;vertical-align:-2px;
+    background:#258b62;animation:memCaret .8s step-end infinite;
+  }
+  .proposal-question {
+    text-align:center;color:#246245;font-size:clamp(20px,5vw,27px);font-style:italic;
+    margin:22px 0 17px;
+  }
+  .proposal-actions {
+    position:relative;display:flex;align-items:center;justify-content:center;gap:18px;
+    min-height:104px;margin-top:12px;
+  }
+  .proposal-yes {
+    min-width:min(310px,75vw);font-family:'Georgia',serif;
+    font-size:clamp(24px,7vw,35px);font-weight:600;color:#fff;
+    border:0;border-radius:999px;padding:18px 40px;cursor:pointer;
+    background:linear-gradient(145deg,#35d997,#078b59 55%,#05603e);
+    box-shadow:0 13px 35px rgba(11,155,94,.38),inset 0 0 0 1px rgba(255,255,255,.24);
+    animation:proposalYesGlow 1.8s ease-in-out infinite;
+  }
+  @keyframes proposalYesGlow {
+    0%,100%{box-shadow:0 13px 35px rgba(11,155,94,.38),inset 0 0 0 1px rgba(255,255,255,.24);}
+    50%{box-shadow:0 14px 50px rgba(42,235,155,.68),0 0 28px rgba(105,255,194,.25),inset 0 0 0 1px rgba(255,255,255,.34);}
+  }
+  .proposal-no {
+    position:relative;
+    min-width:52px;
+    font-family:'Georgia',serif;font-size:10px;color:#8aa298;
+    background:#f2f7f4;border:1px solid #d5e2dc;border-radius:999px;
+    padding:7px 11px;cursor:pointer;touch-action:manipulation;
+    box-shadow:0 4px 12px rgba(49,85,67,.12);
+    transition:left .4s cubic-bezier(.25,1.3,.35,1),top .4s cubic-bezier(.25,1.3,.35,1),transform .3s ease;
+  }
+  .proposal-no.gone { opacity:0;transform:scale(0) rotate(240deg);pointer-events:none; }
+  .proposal-letter-note {
+    text-align:center;margin-top:14px;color:#8ba598;font-size:11px;font-style:italic;min-height:17px;
+  }
+
+  .proposal-sad { background:rgba(9,5,11,.72); }
+  .proposal-sad-card {
+    width:min(330px,100%);padding:28px 24px;text-align:center;border-radius:28px;
+    background:linear-gradient(160deg,#fff8fb,#f8eef2);
+    box-shadow:0 26px 75px rgba(0,0,0,.58);color:#6c3850;
+    animation:memPop .55s cubic-bezier(.2,.9,.3,1.25);
+  }
+  .sad-pig { font-size:90px;line-height:1;filter:drop-shadow(0 8px 12px rgba(88,34,58,.18));animation:sadPig 1.3s ease-in-out infinite; }
+  @keyframes sadPig { 0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)} }
+  .sad-tears { font-size:27px;letter-spacing:4px;margin-top:-5px; }
+  .proposal-sad-card h2 { margin:8px 0 9px;font-size:23px;font-weight:400;font-style:italic; }
+  .proposal-sad-card p { margin:0;line-height:1.5;font-size:16px; }
+  .proposal-sad-close {
+    margin-top:19px;border:0;border-radius:999px;padding:11px 25px;
+    color:#fff;background:linear-gradient(145deg,#c45a80,#873250);cursor:pointer;font-family:'Georgia',serif;
+  }
+
+  @media(max-width:520px){
+    .proposal-btn { top:calc(env(safe-area-inset-top) + 82px); width:56px;height:56px; }
+    .proposal-ring { transform:scale(.9) rotate(-12deg); }
+    .proposal-letter-card { padding:27px 18px 24px; }
+    .proposal-text { line-height:1.68; min-height:260px; }
+    .proposal-actions { min-height:130px; }
+    .proposal-yes { min-width:0;width:78vw; padding:17px 20px; }
+  }
+  @media(prefers-reduced-motion:reduce){
+    .proposal-btn,.proposal-gem,.proposal-warning-card,.proposal-letter-card,.proposal-yes,.sad-pig { animation-duration:.001ms !important; animation-iteration-count:1 !important; }
+  }
+
   /* ==================== ШУТОЧНЫЙ ДОГОВОР «ОЧЕНЬ ВАЖНО» ==================== */
   .contract-btn {
     position: fixed;
@@ -1787,6 +2035,11 @@
     <span>?</span><span>?</span><span>?</span>
   </button>
 
+  <!-- Особенная кнопка с изумрудным колечком -->
+  <button class="proposal-btn" id="proposalBtn" aria-label="Особенное предложение">
+    <span class="proposal-ring" aria-hidden="true"><span class="proposal-gem"></span></span>
+  </button>
+
   <!-- Шуточный договор -->
   <button class="contract-btn show" id="contractBtn" aria-label="Открыть очень важный договор">
     <span class="contract-btn-icon" aria-hidden="true">§</span>
@@ -1796,6 +2049,48 @@
   <!-- Появится только после раскрытия секретной игры -->
   <button class="pond-btn" id="pondBtn" aria-label="Открыть тайный ночной пруд">🌙</button>
   <div class="secret-toast" id="secretToast" role="status" aria-live="polite"></div>
+
+
+  <!-- Особенное предложение -->
+  <div class="proposal-warning" id="proposalWarning" role="dialog" aria-modal="true" aria-labelledby="proposalWarningTitle">
+    <div class="proposal-warning-card">
+      <div class="proposal-warning-icon">💍</div>
+      <h2 id="proposalWarningTitle">Предупреждение</h2>
+      <p>Если нажать кнопку «Далее», пути назад уже не будет!!!</p>
+      <p class="warning-small">Это предупреждение носит исключительно романтический характер ✦</p>
+      <div class="proposal-warning-actions">
+        <button class="proposal-cancel" id="proposalCancel">Я передумала</button>
+        <button class="proposal-continue" id="proposalContinue">Далее →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="proposal-letter" id="proposalLetter" role="dialog" aria-modal="true" aria-labelledby="proposalTitle">
+    <article class="proposal-letter-card">
+      <button class="proposal-letter-close" id="proposalLetterClose" aria-label="Закрыть">×</button>
+      <div class="proposal-kicker">секретное письмо одной особенной Звёздочке</div>
+      <h1 class="proposal-title" id="proposalTitle">Дорогая Звёздочка</h1>
+      <p class="proposal-subtitle">прочитай до конца… здесь я говорю совершенно серьёзно ❤️</p>
+      <div class="proposal-divider"></div>
+      <div class="proposal-text" id="proposalText"></div>
+      <div class="proposal-question" id="proposalQuestion"></div>
+      <div class="proposal-actions" id="proposalActions">
+        <button class="proposal-yes" id="proposalYes">ДА 💚</button>
+        <button class="proposal-no" id="proposalNo">нет</button>
+      </div>
+      <div class="proposal-letter-note" id="proposalNoHint">один из ответов почему-то выглядит подозрительно маленьким…</div>
+    </article>
+  </div>
+
+  <div class="proposal-sad" id="proposalSad" role="dialog" aria-modal="true" aria-label="Плачущая свинка">
+    <div class="proposal-sad-card">
+      <div class="sad-pig">🐷</div>
+      <div class="sad-tears">💧💧</div>
+      <h2>Эй… Звёздочка…</h2>
+      <p>надо поменять свой ответ, Звёздочка… 🥺</p>
+      <button class="proposal-sad-close" id="proposalSadClose">ладно… 💔</button>
+    </div>
+  </div>
 
   <!-- Полноэкранный анимированный договор -->
   <div class="contract-modal" id="contractModal" role="dialog" aria-modal="true" aria-labelledby="contractTitle">
@@ -2435,6 +2730,7 @@
       document.getElementById('missBtn').classList.add('show');
       document.getElementById('dateBtn').classList.add('show');
       showPondLauncher();
+      showProposalButton();
       renderTally();
     }, textDone + 5200);
   }
@@ -3348,6 +3644,16 @@
   document.getElementById('dfBack').addEventListener('click', () => {
     stopFireworks();
     dateFinal.classList.remove('show');
+    const wow = document.querySelector('#dateFinal .df-wow');
+    const line = document.querySelector('#dateFinal .df-line');
+    const sub = document.querySelector('#dateFinal .df-sub');
+    const heart = document.querySelector('#dateFinal .df-heart');
+    const back = document.getElementById('dfBack');
+    wow.textContent = 'Ураааа! 🎉';
+    line.textContent = 'Это свидание, Звёздочка';
+    sub.textContent = 'самый лучший ответ на свете ✦';
+    heart.textContent = '❤️';
+    back.textContent = '‹ назад';
   });
 </script>
 </body>
