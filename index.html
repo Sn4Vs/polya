@@ -3655,6 +3655,129 @@
     heart.textContent = '❤️';
     back.textContent = '‹ назад';
   });
+
+/* ==================== РОМАНТИЧЕСКОЕ ПРЕДЛОЖЕНИЕ ==================== */
+(function initProposal(){
+  const $ = id => document.getElementById(id);
+  const btn=$('proposalBtn'), warning=$('proposalWarning'), cont=$('proposalContinue'),
+        cancel=$('proposalCancel'), letter=$('proposalLetter'), close=$('proposalLetterClose'),
+        text=$('proposalText'), question=$('proposalQuestion'), actions=$('proposalActions'),
+        yes=$('proposalYes'), no=$('proposalNo'), sad=$('proposalSad'),
+        sadClose=$('proposalSadClose'), hint=$('proposalNoHint');
+  if(!btn || !warning || !letter || !yes || !no) return;
+
+  /* Важное исправление: кнопка теперь действительно становится видимой. */
+  btn.classList.add('show');
+
+  const message=`Дорогая Звёздочка,
+
+мы с тобой знакомы уже долгое время, и за всё это время я ни на секунду не сомневался в том, что именно ты — моё счастливое будущее.
+
+Мне хочется, чтобы мы могли всегда говорить друг другу о своих чувствах открыто и искренне. Чтобы когда я говорил «ты моя, а я твой», это было не просто красивыми словами, а настоящей частью нашей жизни. Чтобы когда нас спрашивали, есть ли у нас кто-то, мы с улыбкой могли сказать: «Да!»
+
+Я хочу, чтобы наше будущее не просто соприкасалось, а действительно было общим. Чтобы мы вместе проходили через трудности, проблемы и невзгоды, поддерживали друг друга и никогда не забывали: у каждого из нас есть человек, который рядом, который выслушает, поймёт, обнимет и останется самым близким человеком на всю жизнь.
+
+И даже после неё — потому что в мире духов я всё равно найду тебя и при первой встрече буду целовать тебя целых 500 лет. ❤️
+
+Мне хочется не «как будто», не «понарошку», не «почти-почти». Мне хочется по-настоящему.
+
+Я хочу, чтобы ты была моей девушкой. Моей спутницей. Моей дамой сердца. Моим самым любимым человеком и моей самой прекрасной Звёздочкой во всей Вселенной.
+
+Я хочу вместе с тобой смеяться, мечтать, строить планы, путешествовать, переживать сложные дни и радоваться самым обычным счастливым моментам. Хочу однажды оглянуться назад и понять, что мы выбрали друг друга — и продолжали выбирать друг друга каждый день.
+
+Поэтому сейчас я хочу спросить тебя совершенно серьёзно…`;
+
+  const finalQuestion='Согласна ли ты стать моей спутницей, моей дамой сердца и самой любимой Звёздочкой во всей Вселенной? 💚';
+  let timer=null, noClicks=0, noGone=false;
+
+  function openWarning(){ warning.classList.add('show'); }
+  function openLetter(){
+    warning.classList.remove('show'); letter.classList.add('show');
+    document.body.style.overflow='hidden';
+    noClicks=0; noGone=false;
+    no.classList.remove('gone');
+    no.style.position='relative'; no.style.left=''; no.style.top=''; no.style.transform='';
+    hint.textContent='один из ответов почему-то выглядит подозрительно маленьким…';
+    text.textContent=''; question.textContent='';
+    actions.style.opacity='0'; actions.style.pointerEvents='none';
+    if(timer) clearInterval(timer);
+    let i=0;
+    timer=setInterval(()=>{
+      text.textContent+=message[i++];
+      if(i>=message.length){
+        clearInterval(timer); timer=null;
+        question.textContent=finalQuestion;
+        actions.style.opacity='1'; actions.style.pointerEvents='auto';
+      }
+    },16);
+  }
+  function closeLetter(){
+    if(timer) clearInterval(timer);
+    letter.classList.remove('show'); warning.classList.remove('show'); sad.classList.remove('show');
+    document.body.style.overflow='';
+  }
+  function moveNo(){
+    if(noGone) return;
+    const r=no.getBoundingClientRect(), w=Math.max(r.width,52), h=Math.max(r.height,32), pad=12;
+    no.style.position='fixed'; no.style.zIndex='300';
+    no.style.left=(pad+Math.random()*Math.max(5,innerWidth-w-pad*2))+'px';
+    no.style.top=(pad+Math.random()*Math.max(5,innerHeight-h-pad*2))+'px';
+    no.style.transform=`rotate(${Math.random()*26-13}deg) scale(${Math.max(.45,1-noClicks*.1)})`;
+  }
+
+  btn.addEventListener('click',openWarning);
+  cont.addEventListener('click',openLetter);
+  cancel.addEventListener('click',()=>warning.classList.remove('show'));
+  close.addEventListener('click',closeLetter);
+  warning.addEventListener('click',e=>{if(e.target===warning) warning.classList.remove('show');});
+
+  no.addEventListener('mouseenter',()=>{if(noClicks>0)moveNo();});
+  no.addEventListener('pointerdown',e=>{
+    if(noGone)return;
+    if(noClicks<4){
+      e.preventDefault(); noClicks++;
+      hint.textContent=['ой… она решила убежать 🙈','ловить её становится всё сложнее ✨','Звёздочка, зачем ты это делаешь? 🥺','кажется, кнопка уже всё поняла…'][Math.min(noClicks-1,3)];
+      moveNo();
+    }
+  });
+  no.addEventListener('click',e=>{
+    if(noGone)return;
+    e.preventDefault();
+    noClicks++;
+    if(noClicks>=5){
+      noGone=true; no.classList.add('gone');
+      hint.textContent='кажется, другого ответа уже нет… 😏';
+      setTimeout(()=>sad.classList.add('show'),300);
+    }else moveNo();
+  });
+  sadClose.addEventListener('click',()=>{
+    sad.classList.remove('show'); letter.classList.remove('show'); document.body.style.overflow='';
+  });
+
+  yes.addEventListener('click',()=>{
+    if(timer)clearInterval(timer);
+    letter.classList.remove('show');
+    const final=document.createElement('div');
+    final.id='proposalSuccess';
+    final.style.cssText='position:fixed;inset:0;z-index:280;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(7,3,16,.82);backdrop-filter:blur(8px);overflow:auto;text-align:center;';
+    final.innerHTML=`<div style="max-width:720px;padding:40px 25px;border-radius:34px;background:linear-gradient(160deg,#fffefb,#effbf4);color:#22553d;box-shadow:0 30px 100px rgba(0,0,0,.6),0 0 70px rgba(42,235,155,.25);animation:memPop .8s cubic-bezier(.2,.9,.3,1.2)">
+      <div style="font-size:70px">💍💚✨</div>
+      <div style="margin-top:12px;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#4d8b6b">официально</div>
+      <h2 style="font-size:clamp(34px,8vw,62px);margin:10px 0;color:#22553d">УРААА! ❤️</h2>
+      <p style="font-size:clamp(21px,5vw,30px);line-height:1.35;font-weight:600">Теперь мы официально — пара!</p>
+      <p style="font-size:clamp(16px,4vw,20px);line-height:1.75;margin:20px auto;max-width:610px;color:#456d5b">Поздравляю нас, Звёздочка! ✨<br>Впереди наше общее будущее: новые воспоминания, разговоры до ночи, путешествия, объятия, смешные моменты, поддержка друг друга и огромное количество счастливых дней.<br><br>И самое главное — теперь у нас ещё больше поводов выбирать друг друга снова и снова. 💚</p>
+      <div style="font-size:32px;margin:18px">🥂 💚 🥂</div>
+      <button id="proposalSuccessClose" style="border:0;border-radius:999px;padding:13px 24px;cursor:pointer;background:#198754;color:#fff;font:inherit;font-weight:700">Остаться вместе ✨</button>
+    </div>`;
+    document.body.appendChild(final);
+    try{if(typeof startFireworks==='function')startFireworks();}catch(e){}
+    try{if(typeof dfHeartsStart==='function')dfHeartsStart();}catch(e){}
+    final.querySelector('#proposalSuccessClose').addEventListener('click',()=>{
+      final.remove(); try{if(typeof stopFireworks==='function')stopFireworks();}catch(e){}
+    });
+  });
+})();
+
 </script>
 </body>
 </html>
