@@ -3779,5 +3779,390 @@
 })();
 
 </script>
+
+<!-- ===== ПАМЯТКА ДЛЯ ЗВЁЗДОЧКИ — отдельный блок, существующий сайт не изменяет ===== -->
+<style>
+  #memoOpen {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 240;
+    width: 54px;
+    height: 54px;
+    border: 1px solid rgba(140,255,205,.45);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #a8ffd5, #35b879 42%, #126342 100%);
+    box-shadow: 0 0 22px rgba(50,230,155,.38), inset 0 1px 2px rgba(255,255,255,.7);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 25px;
+    transition: transform .25s ease, box-shadow .25s ease;
+    animation: memoButtonFloat 3s ease-in-out infinite;
+  }
+  #memoOpen:hover {
+    transform: scale(1.1) rotate(-4deg);
+    box-shadow: 0 0 34px rgba(50,230,155,.6), inset 0 1px 2px rgba(255,255,255,.8);
+  }
+  @keyframes memoButtonFloat {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  #memoOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: rgba(5, 3, 12, .78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  #memoOverlay.memo-show {
+    display: flex;
+    animation: memoFadeIn .45s ease both;
+  }
+  @keyframes memoFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .memo-card {
+    position: relative;
+    width: min(720px, 100%);
+    max-height: min(88vh, 850px);
+    overflow: auto;
+    padding: clamp(27px, 5vw, 48px) clamp(22px, 6vw, 58px) 30px;
+    border: 1px solid rgba(133, 255, 202, .25);
+    border-radius: 30px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(92,255,177,.12), transparent 28%),
+      radial-gradient(circle at 90% 90%, rgba(255,105,164,.10), transparent 30%),
+      linear-gradient(145deg, rgba(31,20,39,.98), rgba(13,30,28,.98));
+    box-shadow: 0 30px 100px rgba(0,0,0,.65), 0 0 70px rgba(55,220,150,.12);
+    color: #fff;
+    scrollbar-width: thin;
+    animation: memoCardIn .7s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  @keyframes memoCardIn {
+    0% { opacity: 0; transform: translateY(35px) scale(.9) rotate(-1deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+  }
+
+  .memo-close {
+    position: absolute;
+    top: 13px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.75);
+    font-size: 24px;
+    cursor: pointer;
+    transition: .2s ease;
+  }
+  .memo-close:hover { background: rgba(255,255,255,.14); transform: rotate(90deg); }
+
+  .memo-top {
+    text-align: center;
+    margin-bottom: 23px;
+  }
+  .memo-kicker {
+    color: #83eeb9;
+    font: 600 11px/1.2 Georgia, serif;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: .9;
+  }
+  .memo-title {
+    margin: 8px 0 4px;
+    font-size: clamp(31px, 7vw, 52px);
+    font-weight: 400;
+    text-shadow: 0 0 25px rgba(103,255,190,.25);
+  }
+  .memo-starline {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #b6ffd9;
+    font-size: 18px;
+  }
+  .memo-starline::before,
+  .memo-starline::after {
+    content: "";
+    width: 38px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(125,255,195,.55));
+  }
+  .memo-starline::after { transform: scaleX(-1); }
+
+  .memo-text {
+    text-align: center;
+    font-size: clamp(16px, 3.7vw, 20px);
+    line-height: 1.8;
+    color: rgba(255,255,255,.9);
+  }
+  .memo-text p {
+    margin: 0 0 18px;
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  #memoOverlay.memo-show .memo-text p {
+    animation: memoParagraph .65s ease forwards;
+  }
+  #memoOverlay.memo-show .memo-text p:nth-child(1) { animation-delay: .25s; }
+  #memoOverlay.memo-show .memo-text p:nth-child(2) { animation-delay: .5s; }
+  #memoOverlay.memo-show .memo-text p:nth-child(3) { animation-delay: .75s; }
+  #memoOverlay.memo-show .memo-text p:nth-child(4) { animation-delay: 1s; }
+  #memoOverlay.memo-show .memo-text p:nth-child(5) { animation-delay: 1.25s; }
+  @keyframes memoParagraph {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .memo-highlight {
+    color: #9dffd0;
+    text-shadow: 0 0 16px rgba(72,255,170,.18);
+  }
+
+  .memo-divider {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    margin: 5px 0 19px;
+    color: #83eeb9;
+    opacity: .75;
+    font-size: 13px;
+  }
+  .memo-divider span:nth-child(2) { animation: memoHeartBeat 1.5s ease-in-out infinite; }
+  @keyframes memoHeartBeat {
+    50% { transform: scale(1.45); text-shadow: 0 0 16px rgba(100,255,190,.7); }
+  }
+
+  .memo-kiss-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 18px;
+    min-height: 105px;
+  }
+
+  #memoKiss {
+    position: relative;
+    width: 105px;
+    height: 78px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform .25s ease;
+  }
+  #memoKiss:hover { transform: scale(1.08) rotate(-2deg); }
+  #memoKiss:active { transform: scale(.94); }
+
+  #memoKiss svg {
+    width: 76px;
+    height: 58px;
+    overflow: visible;
+    filter: drop-shadow(0 0 11px rgba(255,110,160,.45));
+  }
+  .memo-lip {
+    fill: rgba(255,104,157,.14);
+    stroke: #ff82ae;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 330;
+    stroke-dashoffset: 330;
+  }
+  #memoOverlay.memo-show .memo-lip {
+    animation: memoDrawLip 1.7s .95s cubic-bezier(.65,0,.35,1) forwards;
+  }
+  @keyframes memoDrawLip {
+    to { stroke-dashoffset: 0; }
+  }
+  .memo-kiss-glow {
+    position: absolute;
+    inset: 16px 13px;
+    border-radius: 50%;
+    background: rgba(255,90,150,.16);
+    filter: blur(17px);
+    opacity: 0;
+    animation: memoGlow 2.2s 1.8s ease-in-out infinite;
+  }
+  @keyframes memoGlow {
+    0%,100% { opacity: .1; transform: scale(.8); }
+    50% { opacity: .65; transform: scale(1.15); }
+  }
+
+  .memo-hint {
+    text-align: center;
+    margin-top: 2px;
+    color: rgba(255,255,255,.45);
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .memo-float {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    animation: memoFloatUp linear forwards;
+  }
+  @keyframes memoFloatUp {
+    0% { opacity: 0; transform: translateY(20px) scale(.4) rotate(-10deg); }
+    15% { opacity: .8; }
+    100% { opacity: 0; transform: translateY(-95vh) scale(1.1) rotate(25deg); }
+  }
+
+  .memo-kiss-particle {
+    position: fixed;
+    z-index: 280;
+    pointer-events: none;
+    font-size: 18px;
+    animation: memoKissBurst .9s ease-out forwards;
+  }
+  @keyframes memoKissBurst {
+    0% { opacity: 1; transform: translate(0,0) scale(.5); }
+    100% { opacity: 0; transform: translate(var(--mx),var(--my)) scale(1.25) rotate(var(--mr)); }
+  }
+
+  @media (max-width: 560px) {
+    #memoOpen { right: 15px; bottom: 15px; width: 50px; height: 50px; }
+    .memo-card { padding-top: 34px; border-radius: 24px; }
+    .memo-text { line-height: 1.68; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #memoOpen, .memo-card, .memo-float, .memo-kiss-particle { animation: none !important; }
+    #memoOverlay.memo-show .memo-text p,
+    #memoOverlay.memo-show .memo-lip { animation: none !important; opacity: 1; transform: none; stroke-dashoffset: 0; }
+  }
+</style>
+
+<button id="memoOpen" aria-label="Открыть памятку" title="Маленькая памятка">✦</button>
+
+<div id="memoOverlay" aria-hidden="true">
+  <div class="memo-card" role="dialog" aria-modal="true" aria-label="Памятка для Звёздочки">
+    <button class="memo-close" id="memoClose" aria-label="Закрыть">×</button>
+
+    <div class="memo-top">
+      <div class="memo-kicker">маленькая памятка</div>
+      <div class="memo-title">Звёздочка ✦</div>
+      <div class="memo-starline">для тебя</div>
+    </div>
+
+    <div class="memo-text">
+      <p>Звёздочка, я знаю, что иногда могу быть слишком навязчивым. И я учусь замечать это и уважать твоё пространство. Мне совсем не хочется, чтобы моя забота когда-нибудь превращалась в давление. Мне важно, чтобы рядом со мной ты могла просто оставаться собой — без обязанностей, ожиданий и необходимости что-то доказывать.</p>
+
+      <p>Этот сайт — маленькое место, где я оставил частичку своих мыслей для тебя. Не как обещание быть рядом каждую секунду, а как напоминание о том, как сильно я ценю тебя: твой характер, твой смех, наши разговоры, наши маленькие моменты и даже самые обычные дни, которые почему-то становятся особенными.</p>
+
+      <p>Иногда я говорю во сне «я тебя люблю». Наверное, это просто смешная особенность моего сна. Но мне нравится сама мысль, что там нет лишних слов и никаких ожиданий. Просто есть тёплое чувство, которое существует само по себе.</p>
+
+      <p>Если однажды тебе понадобится тишина — я пойму. Если захочется поговорить — буду рад. А если ты просто откроешь эту памятку и улыбнёшься хотя бы на секунду, значит, она уже сделала то, ради чего появилась.</p>
+
+      <p>Береги себя, Звёздочка. Ты <span class="memo-highlight">очень важный для меня человек</span>. И мне хотелось оставить здесь одну простую мысль: иногда самые дорогие вещи — это не большие обещания, а маленькое «я рядом», сказанное вовремя. 💚</p>
+    </div>
+
+    <div class="memo-divider"><span>✦</span><span>♥</span><span>✦</span></div>
+
+    <div class="memo-kiss-area">
+      <button id="memoKiss" aria-label="Поцелуй">
+        <span class="memo-kiss-glow"></span>
+        <svg viewBox="0 0 100 70" aria-hidden="true">
+          <path class="memo-lip" d="M8 35 C19 18, 31 12, 50 28 C69 12, 81 18, 92 35 C78 34, 66 39, 50 54 C34 39, 22 34, 8 35 Z"/>
+          <path class="memo-lip" d="M8 35 C25 39, 36 35, 50 28 C64 35, 75 39, 92 35"/>
+        </svg>
+      </button>
+    </div>
+    <div class="memo-hint">маленький поцелуй в конце</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const open = document.getElementById('memoOpen');
+  const overlay = document.getElementById('memoOverlay');
+  const close = document.getElementById('memoClose');
+  const kiss = document.getElementById('memoKiss');
+
+  if (!open || !overlay || !close || !kiss) return;
+
+  function createMemoFloaters() {
+    const symbols = ['✦','✧','♥','✦','·'];
+    for (let i = 0; i < 18; i++) {
+      const el = document.createElement('span');
+      el.className = 'memo-float';
+      el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+      el.style.left = (4 + Math.random() * 92) + 'vw';
+      el.style.bottom = (-5 - Math.random() * 15) + 'vh';
+      el.style.color = Math.random() > .35 ? '#8fffc2' : '#ff8bb7';
+      el.style.fontSize = (10 + Math.random() * 18) + 'px';
+      el.style.animationDuration = (5 + Math.random() * 6) + 's';
+      el.style.animationDelay = (Math.random() * 2.5) + 's';
+      overlay.appendChild(el);
+      setTimeout(() => el.remove(), 12500);
+    }
+  }
+
+  function showMemo() {
+    overlay.classList.add('memo-show');
+    overlay.setAttribute('aria-hidden', 'false');
+    createMemoFloaters();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideMemo() {
+    overlay.classList.remove('memo-show');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  open.addEventListener('click', showMemo);
+  close.addEventListener('click', hideMemo);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) hideMemo();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('memo-show')) hideMemo();
+  });
+
+  kiss.addEventListener('click', (e) => {
+    const rect = kiss.getBoundingClientRect();
+    const symbols = ['♥','✦','♡','✧','♥','·'];
+    for (let i = 0; i < 15; i++) {
+      const p = document.createElement('span');
+      p.className = 'memo-kiss-particle';
+      p.textContent = symbols[i % symbols.length];
+      p.style.left = (rect.left + rect.width / 2) + 'px';
+      p.style.top = (rect.top + rect.height / 2) + 'px';
+      p.style.color = i % 3 === 0 ? '#8fffc2' : '#ff8bb7';
+      p.style.setProperty('--mx', ((Math.random() - .5) * 210) + 'px');
+      p.style.setProperty('--my', ((Math.random() - .5) * 170 - 30) + 'px');
+      p.style.setProperty('--mr', ((Math.random() - .5) * 80) + 'deg');
+      p.style.animationDelay = (Math.random() * .12) + 's';
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 1100);
+    }
+
+    kiss.animate(
+      [{ transform: 'scale(1)' }, { transform: 'scale(1.18) rotate(2deg)' }, { transform: 'scale(1)' }],
+      { duration: 420, easing: 'cubic-bezier(.2,.9,.3,1.3)' }
+    );
+  });
+})();
+</script>
+<!-- ===== конец отдельного блока памятки ===== -->
+
 </body>
 </html>
