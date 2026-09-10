@@ -2730,7 +2730,6 @@
       document.getElementById('missBtn').classList.add('show');
       document.getElementById('dateBtn').classList.add('show');
       showPondLauncher();
-      showProposalButton();
       renderTally();
     }, textDone + 5200);
   }
@@ -4388,7 +4387,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSycQ4Mx2l600DKBt8zS6TzroHaJ4SpILZ7s",
+  apiKey: "AIzaSyCQ4Mx2l60D0KBt8zS6TzroHaJ4SpIlZ7s",
   authDomain: "zametki-79427.firebaseapp.com",
   projectId: "zametki-79427",
   storageBucket: "zametki-79427.firebasestorage.app",
@@ -4642,6 +4641,8 @@ function showWorkspace(user){
 
 function friendlyAuthError(error){
   const code = error?.code || '';
+  if(code.includes('invalid-api-key'))
+    return 'Ошибка конфигурации Firebase: неверный API key.';
   if(code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found'))
     return 'Не получилось войти. Проверь e-mail и пароль.';
   if(code.includes('too-many-requests'))
