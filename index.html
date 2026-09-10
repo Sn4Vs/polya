@@ -4199,5 +4199,290 @@
 </script>
 <!-- ===== конец отдельного блока памятки ===== -->
 
+
+<!-- ===== БЛОКНОТ ЗВЁЗДОЧКИ — отдельный блок, существующий сайт не изменяет ===== -->
+<style>
+  #starNotebookOpen{
+    position:fixed; right:22px; bottom:92px; z-index:9995;
+    width:56px; height:56px; border:1px solid rgba(148,255,194,.42);
+    border-radius:18px; cursor:pointer; display:grid; place-items:center;
+    background:linear-gradient(145deg,rgba(12,34,27,.94),rgba(21,61,45,.94));
+    color:#c7ffdd; box-shadow:0 12px 35px rgba(0,0,0,.28),0 0 24px rgba(76,255,152,.10);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    transition:.25s ease;
+  }
+  #starNotebookOpen:hover{transform:translateY(-3px) rotate(-2deg);box-shadow:0 16px 38px rgba(0,0,0,.34),0 0 28px rgba(76,255,152,.18)}
+  #starNotebookOpen svg{width:29px;height:29px;filter:drop-shadow(0 2px 7px rgba(103,255,171,.26))}
+
+  #starNotebookOverlay{
+    position:fixed; inset:0; z-index:10020; display:none; align-items:center; justify-content:center;
+    padding:22px; background:rgba(4,9,7,.76); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    opacity:0; transition:opacity .28s ease;
+  }
+  #starNotebookOverlay.open{display:flex;opacity:1}
+  .star-notebook{
+    width:min(860px,96vw); max-height:min(86vh,900px); overflow:hidden; position:relative;
+    border-radius:28px; border:1px solid rgba(136,255,190,.22);
+    background:
+      linear-gradient(90deg,transparent 54px,rgba(255,114,158,.16) 55px,rgba(255,114,158,.16) 57px,transparent 58px),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0,rgba(255,255,255,.028) 1px,transparent 1px,transparent 34px),
+      linear-gradient(160deg,#13271f,#0d1d17 65%,#0a1511);
+    box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);
+    color:#effff5;
+  }
+  .star-notebook::before{
+    content:""; position:absolute; left:24px; top:0; bottom:0; width:12px;
+    background:radial-gradient(circle,rgba(215,255,231,.30) 0 2px,transparent 2.6px) center 12px/12px 28px repeat-y;
+    opacity:.8; pointer-events:none;
+  }
+  .star-notebook-head{padding:26px 28px 16px 78px;display:flex;align-items:flex-start;gap:16px;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+  .star-notebook-kicker{font-size:12px;letter-spacing:.17em;text-transform:uppercase;color:#88dba9;margin-bottom:6px}
+  .star-notebook-title{font-size:clamp(25px,4vw,38px);line-height:1.05;margin:0;font-weight:750;letter-spacing:-.03em}
+  .star-notebook-sub{margin:8px 0 0;color:rgba(235,255,243,.65);font-size:14px;max-width:610px;line-height:1.5}
+  #starNotebookClose{border:0;background:rgba(255,255,255,.06);color:#eafff1;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:25px;line-height:1;flex:0 0 auto;transition:.2s}
+  #starNotebookClose:hover{background:rgba(255,255,255,.12);transform:rotate(6deg)}
+  .star-notebook-body{padding:18px 28px 28px 78px;overflow:auto;max-height:calc(min(86vh,900px) - 126px)}
+  .star-note-add{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:15px}
+  #starNoteInput{
+    width:100%; min-height:48px; max-height:130px; resize:vertical; box-sizing:border-box;
+    border:1px solid rgba(144,255,194,.16); border-radius:15px; padding:13px 14px;
+    background:rgba(255,255,255,.055); color:#f3fff7; outline:none; font:inherit; line-height:1.45;
+  }
+  #starNoteInput:focus{border-color:rgba(125,255,181,.50);box-shadow:0 0 0 3px rgba(85,255,160,.08)}
+  #starNoteInput::placeholder{color:rgba(239,255,245,.42)}
+  #starNoteAddBtn{border:0;border-radius:15px;padding:0 18px;min-height:48px;cursor:pointer;font-weight:700;color:#092116;background:linear-gradient(135deg,#9dffc6,#5fe89a);box-shadow:0 7px 20px rgba(75,231,144,.18);transition:.2s}
+  #starNoteAddBtn:hover{transform:translateY(-1px);filter:brightness(1.04)}
+  .star-note-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 12px;color:rgba(233,255,241,.48);font-size:12px}
+  .star-note-list{display:flex;flex-direction:column;gap:10px}
+  .star-note-empty{padding:28px 18px;text-align:center;border:1px dashed rgba(139,255,190,.18);border-radius:16px;color:rgba(236,255,244,.48);line-height:1.5}
+  .star-note-item{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 12px 13px 10px;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:rgba(255,255,255,.038);transition:.25s ease;overflow:visible}
+  .star-note-item:hover{background:rgba(255,255,255,.055);border-color:rgba(124,255,183,.15)}
+  .star-note-item.done{background:rgba(85,213,137,.065);border-color:rgba(104,255,166,.18)}
+  .star-note-check{appearance:none;-webkit-appearance:none;width:25px;height:25px;border-radius:8px;border:1px solid rgba(178,255,210,.35);background:rgba(255,255,255,.055);margin:2px 0 0;cursor:pointer;display:grid;place-items:center;transition:.2s}
+  .star-note-check:checked{background:linear-gradient(135deg,#a4ffcb,#5ce395);border-color:transparent;box-shadow:0 0 16px rgba(93,237,157,.22)}
+  .star-note-check:checked::after{content:"✓";font-weight:900;color:#0a2417;font-size:17px;line-height:1}
+  .star-note-text{white-space:pre-wrap;word-break:break-word;line-height:1.5;color:#f1fff6;padding:2px 0;transition:.2s}
+  .star-note-item.done .star-note-text{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:rgba(163,255,201,.55);color:rgba(239,255,245,.50)}
+  .star-note-editbox{width:100%;min-height:70px;resize:vertical;box-sizing:border-box;border:1px solid rgba(135,255,188,.30);border-radius:11px;background:rgba(0,0,0,.18);color:#f1fff6;padding:9px 10px;outline:none;font:inherit;line-height:1.45}
+  .star-note-actions{display:flex;gap:5px}
+  .star-note-action{width:34px;height:34px;border:0;border-radius:10px;background:rgba(255,255,255,.055);color:rgba(239,255,245,.72);cursor:pointer;font-size:15px;transition:.2s}
+  .star-note-action:hover{background:rgba(255,255,255,.11);color:#fff}
+  .star-note-action.delete:hover{background:rgba(255,91,120,.11);color:#ff9fb3}
+  .star-note-kiss{position:fixed;z-index:10080;pointer-events:none;font-size:38px;transform:translate(-50%,-50%) scale(.35) rotate(-8deg);opacity:0;filter:drop-shadow(0 7px 14px rgba(0,0,0,.20));animation:starKissFloat 1.45s cubic-bezier(.16,.85,.28,1) forwards}
+  @keyframes starKissFloat{0%{opacity:0;transform:translate(-50%,-20%) scale(.35) rotate(-10deg)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.16) rotate(5deg)}55%{opacity:1;transform:translate(-50%,-78%) scale(1) rotate(-3deg)}100%{opacity:0;transform:translate(-50%,-145%) scale(.82) rotate(8deg)}}
+  .star-note-savehint{margin-top:13px;text-align:center;font-size:11px;color:rgba(226,255,238,.33)}
+  @media(max-width:620px){
+    #starNotebookOpen{right:15px;bottom:86px;width:52px;height:52px;border-radius:16px}
+    #starNotebookOverlay{padding:10px}
+    .star-notebook{border-radius:22px;max-height:91vh;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 32px),linear-gradient(160deg,#13271f,#0a1511)}
+    .star-notebook::before{display:none}
+    .star-notebook-head{padding:21px 17px 13px}
+    .star-notebook-body{padding:15px 17px 22px;max-height:calc(91vh - 115px)}
+    .star-note-add{grid-template-columns:1fr}
+    #starNoteAddBtn{min-height:44px}
+    .star-note-item{grid-template-columns:auto 1fr;}
+    .star-note-actions{grid-column:2;justify-content:flex-end;margin-top:-2px}
+  }
+  @media(prefers-reduced-motion:reduce){.star-note-kiss{animation:none;opacity:1}.star-note-item,#starNotebookOpen{transition:none}}
+</style>
+
+<button id="starNotebookOpen" aria-label="Открыть блокнот Звёздочки" title="Блокнот Звёздочки">
+  <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+    <rect x="13" y="9" width="39" height="46" rx="7" stroke="currentColor" stroke-width="3"/>
+    <path d="M22 9v46M30 22h14M30 31h14M30 40h10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    <path d="M9 18h8M9 28h8M9 38h8M9 48h8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<div id="starNotebookOverlay" aria-hidden="true">
+  <section class="star-notebook" role="dialog" aria-modal="true" aria-labelledby="starNotebookTitle">
+    <div class="star-notebook-head">
+      <div>
+        <div class="star-notebook-kicker">личное пространство для планов</div>
+        <h2 class="star-notebook-title" id="starNotebookTitle">Блокнот Звёздочки ✦</h2>
+        <p class="star-notebook-sub">Здесь можно оставлять цели и задачи, редактировать их и отмечать выполненными. Всё сохраняется автоматически.</p>
+      </div>
+      <button id="starNotebookClose" aria-label="Закрыть">×</button>
+    </div>
+    <div class="star-notebook-body">
+      <div class="star-note-add">
+        <textarea id="starNoteInput" maxlength="600" placeholder="Например: закончить важную задачу, записаться куда-то, не забыть маленькую мечту…"></textarea>
+        <button id="starNoteAddBtn">Добавить</button>
+      </div>
+      <div class="star-note-meta">
+        <span id="starNoteCounter">0 задач</span>
+        <span>Enter — добавить · Shift+Enter — новая строка</span>
+      </div>
+      <div class="star-note-list" id="starNoteList"></div>
+      <div class="star-note-savehint">Записи хранятся в этом браузере на этом устройстве.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'zvezdochka_notebook_v1';
+  const openBtn = document.getElementById('starNotebookOpen');
+  const overlay = document.getElementById('starNotebookOverlay');
+  const closeBtn = document.getElementById('starNotebookClose');
+  const input = document.getElementById('starNoteInput');
+  const addBtn = document.getElementById('starNoteAddBtn');
+  const list = document.getElementById('starNoteList');
+  const counter = document.getElementById('starNoteCounter');
+
+  let notes = load();
+
+  function load(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) { return []; }
+  }
+
+  function save(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch(e) {}
+  }
+
+  function esc(value){
+    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+  }
+
+  function plural(n){
+    const n10=n%10,n100=n%100;
+    if(n10===1 && n100!==11) return 'задача';
+    if(n10>=2 && n10<=4 && !(n100>=12 && n100<=14)) return 'задачи';
+    return 'задач';
+  }
+
+  function updateCounter(){
+    const done = notes.filter(n => n.done).length;
+    counter.textContent = notes.length ? `${notes.length} ${plural(notes.length)} · выполнено ${done}` : '0 задач';
+  }
+
+  function render(){
+    list.innerHTML = '';
+    if(!notes.length){
+      list.innerHTML = '<div class="star-note-empty">Пока здесь тихо.<br>Добавь первую цель или задачу ✦</div>';
+      updateCounter();
+      return;
+    }
+
+    notes.forEach(note => {
+      const item = document.createElement('div');
+      item.className = 'star-note-item' + (note.done ? ' done' : '');
+      item.dataset.id = note.id;
+      item.innerHTML = `
+        <input class="star-note-check" type="checkbox" ${note.done ? 'checked' : ''} aria-label="Отметить выполненной">
+        <div class="star-note-text">${esc(note.text)}</div>
+        <div class="star-note-actions">
+          <button class="star-note-action edit" title="Редактировать" aria-label="Редактировать">✎</button>
+          <button class="star-note-action delete" title="Удалить" aria-label="Удалить">×</button>
+        </div>`;
+
+      const check = item.querySelector('.star-note-check');
+      const edit = item.querySelector('.edit');
+      const del = item.querySelector('.delete');
+
+      check.addEventListener('change', () => {
+        const wasDone = note.done;
+        note.done = check.checked;
+        save();
+        item.classList.toggle('done', note.done);
+        updateCounter();
+        if(!wasDone && note.done) showKiss(check);
+      });
+
+      edit.addEventListener('click', () => startEdit(item, note));
+      del.addEventListener('click', () => {
+        notes = notes.filter(n => n.id !== note.id);
+        save();
+        render();
+      });
+
+      list.appendChild(item);
+    });
+    updateCounter();
+  }
+
+  function startEdit(item, note){
+    const textEl = item.querySelector('.star-note-text');
+    const editBtn = item.querySelector('.edit');
+    if(item.querySelector('.star-note-editbox')) return;
+
+    const ta = document.createElement('textarea');
+    ta.className = 'star-note-editbox';
+    ta.maxLength = 600;
+    ta.value = note.text;
+    textEl.replaceWith(ta);
+    editBtn.textContent = '✓';
+    editBtn.title = 'Сохранить';
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+
+    const commit = () => {
+      const value = ta.value.trim();
+      if(value) note.text = value;
+      save();
+      render();
+    };
+
+    editBtn.onclick = commit;
+    ta.addEventListener('keydown', e => {
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
+      if(e.key === 'Escape'){ render(); }
+    });
+  }
+
+  function addNote(){
+    const text = input.value.trim();
+    if(!text) return;
+    notes.unshift({
+      id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2),
+      text,
+      done:false,
+      createdAt:Date.now()
+    });
+    input.value = '';
+    save();
+    render();
+    input.focus();
+  }
+
+  function showKiss(anchor){
+    const r = anchor.getBoundingClientRect();
+    const kiss = document.createElement('div');
+    kiss.className = 'star-note-kiss';
+    kiss.textContent = '💋';
+    kiss.style.left = (r.left + r.width/2 + 10) + 'px';
+    kiss.style.top = (r.top + r.height/2 - 4) + 'px';
+    document.body.appendChild(kiss);
+    setTimeout(() => kiss.remove(), 1550);
+  }
+
+  function openNotebook(){
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    setTimeout(() => input.focus(), 100);
+  }
+  function closeNotebook(){
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  openBtn.addEventListener('click', openNotebook);
+  closeBtn.addEventListener('click', closeNotebook);
+  overlay.addEventListener('click', e => { if(e.target===overlay) closeNotebook(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && overlay.classList.contains('open')) closeNotebook(); });
+  addBtn.addEventListener('click', addNote);
+  input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); addNote(); } });
+
+  render();
+})();
+</script>
+<!-- ===== конец отдельного блока блокнота ===== -->
+
 </body>
 </html>
