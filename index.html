@@ -4271,6 +4271,37 @@
   .star-note-kiss{position:fixed;z-index:10080;pointer-events:none;font-size:38px;transform:translate(-50%,-50%) scale(.35) rotate(-8deg);opacity:0;filter:drop-shadow(0 7px 14px rgba(0,0,0,.20));animation:starKissFloat 1.45s cubic-bezier(.16,.85,.28,1) forwards}
   @keyframes starKissFloat{0%{opacity:0;transform:translate(-50%,-20%) scale(.35) rotate(-10deg)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.16) rotate(5deg)}55%{opacity:1;transform:translate(-50%,-78%) scale(1) rotate(-3deg)}100%{opacity:0;transform:translate(-50%,-145%) scale(.82) rotate(8deg)}}
   .star-note-savehint{margin-top:13px;text-align:center;font-size:11px;color:rgba(226,255,238,.33)}
+
+  .star-auth-card{
+    border:1px solid rgba(136,255,190,.16); border-radius:19px;
+    background:rgba(255,255,255,.042); padding:18px; margin-bottom:14px;
+  }
+  .star-auth-title{font-size:18px;font-weight:750;margin:0 0 5px;color:#effff5}
+  .star-auth-sub{font-size:12px;line-height:1.5;color:rgba(235,255,243,.50);margin:0 0 13px}
+  .star-auth-form{display:grid;grid-template-columns:1fr 1fr auto;gap:9px}
+  .star-auth-input{
+    width:100%;box-sizing:border-box;border:1px solid rgba(144,255,194,.16);border-radius:13px;
+    padding:11px 12px;background:rgba(0,0,0,.14);color:#f3fff7;outline:none;font:inherit;
+  }
+  .star-auth-input:focus{border-color:rgba(125,255,181,.48);box-shadow:0 0 0 3px rgba(85,255,160,.07)}
+  .star-auth-input::placeholder{color:rgba(239,255,245,.35)}
+  #starAuthLoginBtn{
+    border:0;border-radius:13px;padding:0 17px;min-height:43px;cursor:pointer;font-weight:750;
+    color:#092116;background:linear-gradient(135deg,#9dffc6,#5fe89a)
+  }
+  #starAuthLoginBtn:disabled{opacity:.55;cursor:default}
+  .star-auth-error{min-height:18px;margin-top:9px;font-size:12px;color:#ffb0c0}
+  .star-auth-state{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-bottom:12px;padding:9px 11px;border-radius:13px;background:rgba(95,232,154,.055);
+    border:1px solid rgba(95,232,154,.12);font-size:12px;color:rgba(235,255,243,.60)
+  }
+  #starAuthLogout{
+    border:0;border-radius:10px;padding:7px 10px;cursor:pointer;
+    background:rgba(255,255,255,.07);color:rgba(239,255,245,.76);font:inherit;font-size:11px
+  }
+  #starAuthLogout:hover{background:rgba(255,255,255,.12);color:#fff}
+  .star-auth-hidden{display:none !important}
   @media(max-width:620px){
     #starNotebookOpen{right:15px;bottom:86px;width:52px;height:52px;border-radius:16px}
     #starNotebookOverlay{padding:10px}
@@ -4279,6 +4310,7 @@
     .star-notebook-head{padding:21px 17px 13px}
     .star-notebook-body{padding:15px 17px 22px;max-height:calc(91vh - 115px)}
     .star-note-add{grid-template-columns:1fr}
+    .star-auth-form{grid-template-columns:1fr}
     #starNoteAddBtn{min-height:44px}
     .star-note-item{grid-template-columns:auto 1fr;}
     .star-note-actions{grid-column:2;justify-content:flex-end;margin-top:-2px}
@@ -4300,187 +4332,474 @@
       <div>
         <div class="star-notebook-kicker">личное пространство для планов</div>
         <h2 class="star-notebook-title" id="starNotebookTitle">Блокнот Звёздочки ✦</h2>
-        <p class="star-notebook-sub">Здесь можно оставлять цели и задачи, редактировать их и отмечать выполненными. Всё сохраняется автоматически.</p>
+        <p class="star-notebook-sub">Здесь можно оставлять цели и задачи, редактировать их и отмечать выполненными. Записи синхронизируются между вашими устройствами и доступны вам обоим.</p>
       </div>
       <button id="starNotebookClose" aria-label="Закрыть">×</button>
     </div>
     <div class="star-notebook-body">
-      <div class="star-note-add">
-        <textarea id="starNoteInput" maxlength="600" placeholder="Например: закончить важную задачу, записаться куда-то, не забыть маленькую мечту…"></textarea>
-        <button id="starNoteAddBtn">Добавить</button>
+      <div class="star-auth-card" id="starAuthCard">
+        <h3 class="star-auth-title">Вход в общий блокнот ✦</h3>
+        <p class="star-auth-sub">Записи видны двум владельцам блокнота и синхронизируются через Firebase. Войди под своим аккаунтом.</p>
+        <form class="star-auth-form" id="starAuthForm">
+          <input class="star-auth-input" id="starAuthEmail" type="email" autocomplete="username" placeholder="E-mail" required>
+          <input class="star-auth-input" id="starAuthPassword" type="password" autocomplete="current-password" placeholder="Пароль" required>
+          <button id="starAuthLoginBtn" type="submit">Войти</button>
+        </form>
+        <div class="star-auth-error" id="starAuthError"></div>
       </div>
-      <div class="star-note-meta">
-        <span id="starNoteCounter">0 задач</span>
-        <span>Enter — добавить · Shift+Enter — новая строка</span>
+
+      <div id="starNotebookWorkspace" class="star-auth-hidden">
+        <div class="star-auth-state">
+          <span id="starAuthWho">● вход выполнен</span>
+          <button id="starAuthLogout" type="button">Выйти</button>
+        </div>
+
+        <div class="star-note-add">
+          <textarea id="starNoteInput" maxlength="600" placeholder="Например: закончить важную задачу, записаться куда-то, не забыть маленькую мечту…"></textarea>
+          <button id="starNoteAddBtn">Добавить</button>
+        </div>
+        <div class="star-note-meta">
+          <span id="starNoteCounter">0 задач</span>
+          <span>Enter — добавить · Shift+Enter — новая строка</span>
+        </div>
+        <div class="star-note-list" id="starNoteList"></div>
+        <div class="star-note-savehint"><span id="starNoteCloudStatus">● подключение к облаку…</span><br>Общий блокнот: изменения синхронизируются между вашими устройствами.</div>
       </div>
-      <div class="star-note-list" id="starNoteList"></div>
-      <div class="star-note-savehint">Записи хранятся в этом браузере на этом устройстве.</div>
     </div>
   </section>
 </div>
 
-<script>
-(() => {
-  const STORAGE_KEY = 'zvezdochka_notebook_v1';
-  const openBtn = document.getElementById('starNotebookOpen');
-  const overlay = document.getElementById('starNotebookOverlay');
-  const closeBtn = document.getElementById('starNotebookClose');
-  const input = document.getElementById('starNoteInput');
-  const addBtn = document.getElementById('starNoteAddBtn');
-  const list = document.getElementById('starNoteList');
-  const counter = document.getElementById('starNoteCounter');
+<script type="module">
+/*
+  ОБЩИЙ БЛОКНОТ — FIREBASE AUTH + FIRESTORE
+  Доступ разрешён только двум Firebase UID.
+  Firestore хранит и синхронизирует задачи; IndexedDB сохраняет локальный кэш
+  и ожидающие изменения между перезагрузками на поддерживаемых браузерах.
+*/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+  getAuth, setPersistence, browserLocalPersistence,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+  initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, serverTimestamp, getDocs, writeBatch
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-  let notes = load();
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSycQ4Mx2l600DKBt8zS6TzroHaJ4SpILZ7s",
+  authDomain: "zametki-79427.firebaseapp.com",
+  projectId: "zametki-79427",
+  storageBucket: "zametki-79427.firebasestorage.app",
+  messagingSenderId: "630129759584",
+  appId: "1:630129759584:web:b339276bd11ff0ac6a3a05",
+  measurementId: "G-8C8X4GPM59"
+};
 
-  function load(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) { return []; }
+const ALLOWED_UIDS = new Set([
+  "BYmhRqqXQQPKPTOnrjzEFTfNL3D3",
+  "IG3jAerjnHZekX8gEn51AQq6Oli1"
+]);
+
+const NOTEBOOK_ROOM_ID = "zvezdochka-shared-notebook";
+const LEGACY_STORAGE_KEY = "zvezdochka_notebook_v1";
+
+const openBtn = document.getElementById('starNotebookOpen');
+const overlay = document.getElementById('starNotebookOverlay');
+const closeBtn = document.getElementById('starNotebookClose');
+
+const authCard = document.getElementById('starAuthCard');
+const authForm = document.getElementById('starAuthForm');
+const authEmail = document.getElementById('starAuthEmail');
+const authPassword = document.getElementById('starAuthPassword');
+const authLoginBtn = document.getElementById('starAuthLoginBtn');
+const authError = document.getElementById('starAuthError');
+const authWho = document.getElementById('starAuthWho');
+const authLogout = document.getElementById('starAuthLogout');
+const workspace = document.getElementById('starNotebookWorkspace');
+
+const input = document.getElementById('starNoteInput');
+const addBtn = document.getElementById('starNoteAddBtn');
+const list = document.getElementById('starNoteList');
+const counter = document.getElementById('starNoteCounter');
+const cloudStatus = document.getElementById('starNoteCloudStatus');
+
+const app = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+
+// Явно сохраняем вход между перезагрузками браузера.
+setPersistence(auth, browserLocalPersistence).catch(console.warn);
+
+// PersistentLocalCache = IndexedDB-кэш Firestore.
+// Это помогает не терять уже загруженные данные и ожидающие записи при перезагрузке.
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+} catch (e) {
+  console.warn("Persistent Firestore cache недоступен, используется обычное подключение:", e);
+  try {
+    db = getFirestore(app);
+  } catch (fallbackError) {
+    console.error("Не удалось инициализировать Firestore:", fallbackError);
   }
+}
 
-  function save(){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch(e) {}
-  }
+let notes = [];
+let notesCol = null;
+let cloudReady = false;
+let cloudStarted = false;
+let unsubscribeNotes = null;
 
-  function esc(value){
-    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
-  }
+function esc(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+}
 
-  function plural(n){
-    const n10=n%10,n100=n%100;
-    if(n10===1 && n100!==11) return 'задача';
-    if(n10>=2 && n10<=4 && !(n100>=12 && n100<=14)) return 'задачи';
-    return 'задач';
-  }
+function plural(n){
+  const n10=n%10,n100=n%100;
+  if(n10===1 && n100!==11) return 'задача';
+  if(n10>=2 && n10<=4 && !(n100>=12 && n100<=14)) return 'задачи';
+  return 'задач';
+}
 
-  function updateCounter(){
-    const done = notes.filter(n => n.done).length;
-    counter.textContent = notes.length ? `${notes.length} ${plural(notes.length)} · выполнено ${done}` : '0 задач';
-  }
+function updateCounter(){
+  const done = notes.filter(n => n.done).length;
+  counter.textContent = notes.length ? `${notes.length} ${plural(notes.length)} · выполнено ${done}` : '0 задач';
+}
 
-  function render(){
-    list.innerHTML = '';
-    if(!notes.length){
-      list.innerHTML = '<div class="star-note-empty">Пока здесь тихо.<br>Добавь первую цель или задачу ✦</div>';
-      updateCounter();
-      return;
-    }
-
-    notes.forEach(note => {
-      const item = document.createElement('div');
-      item.className = 'star-note-item' + (note.done ? ' done' : '');
-      item.dataset.id = note.id;
-      item.innerHTML = `
-        <input class="star-note-check" type="checkbox" ${note.done ? 'checked' : ''} aria-label="Отметить выполненной">
-        <div class="star-note-text">${esc(note.text)}</div>
-        <div class="star-note-actions">
-          <button class="star-note-action edit" title="Редактировать" aria-label="Редактировать">✎</button>
-          <button class="star-note-action delete" title="Удалить" aria-label="Удалить">×</button>
-        </div>`;
-
-      const check = item.querySelector('.star-note-check');
-      const edit = item.querySelector('.edit');
-      const del = item.querySelector('.delete');
-
-      check.addEventListener('change', () => {
-        const wasDone = note.done;
-        note.done = check.checked;
-        save();
-        item.classList.toggle('done', note.done);
-        updateCounter();
-        if(!wasDone && note.done) showKiss(check);
-      });
-
-      edit.addEventListener('click', () => startEdit(item, note));
-      del.addEventListener('click', () => {
-        notes = notes.filter(n => n.id !== note.id);
-        save();
-        render();
-      });
-
-      list.appendChild(item);
-    });
+function render(){
+  list.innerHTML = '';
+  if(!notes.length){
+    list.innerHTML = '<div class="star-note-empty">Пока здесь тихо.<br>Добавь первую цель или задачу ✦</div>';
     updateCounter();
+    return;
   }
 
-  function startEdit(item, note){
-    const textEl = item.querySelector('.star-note-text');
-    const editBtn = item.querySelector('.edit');
-    if(item.querySelector('.star-note-editbox')) return;
+  notes.forEach(note => {
+    const item = document.createElement('div');
+    item.className = 'star-note-item' + (note.done ? ' done' : '');
+    item.dataset.id = note.id;
+    item.innerHTML = `
+      <input class="star-note-check" type="checkbox" ${note.done ? 'checked' : ''} aria-label="Отметить выполненной">
+      <div class="star-note-text">${esc(note.text)}</div>
+      <div class="star-note-actions">
+        <button class="star-note-action edit" title="Редактировать" aria-label="Редактировать">✎</button>
+        <button class="star-note-action delete" title="Удалить" aria-label="Удалить">×</button>
+      </div>`;
 
-    const ta = document.createElement('textarea');
-    ta.className = 'star-note-editbox';
-    ta.maxLength = 600;
-    ta.value = note.text;
-    textEl.replaceWith(ta);
-    editBtn.textContent = '✓';
-    editBtn.title = 'Сохранить';
-    ta.focus();
-    ta.setSelectionRange(ta.value.length, ta.value.length);
+    const check = item.querySelector('.star-note-check');
+    const edit = item.querySelector('.edit');
+    const del = item.querySelector('.delete');
 
-    const commit = () => {
-      const value = ta.value.trim();
-      if(value) note.text = value;
-      save();
-      render();
-    };
+    check.addEventListener('change', async () => {
+      const wasDone = note.done;
+      const nextDone = check.checked;
+      note.done = nextDone;
+      item.classList.toggle('done', nextDone);
+      updateCounter();
 
-    editBtn.onclick = commit;
-    ta.addEventListener('keydown', e => {
-      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
-      if(e.key === 'Escape'){ render(); }
+      if(!wasDone && nextDone) showKiss(check);
+
+      try {
+        await updateDoc(doc(notesCol, note.id), {
+          done: nextDone,
+          updatedAt: serverTimestamp()
+        });
+      } catch(e){
+        console.error(e);
+        cloudStatus.textContent = '● ошибка синхронизации';
+        note.done = wasDone;
+        check.checked = wasDone;
+        item.classList.toggle('done', wasDone);
+        updateCounter();
+      }
     });
-  }
 
-  function addNote(){
-    const text = input.value.trim();
-    if(!text) return;
-    notes.unshift({
-      id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2),
+    edit.addEventListener('click', () => startEdit(item, note));
+
+    del.addEventListener('click', async () => {
+      try {
+        await deleteDoc(doc(notesCol, note.id));
+      } catch(e){
+        console.error(e);
+        cloudStatus.textContent = '● ошибка удаления';
+      }
+    });
+
+    list.appendChild(item);
+  });
+
+  updateCounter();
+}
+
+function startEdit(item, note){
+  const textEl = item.querySelector('.star-note-text');
+  const editBtn = item.querySelector('.edit');
+  if(item.querySelector('.star-note-editbox')) return;
+
+  const ta = document.createElement('textarea');
+  ta.className = 'star-note-editbox';
+  ta.maxLength = 600;
+  ta.value = note.text;
+  textEl.replaceWith(ta);
+  editBtn.textContent = '✓';
+  editBtn.title = 'Сохранить';
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+
+  let saving = false;
+  const commit = async () => {
+    if(saving) return;
+    const value = ta.value.trim();
+    if(!value){ render(); return; }
+    saving = true;
+    try {
+      await updateDoc(doc(notesCol, note.id), {
+        text: value,
+        updatedAt: serverTimestamp()
+      });
+    } catch(e){
+      console.error(e);
+      cloudStatus.textContent = '● ошибка синхронизации';
+      saving = false;
+      render();
+    }
+  };
+
+  editBtn.onclick = commit;
+  ta.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
+    if(e.key === 'Escape'){ render(); }
+  });
+}
+
+async function addNote(){
+  const text = input.value.trim();
+  if(!text || !cloudReady || !auth.currentUser) return;
+
+  input.value = '';
+  input.focus();
+
+  try {
+    await addDoc(notesCol, {
       text,
       done:false,
-      createdAt:Date.now()
+      createdAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
     });
-    input.value = '';
-    save();
+  } catch(e){
+    console.error(e);
+    cloudStatus.textContent = '● не удалось сохранить';
+    input.value = text;
+  }
+}
+
+function showKiss(anchor){
+  const r = anchor.getBoundingClientRect();
+  const kiss = document.createElement('div');
+  kiss.className = 'star-note-kiss';
+  kiss.textContent = '💋';
+  kiss.style.left = (r.left + r.width/2 + 10) + 'px';
+  kiss.style.top = (r.top + r.height/2 - 4) + 'px';
+  document.body.appendChild(kiss);
+  setTimeout(() => kiss.remove(), 1550);
+}
+
+function openNotebook(){
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+
+  setTimeout(() => {
+    if(auth.currentUser && ALLOWED_UIDS.has(auth.currentUser.uid)) input.focus();
+    else authEmail.focus();
+  }, 100);
+}
+
+function closeNotebook(){
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
+function showLogin(message=''){
+  authCard.classList.remove('star-auth-hidden');
+  workspace.classList.add('star-auth-hidden');
+  authError.textContent = message;
+}
+
+function showWorkspace(user){
+  authCard.classList.add('star-auth-hidden');
+  workspace.classList.remove('star-auth-hidden');
+  const label = user.email ? user.email : 'разрешённый аккаунт';
+  authWho.textContent = `● вошли как ${label}`;
+  authError.textContent = '';
+}
+
+function friendlyAuthError(error){
+  const code = error?.code || '';
+  if(code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found'))
+    return 'Не получилось войти. Проверь e-mail и пароль.';
+  if(code.includes('too-many-requests'))
+    return 'Слишком много попыток. Подожди немного и попробуй снова.';
+  if(code.includes('network-request-failed'))
+    return 'Нет связи с Firebase. Проверь интернет.';
+  return 'Не получилось войти. Проверь данные и попробуй ещё раз.';
+}
+
+async function migrateLegacyLocalNotes(){
+  try {
+    if(localStorage.getItem(LEGACY_STORAGE_KEY + '_migrated') === 'yes') return;
+
+    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if(!raw) return;
+
+    const old = JSON.parse(raw);
+    if(!Array.isArray(old) || !old.length) return;
+
+    const existing = await getDocs(notesCol);
+    if(!existing.empty) return;
+
+    const batch = writeBatch(db);
+    old.forEach(n => {
+      const text = String(n.text || '').trim().slice(0,600);
+      if(!text) return;
+      const ref = doc(notesCol);
+      batch.set(ref, {
+        text,
+        done:!!n.done,
+        createdAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      });
+    });
+
+    await batch.commit();
+    localStorage.setItem(LEGACY_STORAGE_KEY + '_migrated', 'yes');
+  } catch(e){
+    console.warn('Не удалось перенести старые локальные заметки:', e);
+  }
+}
+
+function stopCloud(){
+  if(unsubscribeNotes){
+    unsubscribeNotes();
+    unsubscribeNotes = null;
+  }
+  cloudStarted = false;
+  cloudReady = false;
+  notes = [];
+  list.innerHTML = '';
+  updateCounter();
+}
+
+async function startCloud(){
+  if(cloudStarted) return;
+  if(!db){
+    cloudStatus.textContent = '● Firestore не инициализировался';
+    return;
+  }
+
+  cloudStarted = true;
+  notesCol = collection(db, 'notebooks', NOTEBOOK_ROOM_ID, 'notes');
+  cloudStatus.textContent = '● подключение к облаку…';
+  addBtn.disabled = true;
+
+  await migrateLegacyLocalNotes();
+
+  unsubscribeNotes = onSnapshot(notesCol, {includeMetadataChanges:true}, snap => {
+    notes = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    notes.sort((a,b) => {
+      const av = a.createdAt?.seconds || 0;
+      const bv = b.createdAt?.seconds || 0;
+      return bv-av;
+    });
+
+    cloudReady = true;
+    addBtn.disabled = false;
+
+    if(snap.metadata.fromCache){
+      cloudStatus.textContent = '● локальная копия · облако подключается';
+    }else if(snap.metadata.hasPendingWrites){
+      cloudStatus.textContent = '● сохраняем изменения…';
+    }else{
+      cloudStatus.textContent = '● синхронизация включена · записи общие';
+    }
+
     render();
-    input.focus();
-  }
+  }, err => {
+    console.error(err);
+    cloudReady = false;
+    addBtn.disabled = true;
+    cloudStatus.textContent =
+      err?.code === 'permission-denied'
+        ? '● нет доступа — проверь Firestore Rules'
+        : '● облако временно недоступно';
+  });
+}
 
-  function showKiss(anchor){
-    const r = anchor.getBoundingClientRect();
-    const kiss = document.createElement('div');
-    kiss.className = 'star-note-kiss';
-    kiss.textContent = '💋';
-    kiss.style.left = (r.left + r.width/2 + 10) + 'px';
-    kiss.style.top = (r.top + r.height/2 - 4) + 'px';
-    document.body.appendChild(kiss);
-    setTimeout(() => kiss.remove(), 1550);
-  }
+authForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  authError.textContent = '';
+  authLoginBtn.disabled = true;
+  authLoginBtn.textContent = 'Входим…';
 
-  function openNotebook(){
-    overlay.classList.add('open');
-    overlay.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    setTimeout(() => input.focus(), 100);
-  }
-  function closeNotebook(){
-    overlay.classList.remove('open');
-    overlay.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
-  }
+  try {
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      authEmail.value.trim(),
+      authPassword.value
+    );
 
-  openBtn.addEventListener('click', openNotebook);
-  closeBtn.addEventListener('click', closeNotebook);
-  overlay.addEventListener('click', e => { if(e.target===overlay) closeNotebook(); });
-  document.addEventListener('keydown', e => { if(e.key==='Escape' && overlay.classList.contains('open')) closeNotebook(); });
-  addBtn.addEventListener('click', addNote);
-  input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); addNote(); } });
+    if(!ALLOWED_UIDS.has(cred.user.uid)){
+      await signOut(auth);
+      showLogin('Этот аккаунт не имеет доступа к блокноту.');
+    }
+  } catch(error){
+    console.error(error);
+    authError.textContent = friendlyAuthError(error);
+  } finally {
+    authLoginBtn.disabled = false;
+    authLoginBtn.textContent = 'Войти';
+    authPassword.value = '';
+  }
+});
 
-  render();
-})();
+authLogout.addEventListener('click', async () => {
+  await signOut(auth);
+});
+
+onAuthStateChanged(auth, async user => {
+  if(user && ALLOWED_UIDS.has(user.uid)){
+    showWorkspace(user);
+    await startCloud();
+  }else{
+    stopCloud();
+    if(user){
+      await signOut(auth);
+      showLogin('Этот аккаунт не имеет доступа к блокноту.');
+    }else{
+      showLogin();
+    }
+  }
+});
+
+openBtn.addEventListener('click', openNotebook);
+closeBtn.addEventListener('click', closeNotebook);
+overlay.addEventListener('click', e => { if(e.target===overlay) closeNotebook(); });
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape' && overlay.classList.contains('open')) closeNotebook();
+});
+addBtn.addEventListener('click', addNote);
+input.addEventListener('keydown', e => {
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    addNote();
+  }
+});
 </script>
 <!-- ===== конец отдельного блока блокнота ===== -->
 
