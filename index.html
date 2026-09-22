@@ -2107,6 +2107,7 @@
       <button class="play-btn" id="playBtn" aria-label="Собрать пары">пары ✦</button>
       <button class="garden-btn" id="gardenBtn" aria-label="Собрать букет">букет 🌷</button>
       <button class="jackpot-btn" id="jackpotBtn" aria-label="Поймать джекпот">джекпот 🎰</button>
+      <button class="pigquiz-btn" id="pigQuizOpen" aria-label="Тест на знание меня">тестик 🐷</button>
     </div>
     <a class="miss-btn" id="missBtn" href="tel:89042360018" aria-label="Соскучилась — позвонить">
       соскучилась <span class="miss-emoji">❤️</span>
@@ -4911,6 +4912,1044 @@ input.addEventListener('keydown', e => {
 });
 </script>
 <!-- ===== конец отдельного блока блокнота ===== -->
+
+
+<!-- ===== ТЕСТ НА ЗНАНИЕ МЕНЯ ===== -->
+<style>
+  .pigquiz-btn{
+    border:0; cursor:pointer;
+    font: 700 18px/1.1 'Georgia', serif;
+    color:#5f2137;
+    padding: 16px 24px;
+    border-radius: 999px;
+    background: linear-gradient(135deg,#ffd7e6,#ffc2d9 50%, #fca8c9 100%);
+    box-shadow: 0 12px 34px rgba(255,162,194,.42), inset 0 1px 0 rgba(255,255,255,.78);
+    transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+  }
+  .pigquiz-btn:hover{
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.03);
+    box-shadow: 0 15px 38px rgba(255,162,194,.55), inset 0 1px 0 rgba(255,255,255,.84);
+  }
+
+  .pigquiz-overlay{
+    position: fixed; inset: 0; z-index: 310;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(11,5,18,.84);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .pigquiz-overlay.open{ display:flex; animation:pigquizFade .35s ease; }
+  @keyframes pigquizFade { from{opacity:0} to{opacity:1} }
+
+  .pigquiz-screen{
+    position: relative;
+    width: min(760px, 100%);
+    max-height: min(88vh, 900px);
+    overflow: auto;
+    padding: 28px 26px 26px;
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,188,214,.18), transparent 26%),
+      radial-gradient(circle at 88% 18%, rgba(255,255,255,.07), transparent 25%),
+      linear-gradient(160deg, rgba(33,12,31,.98), rgba(17,27,30,.98));
+    border: 1px solid rgba(255,201,224,.20);
+    box-shadow: 0 28px 90px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.04) inset;
+    color: #fff7fb;
+  }
+  .pigquiz-close{
+    position:absolute; top:14px; right:15px; width:38px; height:38px;
+    border:0; border-radius:50%; cursor:pointer;
+    background: rgba(255,255,255,.08); color:#fff; font-size:24px;
+    transition: transform .22s ease, background .22s ease;
+  }
+  .pigquiz-close:hover{ background: rgba(255,255,255,.14); transform: rotate(90deg); }
+
+  .pigquiz-title{
+    margin: 2px 0 6px;
+    text-align:center;
+    font-size: clamp(30px, 5vw, 44px);
+    font-weight: 500;
+    text-shadow: 0 0 24px rgba(255,167,204,.22);
+  }
+  .pigquiz-sub{
+    margin: 0 auto 18px;
+    max-width: 540px;
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(255,242,248,.72);
+  }
+
+  .pigquiz-progress{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin: 0 0 18px;
+    padding: 11px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.06);
+    color: rgba(255,243,248,.76);
+    font-size: 13px;
+  }
+  .pigquiz-bar{
+    flex:1; height:10px; border-radius:999px;
+    background: rgba(255,255,255,.09);
+    overflow:hidden;
+  }
+  .pigquiz-bar i{
+    display:block; height:100%; width:0%;
+    border-radius:999px;
+    background: linear-gradient(90deg,#ffbdd8,#ffd4e4,#ff9ec7);
+    transition: width .3s ease;
+  }
+
+  .pigquiz-card{
+    padding: 24px 20px 18px;
+    border-radius: 24px;
+    background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+    border: 1px solid rgba(255,255,255,.07);
+  }
+  .pigquiz-qnum{
+    display:inline-flex; align-items:center; gap:8px;
+    margin-bottom: 12px;
+    color:#ffd4e5; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .pigquiz-question{
+    margin: 0 0 16px;
+    font-size: clamp(23px, 4vw, 32px);
+    line-height: 1.25;
+    text-align:center;
+  }
+  .pigquiz-hint{
+    margin: -2px 0 16px;
+    text-align:center;
+    color: rgba(255,242,248,.54);
+    font-size: 12px;
+  }
+  .pigquiz-options{
+    display:grid; gap:12px;
+  }
+  .pigquiz-option{
+    position: relative;
+    display:flex; gap:12px; align-items:flex-start;
+    cursor:pointer;
+    padding: 14px 14px 14px 48px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
+    transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+  .pigquiz-option:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.065);
+    border-color: rgba(255,190,218,.22);
+    box-shadow: 0 12px 24px rgba(0,0,0,.14);
+  }
+  .pigquiz-option input{
+    position:absolute; opacity:0; pointer-events:none;
+  }
+  .pigquiz-bullet{
+    position:absolute; left:15px; top:15px;
+    width:20px; height:20px; border-radius:50%;
+    border: 2px solid rgba(255,210,228,.55);
+    background: transparent;
+    transition: .18s ease;
+  }
+  .pigquiz-bullet::after{
+    content:"";
+    position:absolute; inset:3px;
+    border-radius:50%;
+    background: linear-gradient(135deg,#ffb9d7,#ff7fb6);
+    transform: scale(0);
+    transition: transform .18s ease;
+  }
+  .pigquiz-option input:checked + .pigquiz-bullet{
+    border-color:#ffb0cf;
+    box-shadow:0 0 0 4px rgba(255,162,194,.10);
+  }
+  .pigquiz-option input:checked + .pigquiz-bullet::after{
+    transform: scale(1);
+  }
+  .pigquiz-option strong{
+    display:block;
+    margin-bottom:3px;
+    color:#ffe1ee;
+    font-size:15px;
+  }
+  .pigquiz-option span{
+    color: rgba(255,245,249,.72);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .pigquiz-note{
+    min-height: 22px;
+    margin-top: 14px;
+    text-align:center;
+    color: #ffbfd6;
+    font-size: 13px;
+  }
+  .pigquiz-actions{
+    display:flex; justify-content:center; gap:12px; flex-wrap:wrap;
+    margin-top: 18px;
+  }
+  .pigquiz-mainbtn,.pigquiz-ghostbtn{
+    border:0; cursor:pointer; border-radius:999px;
+    padding: 13px 21px;
+    font: 700 15px/1 'Georgia', serif;
+    transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  }
+  .pigquiz-mainbtn{
+    color:#5c2134;
+    background: linear-gradient(135deg,#ffd7e6,#ffc2d9 50%,#ffabc9);
+    box-shadow: 0 12px 30px rgba(255,170,199,.36);
+  }
+  .pigquiz-mainbtn:hover,.pigquiz-ghostbtn:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+  .pigquiz-ghostbtn{
+    color:#fff7fb;
+    background: rgba(255,255,255,.08);
+  }
+
+  .pigquiz-slap.hidden, .pigquiz-final.hidden{ display:none; }
+  .pigquiz-slap-wrap{
+    text-align:center;
+    padding-top: 6px;
+  }
+  .pigquiz-slap-title{
+    margin: 0 0 8px;
+    font-size: clamp(26px, 4vw, 38px);
+  }
+  .pigquiz-slap-sub{
+    margin: 0 auto 18px;
+    max-width: 430px;
+    color: rgba(255,244,248,.75);
+    line-height: 1.55;
+  }
+  .pigquiz-slap-zone{
+    position: relative;
+    width: min(360px, 90%);
+    margin: 0 auto 18px;
+    min-height: 300px;
+    display:grid;
+    place-items:center;
+    cursor: pointer;
+    user-select:none;
+  }
+  .pigquiz-butt{
+    position: relative;
+    width: 235px; height: 210px;
+    transform-origin: center bottom;
+    transition: transform .16s ease;
+  }
+  .pigquiz-butt-body{
+    position:absolute; left:50%; top:30px; transform:translateX(-50%);
+    width: 208px; height: 152px;
+    border-radius: 90px 90px 82px 82px / 92px 92px 62px 62px;
+    background: linear-gradient(160deg,#ffbfd5,#ffacc8 55%, #f88ab2 100%);
+    box-shadow: inset 0 -10px 14px rgba(230,96,145,.20), 0 14px 30px rgba(0,0,0,.18);
+  }
+  .pigquiz-cheek{
+    position:absolute; top:73px; width:86px; height:92px;
+    border-radius: 50%;
+    background: linear-gradient(180deg,#ffcade,#ff9dc0);
+    box-shadow: inset 0 -8px 12px rgba(230,96,145,.18);
+  }
+  .pigquiz-cheek.left{ left:27px; }
+  .pigquiz-cheek.right{ right:27px; }
+  .pigquiz-crack{
+    position:absolute; left:50%; top:73px; transform:translateX(-50%);
+    width:8px; height:80px; border-radius:999px;
+    background: rgba(204,80,126,.45);
+  }
+  .pigquiz-hole{
+    position:absolute; top:106px; width:18px; height:26px;
+    border-radius: 50%;
+    background: rgba(204,78,124,.34);
+  }
+  .pigquiz-hole.left{ left:95px; transform: rotate(12deg); }
+  .pigquiz-hole.right{ right:95px; transform: rotate(-12deg); }
+  .pigquiz-leg{
+    position:absolute; bottom:0; width:42px; height:78px; border-radius: 22px;
+    background: linear-gradient(180deg,#ffbed5,#f798bb);
+  }
+  .pigquiz-leg:after{
+    content:""; position:absolute; left:2px; right:2px; bottom:-6px; height:20px;
+    border-radius: 999px; background:#f882af;
+  }
+  .pigquiz-leg.l1{ left:48px; }
+  .pigquiz-leg.l2{ left:96px; }
+  .pigquiz-leg.l3{ right:96px; }
+  .pigquiz-leg.l4{ right:48px; }
+  .pigquiz-tail{
+    position:absolute; right:26px; top:28px; width:46px; height:46px;
+    border: 6px solid #f67ca8; border-left-color: transparent; border-bottom-color: transparent;
+    border-radius: 50%;
+    transform: rotate(28deg);
+  }
+  .pigquiz-tail:after{
+    content:""; position:absolute; right:-12px; top:15px; width:14px; height:14px;
+    border-radius:50%; background:#f67ca8;
+  }
+  .pigquiz-butt.slap{
+    animation: pigButtSlap .52s cubic-bezier(.22,.84,.27,1.35);
+  }
+  @keyframes pigButtSlap{
+    0%{ transform: scale(1) rotate(0) }
+    35%{ transform: scale(.96,1.02) rotate(-3deg) translateY(5px)}
+    65%{ transform: scale(1.03,.98) rotate(3deg) translateY(-4px)}
+    100%{ transform: scale(1) rotate(0) }
+  }
+  .pigquiz-slap-mark{
+    position:absolute; inset:0;
+    display:grid; place-items:center;
+    font-size: 44px; font-weight:700; color:#fff7fb;
+    text-shadow:0 0 18px rgba(255,160,198,.6);
+    opacity:0; pointer-events:none;
+    transition: opacity .18s ease;
+  }
+  .pigquiz-slap-zone.done .pigquiz-slap-mark{ opacity:1; }
+  .pigquiz-slap-retry{
+    min-height: 28px;
+    margin-top: 8px;
+    color:#ffd7e8;
+    font-size: 17px;
+    opacity:0;
+    transition: opacity .18s ease;
+  }
+  .pigquiz-slap-zone.done + .pigquiz-slap-retry{ opacity:1; }
+  .pigquiz-slap-actions{ margin-top:14px; opacity:0; transition: opacity .18s ease; }
+  .pigquiz-slap-actions.show{ opacity:1; }
+
+  .pigquiz-final-card{
+    text-align:center;
+    padding-top: 4px;
+  }
+  .pigquiz-final-title{
+    margin: 0 0 8px;
+    font-size: clamp(28px, 4vw, 40px);
+  }
+  .pigquiz-final-sub{
+    margin: 0 auto 18px;
+    max-width: 470px;
+    color: rgba(255,244,248,.78);
+    line-height:1.6;
+  }
+  .pigquiz-photo{
+    width:min(360px, 92%);
+    margin:0 auto 18px;
+    padding: 14px 14px 0;
+    border-radius: 8px;
+    background: linear-gradient(160deg,#fffdfb,#fff1f6);
+    box-shadow: 0 22px 54px rgba(0,0,0,.34), 0 0 0 1px rgba(255,187,213,.46);
+  }
+  .pigquiz-photo-tape{
+    width:72px; height:22px; margin:-24px auto 10px;
+    border-radius:2px;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,.26) 0 4px, transparent 4px 9px), rgba(255,189,214,.68);
+    box-shadow: 0 3px 7px rgba(0,0,0,.15);
+    transform: rotate(-4deg);
+  }
+  .pigquiz-photo-inner{
+    position:relative;
+    height: 290px;
+    overflow:hidden;
+    border-radius: 4px;
+    background: radial-gradient(circle at 50% 28%, #fff6fa 0, #ffd6e6 38%, #ffbad3 100%);
+    display:grid;
+    place-items:center;
+  }
+  .pigquiz-stars{
+    position:absolute; inset:0; pointer-events:none;
+  }
+  .pigquiz-stars i{
+    position:absolute; color:#fff7fb; font-style:normal;
+    text-shadow:0 0 16px rgba(255,255,255,.9);
+    animation:pigquizStarBlink ease-in-out infinite;
+  }
+  .pigquiz-stars i:nth-child(1){ left:15%; top:16%; font-size:20px; animation-duration:1.6s;}
+  .pigquiz-stars i:nth-child(2){ right:18%; top:14%; font-size:26px; animation-duration:2s;}
+  .pigquiz-stars i:nth-child(3){ left:19%; bottom:20%; font-size:18px; animation-duration:1.7s;}
+  .pigquiz-stars i:nth-child(4){ right:16%; bottom:24%; font-size:22px; animation-duration:1.9s;}
+  @keyframes pigquizStarBlink{
+    0%,100%{ opacity:.25; transform:scale(.8) rotate(0deg);}
+    50%{ opacity:1; transform:scale(1.35) rotate(12deg);}
+  }
+  .pigquiz-pigface{
+    position:relative; width:210px; height:180px;
+  }
+  .pigquiz-ear{
+    position:absolute; top:12px; width:64px; height:72px;
+    border-radius: 70% 70% 28% 28%;
+    background: linear-gradient(160deg,#ffbdd6,#ff9fc3);
+    z-index:0;
+  }
+  .pigquiz-ear.left{ left:22px; transform: rotate(-18deg); }
+  .pigquiz-ear.right{ right:22px; transform: rotate(18deg); }
+  .pigquiz-ear:after{
+    content:""; position:absolute; inset:14px 12px 16px;
+    border-radius: inherit; background: rgba(255,226,236,.62);
+  }
+  .pigquiz-face{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    width: 200px; height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(160deg,#ffc4da,#ffa9c8 60%,#ff93ba 100%);
+    box-shadow: inset 0 -12px 18px rgba(226,92,140,.18);
+    z-index:1;
+  }
+  .pigquiz-eye{
+    position:absolute; top:42px; width:28px; height:28px; color:#ffffff;
+    text-shadow: 0 0 16px rgba(255,255,255,.95), 0 0 30px rgba(255,250,196,.7);
+    font-size: 28px; line-height:1;
+    animation: pigquizSparkEye 1.7s ease-in-out infinite;
+  }
+  .pigquiz-eye.left{ left:52px; }
+  .pigquiz-eye.right{ right:52px; animation-delay:.22s; }
+  @keyframes pigquizSparkEye{
+    0%,100%{ transform: scale(.92) rotate(0deg); opacity:.8; }
+    50%{ transform: scale(1.2) rotate(10deg); opacity:1; }
+  }
+  .pigquiz-blush{
+    position:absolute; top:78px; width:34px; height:22px;
+    border-radius:50%; background: rgba(244,106,147,.28); filter: blur(1px);
+  }
+  .pigquiz-blush.left{ left:28px; }
+  .pigquiz-blush.right{ right:28px; }
+  .pigquiz-snout{
+    position:absolute; left:50%; top:76px; transform:translateX(-50%);
+    width:82px; height:58px; border-radius:40px;
+    background: linear-gradient(180deg,#ffcade,#ffafcb);
+    box-shadow: inset 0 -6px 10px rgba(227,98,145,.14);
+  }
+  .pigquiz-snout:before, .pigquiz-snout:after{
+    content:""; position:absolute; top:20px; width:14px; height:20px;
+    border-radius: 50%; background: rgba(183,69,115,.45);
+  }
+  .pigquiz-snout:before{ left:22px; }
+  .pigquiz-snout:after{ right:22px; }
+  .pigquiz-mouth{
+    position:absolute; left:50%; bottom:24px; transform:translateX(-50%);
+    width:42px; height:18px; border-bottom:3px solid rgba(182,63,110,.52);
+    border-radius: 0 0 24px 24px;
+  }
+  .pigquiz-photo-cap{
+    text-align:center;
+    padding: 13px 8px 15px;
+    color:#94405f;
+    font-size: 15px;
+    font-family: 'Segoe Script','Bradley Hand','Snell Roundhand','Comic Sans MS','Georgia',cursive;
+  }
+
+  @media (max-width: 640px){
+    .pigquiz-screen{ padding:24px 16px 20px; border-radius:22px; }
+    .pigquiz-progress{ flex-direction:column; align-items:stretch; }
+    .pigquiz-question{ font-size: 24px; }
+    .pigquiz-option{ padding: 13px 12px 13px 44px; }
+    .pigquiz-butt{ transform: scale(.88); }
+  }
+
+  /* Милые реакции тестика */
+  .pigquiz-fx-layer{
+    position:fixed; inset:0; z-index:340;
+    pointer-events:none; overflow:hidden;
+  }
+  .pigquiz-pop{
+    position:fixed;
+    transform:translate(-50%,-50%);
+    font-size:26px;
+    line-height:1;
+    pointer-events:none;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+    animation:pigquizPop 1.25s cubic-bezier(.15,.8,.25,1) forwards;
+  }
+  @keyframes pigquizPop{
+    0%{opacity:0; transform:translate(-50%,-30%) scale(.35) rotate(0deg)}
+    20%{opacity:1; transform:translate(-50%,-65%) scale(1.2) rotate(var(--rot,0deg))}
+    72%{opacity:1; transform:translate(calc(-50% + var(--drift,0px)), -150%) scale(.95) rotate(var(--rot,0deg))}
+    100%{opacity:0; transform:translate(calc(-50% + var(--drift,0px)), -225%) scale(.65) rotate(var(--rot,0deg))}
+  }
+  .pigquiz-good-flash{
+    position:fixed; inset:0; z-index:335; pointer-events:none;
+    background:radial-gradient(circle at 50% 50%, rgba(255,218,235,.24), transparent 58%);
+    opacity:0;
+    animation:pigquizGoodFlash .58s ease-out forwards;
+  }
+  @keyframes pigquizGoodFlash{
+    0%{opacity:0}
+    30%{opacity:1}
+    100%{opacity:0}
+  }
+  .pigquiz-card.good-bounce{
+    animation:pigquizGoodBounce .5s cubic-bezier(.2,.9,.3,1.25);
+  }
+  @keyframes pigquizGoodBounce{
+    0%{transform:scale(1)}
+    45%{transform:scale(1.018)}
+    100%{transform:scale(1)}
+  }
+  .pigquiz-correct-msg{
+    min-height:22px;
+    margin-top:12px;
+    text-align:center;
+    color:#ffd8e8;
+    font-size:14px;
+    opacity:0;
+    transform:translateY(5px);
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .pigquiz-correct-msg.show{
+    opacity:1; transform:translateY(0);
+  }
+  .pigquiz-slap-zone.done::after{
+    content:"💥";
+    position:absolute;
+    left:50%; top:51%;
+    font-size:54px;
+    transform:translate(-50%,-50%) scale(.4);
+    animation:pigquizSlapBurst .55s ease-out forwards;
+    pointer-events:none;
+  }
+  @keyframes pigquizSlapBurst{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.3) rotate(-15deg)}
+    35%{opacity:1; transform:translate(-50%,-50%) scale(1.25) rotate(8deg)}
+    100%{opacity:0; transform:translate(-50%,-50%) scale(1.65) rotate(18deg)}
+  }
+  .pigquiz-pigface.final-wiggle{
+    animation:pigquizFinalWiggle 1.2s ease-in-out infinite;
+  }
+  @keyframes pigquizFinalWiggle{
+    0%,100%{transform:rotate(-1deg) translateY(0)}
+    50%{transform:rotate(1deg) translateY(-5px)}
+  }
+
+</style>
+
+<div class="pigquiz-fx-layer" id="pigQuizFxLayer" aria-hidden="true"></div>
+<div class="pigquiz-overlay" id="pigQuizOverlay" aria-hidden="true">
+  <div class="pigquiz-screen" id="pigQuizMain">
+    <button class="pigquiz-close" id="pigQuizClose" aria-label="Закрыть">×</button>
+    <h2 class="pigquiz-title">тест на знание меня 🐷</h2>
+    <p class="pigquiz-sub">Вопросы глупенькие, но очень важные. Иногда правильных ответов несколько — всё как в любви: если сомневаешься, выбирай всё самое милое.</p>
+
+    <div class="pigquiz-progress">
+      <span id="pigQuizProgressLabel">вопрос 1 из 10</span>
+      <div class="pigquiz-bar"><i id="pigQuizBar"></i></div>
+      <span id="pigQuizScore">0/10</span>
+    </div>
+
+    <div class="pigquiz-card">
+      <div class="pigquiz-qnum" id="pigQuizNum">✦ маленький вопросик</div>
+      <h3 class="pigquiz-question" id="pigQuizQuestion"></h3>
+      <div class="pigquiz-hint" id="pigQuizHint"></div>
+      <div class="pigquiz-options" id="pigQuizOptions"></div>
+      <div class="pigquiz-note" id="pigQuizNote"></div>
+      <div class="pigquiz-correct-msg" id="pigQuizCorrectMsg"></div>
+      <div class="pigquiz-actions">
+        <button class="pigquiz-mainbtn" id="pigQuizCheck">ответить</button>
+        <button class="pigquiz-ghostbtn" id="pigQuizRestart" type="button">начать заново</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pigquiz-screen pigquiz-slap hidden" id="pigQuizSlap">
+    <button class="pigquiz-close" id="pigQuizSlapClose" aria-label="Закрыть">×</button>
+    <div class="pigquiz-slap-wrap">
+      <h2 class="pigquiz-slap-title">ой-ой, свинка подставила попу</h2>
+      <p class="pigquiz-slap-sub">За неправильный ответ ей срочно нужен воспитательный шлёп. Нажми на экран со свинкой — и она отпустит тебя попробовать снова.</p>
+
+      <div class="pigquiz-slap-zone" id="pigQuizSlapZone" role="button" tabindex="0" aria-label="Шлёпнуть свинку">
+        <div class="pigquiz-butt" id="pigQuizButt">
+          <div class="pigquiz-tail"></div>
+          <div class="pigquiz-leg l1"></div>
+          <div class="pigquiz-leg l2"></div>
+          <div class="pigquiz-leg l3"></div>
+          <div class="pigquiz-leg l4"></div>
+          <div class="pigquiz-butt-body"></div>
+          <div class="pigquiz-cheek left"></div>
+          <div class="pigquiz-cheek right"></div>
+          <div class="pigquiz-crack"></div>
+          <div class="pigquiz-hole left"></div>
+          <div class="pigquiz-hole right"></div>
+        </div>
+        <div class="pigquiz-slap-mark" id="pigQuizSlapMark">шлёп!</div>
+      </div>
+
+      <div class="pigquiz-slap-retry" id="pigQuizRetryText">попробуй ещё раз ✦</div>
+      <div class="pigquiz-slap-actions" id="pigQuizRetryActions">
+        <button class="pigquiz-mainbtn" id="pigQuizBackToQuestion" type="button">вернуться к вопросу</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pigquiz-screen pigquiz-final hidden" id="pigQuizFinal">
+    <button class="pigquiz-close" id="pigQuizFinalClose" aria-label="Закрыть">×</button>
+    <div class="pigquiz-final-card">
+      <h2 class="pigquiz-final-title">ты меня знаешь слишком хорошо ✦</h2>
+      <p class="pigquiz-final-sub">Все 10 вопросов покорены. В награду — милая свинка с искрящимися глазками, которая официально подтверждает: ты лучшая в этом тестике.</p>
+
+      <div class="pigquiz-photo">
+        <div class="pigquiz-photo-tape"></div>
+        <div class="pigquiz-photo-inner">
+          <div class="pigquiz-stars">
+            <i>✦</i><i>✦</i><i>✦</i><i>✦</i>
+          </div>
+          <div class="pigquiz-pigface final-wiggle" aria-hidden="true">
+            <div class="pigquiz-ear left"></div>
+            <div class="pigquiz-ear right"></div>
+            <div class="pigquiz-face">
+              <div class="pigquiz-eye left">✦</div>
+              <div class="pigquiz-eye right">✦</div>
+              <div class="pigquiz-blush left"></div>
+              <div class="pigquiz-blush right"></div>
+              <div class="pigquiz-snout"></div>
+              <div class="pigquiz-mouth"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pigquiz-photo-cap">свинка с искрящимися глазками очень тобой довольна 🐷</div>
+      </div>
+
+      <div class="pigquiz-actions">
+        <button class="pigquiz-mainbtn" id="pigQuizKeep" type="button">умилиться ещё чуть-чуть</button>
+        <button class="pigquiz-ghostbtn" id="pigQuizReplay" type="button">пройти ещё раз</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const questions = [
+    {
+      text: 'Во сколько лет я научился дышать?',
+      options: [
+        { label: 'A', text: 'в 0 лет' },
+        { label: 'Б', text: 'с рождения' },
+        { label: 'В', text: 'я не умею дышать' }
+      ],
+      correct: [0, 1]
+    },
+    {
+      text: 'Насколько сильно я тебя люблю?',
+      options: [
+        { label: 'A', text: 'безгранично' },
+        { label: 'Б', text: 'неизмеримо' },
+        { label: 'В', text: 'неистово' }
+      ],
+      correct: [0, 1, 2]
+    },
+    {
+      text: 'Что происходит с моим настроением, когда я думаю о тебе?',
+      options: [
+        { label: 'A', text: 'оно становится нежнее' },
+        { label: 'Б', text: 'я начинаю улыбаться' },
+        { label: 'В', text: 'хочется быть рядом' }
+      ],
+      correct: [0, 1, 2]
+    },
+    {
+      text: 'Что я, скорее всего, сделаю, если ты загрустишь?',
+      options: [
+        { label: 'A', text: 'полезу обнимать' },
+        { label: 'Б', text: 'буду смешить' },
+        { label: 'В', text: 'сделаю вид, что не заметил' }
+      ],
+      correct: [0, 1]
+    },
+    {
+      text: 'Кто ты для меня?',
+      options: [
+        { label: 'A', text: 'любимая' },
+        { label: 'Б', text: 'Звёздочка' },
+        { label: 'В', text: 'самый важный человек' }
+      ],
+      correct: [0, 1, 2]
+    },
+    {
+      text: 'Что я умею делать особенно хорошо?',
+      options: [
+        { label: 'A', text: 'скучать по тебе' },
+        { label: 'Б', text: 'думать о тебе' },
+        { label: 'В', text: 'забывать про тебя' }
+      ],
+      correct: [0, 1]
+    },
+    {
+      text: 'Какой у нас курс отношений?',
+      options: [
+        { label: 'A', text: 'на нежность' },
+        { label: 'Б', text: 'на обнимашки' },
+        { label: 'В', text: 'на безразличие' }
+      ],
+      correct: [0, 1]
+    },
+    {
+      text: 'Что чаще всего крадёт моё внимание?',
+      options: [
+        { label: 'A', text: 'ты' },
+        { label: 'Б', text: 'опять ты' },
+        { label: 'В', text: 'снова ты' }
+      ],
+      correct: [0, 1, 2]
+    },
+    {
+      text: 'Что я хочу делать с тобой почаще?',
+      options: [
+        { label: 'A', text: 'гулять' },
+        { label: 'Б', text: 'целовать' },
+        { label: 'В', text: 'пропадать без ответа' }
+      ],
+      correct: [0, 1]
+    },
+    {
+      text: 'Чем для меня заканчивается каждый такой тест?',
+      options: [
+        { label: 'A', text: 'мы умиляемся' },
+        { label: 'Б', text: 'ты побеждаешь' },
+        { label: 'В', text: 'я люблю тебя ещё сильнее' }
+      ],
+      correct: [0, 1, 2]
+    }
+  ];
+
+  const openBtn = document.getElementById('pigQuizOpen');
+  const overlay = document.getElementById('pigQuizOverlay');
+  const closeBtn = document.getElementById('pigQuizClose');
+  const slapClose = document.getElementById('pigQuizSlapClose');
+  const finalClose = document.getElementById('pigQuizFinalClose');
+
+  const mainScreen = document.getElementById('pigQuizMain');
+  const slapScreen = document.getElementById('pigQuizSlap');
+  const finalScreen = document.getElementById('pigQuizFinal');
+
+  const progressLabel = document.getElementById('pigQuizProgressLabel');
+  const progressBar = document.getElementById('pigQuizBar');
+  const scoreEl = document.getElementById('pigQuizScore');
+  const qNum = document.getElementById('pigQuizNum');
+  const qText = document.getElementById('pigQuizQuestion');
+  const qHint = document.getElementById('pigQuizHint');
+  const optionsWrap = document.getElementById('pigQuizOptions');
+  const noteEl = document.getElementById('pigQuizNote');
+  const correctMsg = document.getElementById('pigQuizCorrectMsg');
+  const fxLayer = document.getElementById('pigQuizFxLayer');
+
+  const checkBtn = document.getElementById('pigQuizCheck');
+  const restartBtn = document.getElementById('pigQuizRestart');
+  const slapZone = document.getElementById('pigQuizSlapZone');
+  const butt = document.getElementById('pigQuizButt');
+  const retryText = document.getElementById('pigQuizRetryText');
+  const retryActions = document.getElementById('pigQuizRetryActions');
+  const backToQuestion = document.getElementById('pigQuizBackToQuestion');
+  const keepBtn = document.getElementById('pigQuizKeep');
+  const replayBtn = document.getElementById('pigQuizReplay');
+
+  let current = 0;
+  let slapped = false;
+
+
+  // Звук создаётся прямо браузером через Web Audio — отдельный mp3 не нужен.
+  // Контекст запускается только после пользовательского нажатия, поэтому работает
+  // и на телефонах с обычными ограничениями автопроигрывания.
+  let pigAudioCtx = null;
+
+  function getAudioCtx(){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return null;
+    if(!pigAudioCtx) pigAudioCtx = new Ctx();
+    if(pigAudioCtx.state === 'suspended') pigAudioCtx.resume().catch(()=>{});
+    return pigAudioCtx;
+  }
+
+  function playSlapSound(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+
+    const now = ctx.currentTime;
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.16), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    // Короткий шумовой "хлопок" с быстрым затуханием.
+    for(let i=0;i<data.length;i++){
+      const t = i / data.length;
+      const env = Math.pow(1 - t, 3.5);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(950, now);
+    filter.Q.setValueAtTime(0.7, now);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.42, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start(now);
+    src.stop(now + 0.17);
+
+    // Маленький низкий "пум" для мультяшности.
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(78, now + 0.11);
+    oscGain.gain.setValueAtTime(0.16, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.14);
+  }
+
+  function playCorrectChime(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    [659.25, 783.99, 987.77].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const start = now + i * 0.055;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.055, start + 0.018);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.24);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.25);
+    });
+  }
+
+  function burstCute(x, y, count=12){
+    if(!fxLayer) return;
+    const symbols = ['💗','✨','💚','🌸','✦','♡'];
+    for(let i=0;i<count;i++){
+      const el = document.createElement('span');
+      el.className = 'pigquiz-pop';
+      el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+      el.style.left = (x + (Math.random()*90 - 45)) + 'px';
+      el.style.top = (y + (Math.random()*40 - 20)) + 'px';
+      el.style.setProperty('--drift', (Math.random()*120 - 60).toFixed(0) + 'px');
+      el.style.setProperty('--rot', (Math.random()*50 - 25).toFixed(0) + 'deg');
+      el.style.animationDelay = (Math.random()*0.12).toFixed(2) + 's';
+      fxLayer.appendChild(el);
+      setTimeout(()=>el.remove(), 1450);
+    }
+  }
+
+  function correctReaction(){
+    playCorrectChime();
+
+    const card = mainScreen.querySelector('.pigquiz-card');
+    if(card){
+      card.classList.remove('good-bounce');
+      void card.offsetWidth;
+      card.classList.add('good-bounce');
+    }
+
+    const flash = document.createElement('div');
+    flash.className = 'pigquiz-good-flash';
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(), 650);
+
+    const r = checkBtn.getBoundingClientRect();
+    burstCute(r.left + r.width/2, r.top + r.height/2, 15);
+
+    if(correctMsg){
+      const msgs = [
+        'ну конечно ты знаешь 💗',
+        'правильно! ✦',
+        'умница, Звёздочка 🌸',
+        'да-да, именно так 💚'
+      ];
+      correctMsg.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+      correctMsg.classList.add('show');
+    }
+  }
+
+  function setsEqual(a, b){
+    if(a.size !== b.size) return false;
+    for(const value of a) if(!b.has(value)) return false;
+    return true;
+  }
+
+  function selectedIndexes(){
+    return [...optionsWrap.querySelectorAll('input:checked')].map(el => Number(el.value));
+  }
+
+  function renderQuestion(){
+    const q = questions[current];
+    const multiple = q.correct.length > 1;
+
+    mainScreen.style.display = '';
+    slapScreen.classList.add('hidden');
+    finalScreen.classList.add('hidden');
+
+    progressLabel.textContent = `вопрос ${current + 1} из ${questions.length}`;
+    progressBar.style.width = `${(current / questions.length) * 100}%`;
+    scoreEl.textContent = `${current}/${questions.length}`;
+    qNum.textContent = `✦ вопросик ${current + 1}`;
+    qText.textContent = q.text;
+    qHint.textContent = multiple ? 'здесь может быть несколько правильных ответов' : 'тут один правильный ответ';
+    noteEl.textContent = 'выбирай всё, что звучит максимально мило';
+    if(correctMsg){
+      correctMsg.textContent = '';
+      correctMsg.classList.remove('show');
+    }
+    optionsWrap.innerHTML = '';
+
+    q.options.forEach((opt, index) => {
+      const label = document.createElement('label');
+      label.className = 'pigquiz-option';
+      label.innerHTML = `
+        <input type="checkbox" value="${index}">
+        <span class="pigquiz-bullet"></span>
+        <div>
+          <strong>${opt.label} — ${opt.text}</strong>
+          <span>${index === q.correct[0] && q.correct.length === q.options.length ? 'да, тут всё правильно' : multiple ? 'возможен верный вариант' : 'подумай хорошенько'}</span>
+        </div>
+      `;
+      const input = label.querySelector('input');
+      if(!multiple){
+        input.addEventListener('change', () => {
+          optionsWrap.querySelectorAll('input').forEach(other => {
+            if(other !== input) other.checked = false;
+          });
+        });
+      }
+      optionsWrap.appendChild(label);
+    });
+  }
+
+  function openQuiz(){
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    renderQuestion();
+  }
+
+  function closeQuiz(){
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function showSlap(){
+    slapped = false;
+    mainScreen.style.display = 'none';
+    slapScreen.classList.remove('hidden');
+    finalScreen.classList.add('hidden');
+    slapZone.classList.remove('done');
+    butt.classList.remove('slap');
+    retryText.style.opacity = '0';
+    retryActions.classList.remove('show');
+  }
+
+  function doSlap(){
+    if(slapped) return;
+    slapped = true;
+
+    playSlapSound();
+
+    const r = slapZone.getBoundingClientRect();
+    burstCute(r.left + r.width/2, r.top + r.height*0.56, 9);
+
+    slapZone.classList.add('done');
+    butt.classList.remove('slap');
+    void butt.offsetWidth;
+    butt.classList.add('slap');
+    retryText.style.opacity = '1';
+    retryActions.classList.add('show');
+
+    if(navigator.vibrate) navigator.vibrate(35);
+  }
+
+  function showFinal(){
+    progressLabel.textContent = `вопрос ${questions.length} из ${questions.length}`;
+    progressBar.style.width = '100%';
+    scoreEl.textContent = `${questions.length}/${questions.length}`;
+    mainScreen.style.display = 'none';
+    slapScreen.classList.add('hidden');
+    finalScreen.classList.remove('hidden');
+  }
+
+  function checkAnswer(){
+    const q = questions[current];
+    const picked = new Set(selectedIndexes());
+    const correct = new Set(q.correct);
+
+    if(!picked.size){
+      noteEl.textContent = 'нужно выбрать хотя бы один ответ ✦';
+      return;
+    }
+
+    if(setsEqual(picked, correct)){
+      correctReaction();
+      checkBtn.disabled = true;
+
+      setTimeout(() => {
+        current += 1;
+        checkBtn.disabled = false;
+        if(current >= questions.length){
+          showFinal();
+          const finalPhoto = finalScreen.querySelector('.pigquiz-photo');
+          if(finalPhoto){
+            const r = finalPhoto.getBoundingClientRect();
+            burstCute(r.left + r.width/2, r.top + r.height/2, 24);
+          }
+        } else {
+          renderQuestion();
+        }
+      }, 650);
+    } else {
+      showSlap();
+    }
+  }
+
+  function restartQuiz(){
+    current = 0;
+    renderQuestion();
+  }
+
+  openBtn && openBtn.addEventListener('click', openQuiz);
+  closeBtn && closeBtn.addEventListener('click', closeQuiz);
+  slapClose && slapClose.addEventListener('click', closeQuiz);
+  finalClose && finalClose.addEventListener('click', closeQuiz);
+  overlay && overlay.addEventListener('click', (e) => {
+    if(e.target === overlay) closeQuiz();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && overlay.classList.contains('open')) closeQuiz();
+  });
+
+  checkBtn && checkBtn.addEventListener('click', checkAnswer);
+  restartBtn && restartBtn.addEventListener('click', restartQuiz);
+  backToQuestion && backToQuestion.addEventListener('click', () => {
+    slapScreen.classList.add('hidden');
+    mainScreen.style.display = '';
+    renderQuestion();
+  });
+  keepBtn && keepBtn.addEventListener('click', closeQuiz);
+  replayBtn && replayBtn.addEventListener('click', restartQuiz);
+
+  slapZone && slapZone.addEventListener('click', doSlap);
+  slapZone && slapZone.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      doSlap();
+    }
+  });
+})();
+</script>
+<!-- ===== конец блока теста ===== -->
 
 </body>
 </html>
