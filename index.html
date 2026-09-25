@@ -7513,5 +7513,1849 @@ input.addEventListener('keydown', e => {
 </script>
 <!-- ===== конец блока музыки и сказок ===== -->
 
+
+<!-- =====================================================================
+     НАША ВСЕЛЕННАЯ — кинематографичная интерактивная глава
+     ===================================================================== -->
+<style>
+  /* ---------- Скрытый вход ---------- */
+  #uUniversePortal{
+    position:fixed;
+    right:20px;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:9994;
+    width:48px;
+    height:48px;
+    border:0;
+    border-radius:50%;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    color:#baffd3;
+    background:
+      radial-gradient(circle at 35% 28%,rgba(255,255,255,.15),transparent 27%),
+      radial-gradient(circle,rgba(41,116,76,.94),rgba(9,29,21,.95) 72%);
+    box-shadow:
+      0 0 0 1px rgba(149,255,192,.18),
+      0 10px 28px rgba(0,0,0,.32),
+      0 0 30px rgba(66,255,148,.12);
+    opacity:.55;
+    transition:opacity .25s ease,transform .25s ease,box-shadow .25s ease;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;
+  }
+  #uUniversePortal:hover{
+    opacity:.92;
+    transform:translateY(-50%) scale(1.05);
+    box-shadow:
+      0 0 0 1px rgba(149,255,192,.35),
+      0 13px 34px rgba(0,0,0,.35),
+      0 0 38px rgba(66,255,148,.20);
+  }
+  #uUniversePortal::before{
+    content:"";
+    position:absolute;
+    inset:-5px;
+    border-radius:50%;
+    background:conic-gradient(#8cffbd calc(var(--uHold,0) * 1turn),rgba(255,255,255,.06) 0);
+    -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);
+    mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 0);
+    opacity:.85;
+  }
+  #uUniversePortal .u-heart{
+    font-size:22px;
+    filter:drop-shadow(0 0 9px rgba(108,255,171,.34));
+  }
+  #uUniversePortal.u-holding{
+    opacity:1;
+    transform:translateY(-50%) scale(.96);
+  }
+
+  /* ---------- Вселенная ---------- */
+  #uUniverseOverlay{
+    position:fixed;
+    inset:0;
+    z-index:10020;
+    display:none;
+    overflow:hidden;
+    color:#f8fbff;
+    background:#02040a;
+    font-family:Georgia,'Times New Roman',serif;
+    isolation:isolate;
+  }
+  #uUniverseOverlay.u-open{display:block;animation:uFadeIn .72s ease both}
+  @keyframes uFadeIn{from{opacity:0}to{opacity:1}}
+
+  #uSpaceCanvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+  }
+  .u-nebula{
+    position:absolute;
+    inset:-14%;
+    z-index:1;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at 18% 18%,rgba(33,118,91,.17),transparent 28%),
+      radial-gradient(ellipse at 76% 22%,rgba(90,55,150,.20),transparent 31%),
+      radial-gradient(ellipse at 50% 76%,rgba(158,49,93,.15),transparent 34%),
+      radial-gradient(ellipse at 46% 46%,rgba(255,255,255,.025),transparent 42%);
+    filter:blur(24px) saturate(118%);
+    transform:translate3d(var(--uPX,0px),var(--uPY,0px),0) scale(1.04);
+    transition:transform .18s linear;
+  }
+  .u-vignette{
+    position:absolute;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 46%,transparent 0 36%,rgba(0,0,0,.12) 62%,rgba(0,0,0,.64) 100%),
+      linear-gradient(180deg,rgba(1,2,6,.28),transparent 21%,transparent 76%,rgba(1,2,6,.42));
+  }
+  .u-film{
+    position:absolute;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    opacity:.17;
+    mix-blend-mode:soft-light;
+    background-image:
+      repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);
+  }
+
+  .u-close{
+    position:absolute;
+    top:max(16px,env(safe-area-inset-top));
+    left:16px;
+    z-index:80;
+    height:42px;
+    padding:0 14px;
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:999px;
+    cursor:pointer;
+    color:rgba(241,248,255,.70);
+    background:rgba(8,10,18,.34);
+    backdrop-filter:blur(12px);
+    font:13px Georgia,serif;
+    opacity:.72;
+    transition:.2s ease;
+  }
+  .u-close:hover{opacity:1;background:rgba(255,255,255,.08)}
+
+  .u-scene{
+    position:absolute;
+    inset:0;
+    z-index:10;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:
+      calc(max(66px,env(safe-area-inset-top) + 52px))
+      max(18px,env(safe-area-inset-right))
+      calc(max(34px,env(safe-area-inset-bottom) + 20px))
+      max(18px,env(safe-area-inset-left));
+    overflow:auto;
+  }
+  .u-scene.u-active{
+    display:flex;
+    animation:uSceneIn .9s cubic-bezier(.2,.72,.15,1) both;
+  }
+  @keyframes uSceneIn{
+    from{opacity:0;filter:blur(10px);transform:scale(1.025)}
+    to{opacity:1;filter:blur(0);transform:scale(1)}
+  }
+
+  .u-hint{
+    position:absolute;
+    left:50%;
+    bottom:max(20px,env(safe-area-inset-bottom) + 14px);
+    z-index:75;
+    transform:translate(-50%,10px);
+    max-width:min(86vw,480px);
+    padding:9px 14px;
+    border-radius:999px;
+    color:rgba(239,247,255,.48);
+    background:rgba(8,11,19,.24);
+    border:1px solid rgba(255,255,255,.045);
+    backdrop-filter:blur(9px);
+    font:italic 12px/1.45 Georgia,serif;
+    letter-spacing:.02em;
+    text-align:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .65s ease,transform .65s ease;
+  }
+  .u-hint.u-show{opacity:1;transform:translate(-50%,0)}
+  .u-hint-target{
+    animation:uHintPulse 1.55s ease-in-out infinite!important;
+  }
+  @keyframes uHintPulse{
+    0%,100%{filter:drop-shadow(0 0 0 rgba(168,255,204,0));}
+    50%{filter:drop-shadow(0 0 18px rgba(168,255,204,.62));}
+  }
+
+  /* ---------- Сцена 1: полёт ---------- */
+  .u-intro-wrap{
+    width:min(860px,100%);
+    text-align:center;
+    pointer-events:none;
+  }
+  .u-intro-copy{
+    opacity:0;
+    transform:translateY(12px);
+    transition:opacity 1s ease,transform 1s ease;
+  }
+  #uUniverseOverlay.u-flight .u-intro-copy{opacity:1;transform:translateY(0)}
+  .u-intro-eyebrow{
+    display:inline-block;
+    margin-bottom:12px;
+    color:rgba(194,255,218,.64);
+    font-size:11px;
+    letter-spacing:.20em;
+    text-transform:uppercase;
+  }
+  .u-intro-title{
+    margin:0;
+    font-weight:400;
+    font-size:clamp(38px,8vw,78px);
+    line-height:.98;
+    letter-spacing:-.025em;
+    text-shadow:0 0 40px rgba(117,255,179,.12);
+  }
+  .u-intro-line{
+    margin:18px auto 0;
+    max-width:610px;
+    color:rgba(231,238,248,.62);
+    font-size:clamp(14px,2.3vw,18px);
+    line-height:1.65;
+  }
+  .u-launch{
+    pointer-events:auto;
+    position:relative;
+    width:116px;
+    height:116px;
+    margin:38px auto 0;
+    border:0;
+    border-radius:50%;
+    cursor:pointer;
+    opacity:0;
+    transform:scale(.7);
+    background:transparent;
+    transition:opacity .85s ease,transform .85s cubic-bezier(.2,.9,.25,1.2);
+  }
+  #uUniverseOverlay.u-flight-ready .u-launch{
+    opacity:1;
+    transform:scale(1);
+  }
+  .u-launch::before,.u-launch::after{
+    content:"";
+    position:absolute;
+    inset:50%;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+  }
+  .u-launch::before{
+    width:34px;height:34px;
+    background:radial-gradient(circle,#fff 0,#d7ffe6 16%,#74ffb2 36%,rgba(80,255,160,.20) 62%,transparent 74%);
+    box-shadow:0 0 28px #89ffbb,0 0 72px rgba(97,255,169,.52);
+  }
+  .u-launch::after{
+    width:84px;height:84px;
+    border:1px solid rgba(137,255,187,.18);
+    box-shadow:0 0 38px rgba(106,255,176,.12) inset;
+    animation:uLaunchOrbit 4s linear infinite;
+  }
+  @keyframes uLaunchOrbit{
+    50%{transform:translate(-50%,-50%) scale(1.18) rotate(180deg);opacity:.48}
+    100%{transform:translate(-50%,-50%) scale(1) rotate(360deg)}
+  }
+
+  /* ---------- Сцена 2: созвездие воспоминаний ---------- */
+  .u-memory-shell{
+    width:min(1000px,100%);
+    min-height:min(76vh,700px);
+    display:grid;
+    grid-template-rows:auto 1fr;
+    gap:14px;
+  }
+  .u-scene-head{text-align:center}
+  .u-scene-kicker{
+    color:rgba(194,255,218,.54);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+  .u-scene-title{
+    margin:7px 0 4px;
+    font-weight:400;
+    font-size:clamp(28px,5.6vw,48px);
+  }
+  .u-scene-sub{
+    margin:0 auto;
+    max-width:590px;
+    color:rgba(231,238,248,.51);
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  .u-constellation{
+    position:relative;
+    min-height:490px;
+    margin-top:8px;
+    border-radius:34px;
+    overflow:hidden;
+  }
+  .u-constellation::before{
+    content:"";
+    position:absolute;
+    inset:10% 14%;
+    background:radial-gradient(circle,rgba(75,255,158,.055),transparent 64%);
+    filter:blur(8px);
+  }
+  .u-constellation-lines{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    overflow:visible;
+    opacity:.24;
+    filter:drop-shadow(0 0 8px rgba(125,255,188,.18));
+  }
+  .u-constellation-lines polyline{
+    fill:none;
+    stroke:rgba(180,233,255,.54);
+    stroke-width:.55;
+    stroke-dasharray:2.5 2.5;
+  }
+  .u-mem-star{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    width:44px;
+    height:44px;
+    border:0;
+    border-radius:50%;
+    background:transparent;
+    color:rgba(227,242,255,.26);
+    cursor:default;
+    pointer-events:none;
+    display:grid;
+    place-items:center;
+    font-size:19px;
+    transition:color .45s ease,transform .45s ease,filter .45s ease,opacity .45s ease;
+    opacity:.42;
+  }
+  .u-mem-star::before{
+    content:"✦";
+  }
+  .u-mem-star.u-done{
+    color:rgba(170,255,204,.62);
+    opacity:.72;
+  }
+  .u-mem-star.u-current{
+    pointer-events:auto;
+    cursor:pointer;
+    color:#eafff2;
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1.3);
+    text-shadow:0 0 10px #95ffc1,0 0 28px #75ffae,0 0 62px rgba(99,255,173,.75);
+    animation:uCurrentStar 2s ease-in-out infinite;
+  }
+  @keyframes uCurrentStar{
+    50%{transform:translate(-50%,-50%) scale(1.52) rotate(8deg)}
+  }
+  .u-memory-progress{
+    position:absolute;
+    right:17px;
+    top:14px;
+    color:rgba(230,239,248,.44);
+    font-size:11px;
+  }
+
+  .u-memory-view{
+    position:absolute;
+    inset:0;
+    z-index:60;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:max(70px,env(safe-area-inset-top) + 52px) 18px max(28px,env(safe-area-inset-bottom) + 14px);
+    background:rgba(2,4,10,.74);
+    backdrop-filter:blur(14px);
+  }
+  .u-memory-view.u-show{display:flex;animation:uFadeIn .42s ease}
+  .u-memory-card{
+    position:relative;
+    width:min(920px,100%);
+    min-height:min(70vh,680px);
+    overflow:hidden;
+    display:grid;
+    grid-template-columns:minmax(0,1.12fr) minmax(250px,.88fr);
+    border-radius:30px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(8,10,18,.92);
+    box-shadow:0 32px 100px rgba(0,0,0,.58);
+  }
+  .u-memory-media{
+    position:relative;
+    min-height:420px;
+    overflow:hidden;
+    background:#05070c;
+  }
+  .u-memory-blur{
+    position:absolute;
+    inset:-8%;
+    background-position:center;
+    background-size:cover;
+    filter:blur(30px) brightness(.44) saturate(.9);
+    transform:scale(1.12);
+    opacity:.9;
+  }
+  .u-memory-media::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg,transparent 70%,rgba(8,10,18,.45));
+    pointer-events:none;
+  }
+  .u-memory-img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    z-index:2;
+    filter:drop-shadow(0 12px 28px rgba(0,0,0,.32));
+    animation:uPhotoBreathe 7s ease-in-out infinite alternate;
+  }
+  @keyframes uPhotoBreathe{
+    from{transform:scale(1)}
+    to{transform:scale(1.018)}
+  }
+  .u-memory-copy{
+    position:relative;
+    z-index:3;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:30px 28px;
+  }
+  .u-memory-index{
+    color:rgba(170,255,204,.60);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .u-memory-copy h3{
+    margin:8px 0 12px;
+    font-weight:400;
+    font-size:clamp(26px,4vw,40px);
+  }
+  .u-memory-copy p{
+    margin:0;
+    color:rgba(240,244,250,.72);
+    line-height:1.72;
+    font-size:15px;
+  }
+  .u-memory-next{
+    align-self:flex-start;
+    margin-top:24px;
+    border:0;
+    border-radius:999px;
+    padding:12px 18px;
+    cursor:pointer;
+    color:#062013;
+    background:linear-gradient(135deg,#d7ffe6,#82ffb6);
+    font:700 13px Georgia,serif;
+    box-shadow:0 10px 28px rgba(93,255,162,.16);
+  }
+
+  /* ---------- Сцена 3: временная линия ---------- */
+  .u-timeline-shell{
+    width:min(860px,100%);
+  }
+  .u-timeline{
+    position:relative;
+    width:min(700px,94%);
+    margin:30px auto 0;
+    padding:14px 0 16px;
+  }
+  .u-timeline::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:8px;
+    bottom:8px;
+    width:1px;
+    background:linear-gradient(180deg,transparent,rgba(173,230,255,.24) 10%,rgba(173,230,255,.24) 90%,transparent);
+  }
+  .u-time-node{
+    position:relative;
+    width:calc(50% - 34px);
+    margin:18px 0;
+    padding:14px 16px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:20px;
+    cursor:pointer;
+    color:#f3f7fb;
+    background:rgba(255,255,255,.035);
+    backdrop-filter:blur(8px);
+    text-align:left;
+    transition:.24s ease;
+  }
+  .u-time-node:nth-child(even){margin-left:calc(50% + 34px)}
+  .u-time-node:hover{transform:translateY(-2px);background:rgba(255,255,255,.06)}
+  .u-time-node::after{
+    content:"✦";
+    position:absolute;
+    top:50%;
+    width:44px;
+    height:44px;
+    display:grid;
+    place-items:center;
+    transform:translateY(-50%);
+    color:rgba(216,241,255,.60);
+    text-shadow:0 0 14px rgba(129,214,255,.5);
+  }
+  .u-time-node:nth-child(odd)::after{right:-57px}
+  .u-time-node:nth-child(even)::after{left:-57px}
+  .u-time-node.u-seen{
+    border-color:rgba(118,255,180,.18);
+    background:rgba(84,255,155,.035);
+  }
+  .u-time-date{
+    display:block;
+    margin-bottom:5px;
+    color:#b8ffd3;
+    font-size:11px;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+  .u-time-copy{
+    display:block;
+    color:rgba(239,244,250,.68);
+    font-size:13px;
+    line-height:1.5;
+  }
+  .u-timeline-next{
+    display:none;
+    margin:22px auto 0;
+    border:0;
+    border-radius:999px;
+    padding:12px 20px;
+    cursor:pointer;
+    color:#052014;
+    background:linear-gradient(135deg,#d8ffe7,#7cffb3);
+    font:700 13px Georgia,serif;
+  }
+  .u-timeline-next.u-show{display:block;animation:uSceneIn .5s ease}
+
+  /* ---------- Сцена 4: голос ---------- */
+  .u-voice-shell{
+    width:min(760px,100%);
+    text-align:center;
+  }
+  .u-voice-orb{
+    position:relative;
+    width:190px;
+    height:190px;
+    margin:26px auto 18px;
+    border:0;
+    border-radius:50%;
+    cursor:pointer;
+    background:
+      radial-gradient(circle at 50% 48%,rgba(255,255,255,.96) 0 3%,rgba(164,255,201,.85) 4% 8%,rgba(88,255,161,.23) 18%,rgba(56,87,120,.10) 42%,transparent 66%);
+    box-shadow:0 0 54px rgba(83,255,160,.20),0 0 110px rgba(95,184,255,.09);
+    transition:transform .25s ease;
+  }
+  .u-voice-orb:hover{transform:scale(1.025)}
+  .u-voice-ring{
+    position:absolute;
+    inset:19px;
+    border:1px solid rgba(184,255,215,.18);
+    border-radius:50%;
+    animation:uVoiceRing 3.1s linear infinite;
+  }
+  .u-voice-ring:nth-child(2){inset:2px;animation-duration:4.5s;animation-direction:reverse}
+  @keyframes uVoiceRing{
+    50%{transform:scale(1.08) rotate(180deg);opacity:.45}
+    100%{transform:scale(1) rotate(360deg)}
+  }
+  .u-voice-play{
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    color:#eafff2;
+    font-size:27px;
+    text-shadow:0 0 18px rgba(116,255,176,.65);
+  }
+  .u-wave{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:4px;
+    min-height:52px;
+    margin:2px auto 10px;
+  }
+  .u-wave i{
+    width:3px;
+    height:10px;
+    border-radius:999px;
+    background:linear-gradient(180deg,#dfffea,#7affb4);
+    opacity:.25;
+  }
+  .u-voice-shell.u-playing .u-wave i{
+    animation:uWave var(--dur,.7s) ease-in-out infinite alternate;
+    animation-delay:var(--delay,0s);
+    opacity:.72;
+  }
+  @keyframes uWave{to{height:42px;opacity:1}}
+  .u-voice-caption{
+    margin:12px auto 0;
+    max-width:590px;
+    color:rgba(236,242,249,.58);
+    line-height:1.65;
+    font-size:14px;
+  }
+  .u-voice-next{
+    margin-top:19px;
+    opacity:0;
+    pointer-events:none;
+    border:0;
+    border-radius:999px;
+    padding:12px 19px;
+    cursor:pointer;
+    color:#052014;
+    background:linear-gradient(135deg,#d8ffe7,#7cffb3);
+    font:700 13px Georgia,serif;
+    transition:opacity .45s ease;
+  }
+  .u-voice-next.u-show{opacity:1;pointer-events:auto}
+
+  /* ---------- Сцена 5: варианты будущего ---------- */
+  .u-future-shell{
+    width:min(1040px,100%);
+  }
+  .u-future-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+    margin-top:26px;
+  }
+  .u-future-door{
+    position:relative;
+    overflow:hidden;
+    min-height:310px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:26px;
+    cursor:pointer;
+    color:#fff;
+    background:
+      radial-gradient(circle at 50% 15%,var(--uDoorGlow,rgba(255,255,255,.08)),transparent 39%),
+      linear-gradient(160deg,rgba(255,255,255,.05),rgba(5,7,13,.42));
+    box-shadow:0 20px 55px rgba(0,0,0,.22);
+    transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
+  }
+  .u-future-door:hover{
+    transform:translateY(-5px);
+    border-color:rgba(199,238,255,.19);
+    box-shadow:0 28px 72px rgba(0,0,0,.35)
+  }
+  .u-future-visual{
+    height:180px;
+    position:relative;
+    overflow:hidden;
+    background:rgba(255,255,255,.02);
+  }
+  .u-door-evening .u-future-visual{
+    background:
+      radial-gradient(circle at 72% 26%,rgba(255,238,187,.55) 0 5%,transparent 6%),
+      linear-gradient(180deg,#151b35,#30203a 65%,#1a111e);
+  }
+  .u-window{
+    position:absolute;
+    left:18%;
+    top:22px;
+    width:64%;
+    height:112px;
+    border:6px solid rgba(238,225,219,.19);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .u-window::before,.u-window::after{
+    content:"";
+    position:absolute;
+    background:rgba(238,225,219,.17);
+  }
+  .u-window::before{width:4px;top:0;bottom:0;left:50%}
+  .u-window::after{height:4px;left:0;right:0;top:50%}
+  .u-mug{
+    position:absolute;
+    bottom:15px;
+    width:38px;height:29px;
+    border-radius:7px 7px 12px 12px;
+    background:linear-gradient(180deg,#d6a0ad,#875c72);
+  }
+  .u-mug::after{
+    content:"";position:absolute;right:-13px;top:5px;width:15px;height:14px;border:4px solid #9c6f82;border-left:0;border-radius:0 10px 10px 0
+  }
+  .u-mug.m1{left:36%}.u-mug.m2{right:36%}
+  .u-door-adventure .u-future-visual{
+    background:linear-gradient(180deg,#1c2943 0 52%,#191b1d 53% 100%);
+  }
+  .u-road{
+    position:absolute;left:50%;bottom:-25px;width:52%;height:150px;
+    transform:translateX(-50%) perspective(180px) rotateX(57deg);
+    background:linear-gradient(90deg,#272a2f 0 47%,#d8cf9f 48% 52%,#272a2f 53%);
+    clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);
+  }
+  .u-road-glow{
+    position:absolute;inset:0;
+    background:radial-gradient(circle at 50% 70%,rgba(255,210,127,.10),transparent 35%);
+  }
+  .u-door-cozy .u-future-visual{
+    background:radial-gradient(circle at 50% 45%,rgba(111,255,179,.10),transparent 34%),linear-gradient(160deg,#12231d,#1d1524);
+  }
+  .u-cozy-orb{
+    position:absolute;
+    top:48px;
+    width:76px;height:76px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.8),rgba(255,184,213,.72) 12%,rgba(255,128,175,.18) 44%,transparent 72%);
+  }
+  .u-cozy-orb.a{left:34%}
+  .u-cozy-orb.b{right:34%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.8),rgba(177,255,211,.72) 12%,rgba(88,255,165,.18) 44%,transparent 72%)}
+  .u-future-door:hover .u-cozy-orb.a{animation:uLeanA 1.2s ease-in-out infinite alternate}
+  .u-future-door:hover .u-cozy-orb.b{animation:uLeanB 1.2s ease-in-out infinite alternate}
+  @keyframes uLeanA{to{transform:translateX(12px) rotate(5deg)}}
+  @keyframes uLeanB{to{transform:translateX(-12px) rotate(-5deg)}}
+
+  .u-future-copy{padding:17px 17px 19px;text-align:left}
+  .u-future-copy strong{display:block;font-weight:400;font-size:20px;margin-bottom:6px}
+  .u-future-copy span{display:block;color:rgba(238,243,249,.55);font-size:12px;line-height:1.5}
+
+  .u-future-view{
+    position:absolute;inset:0;z-index:64;display:none;align-items:center;justify-content:center;
+    padding:max(70px,env(safe-area-inset-top) + 50px) 18px max(28px,env(safe-area-inset-bottom) + 14px);
+    background:rgba(2,4,10,.78);backdrop-filter:blur(14px)
+  }
+  .u-future-view.u-show{display:flex;animation:uFadeIn .38s ease}
+  .u-future-card{
+    width:min(600px,100%);
+    text-align:center;
+    padding:30px 27px;
+    border-radius:28px;
+    background:linear-gradient(155deg,rgba(28,34,49,.96),rgba(12,16,23,.97));
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 28px 80px rgba(0,0,0,.50)
+  }
+  .u-future-card .u-big{font-size:54px;margin-bottom:10px}
+  .u-future-card h3{font-size:32px;font-weight:400;margin:0 0 10px}
+  .u-future-card p{margin:0;color:rgba(239,244,250,.68);font-size:15px;line-height:1.7}
+  .u-future-close{
+    margin-top:20px;border:0;border-radius:999px;padding:12px 19px;cursor:pointer;
+    color:#052014;background:linear-gradient(135deg,#d8ffe7,#7cffb3);font:700 13px Georgia,serif
+  }
+  .u-future-next{
+    display:none;margin:20px auto 0;border:0;border-radius:999px;padding:12px 21px;cursor:pointer;
+    color:#052014;background:linear-gradient(135deg,#d8ffe7,#7cffb3);font:700 13px Georgia,serif
+  }
+  .u-future-next.u-show{display:block}
+
+  /* ---------- Финал ---------- */
+  .u-final-shell{
+    width:min(860px,100%);
+    text-align:center;
+  }
+  .u-final-copy{
+    max-width:730px;
+    margin:0 auto;
+  }
+  .u-final-copy h2{
+    margin:0 0 16px;
+    font-weight:400;
+    font-size:clamp(34px,7vw,62px);
+    line-height:1.05;
+  }
+  .u-final-copy p{
+    opacity:0;
+    transform:translateY(12px);
+    margin:0 auto 13px;
+    color:rgba(240,245,250,.72);
+    font-size:clamp(14px,2.3vw,17px);
+    line-height:1.72;
+    transition:opacity .85s ease,transform .85s ease;
+  }
+  .u-final-copy p.u-reveal{opacity:1;transform:translateY(0)}
+  .u-final-quote{
+    margin-top:22px!important;
+    color:#d9ffe8!important;
+    font-size:clamp(16px,2.6vw,20px)!important;
+  }
+
+  .u-answer-card{
+    opacity:0;
+    transform:translateY(18px);
+    pointer-events:none;
+    width:min(700px,100%);
+    margin:26px auto 0;
+    padding:20px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:25px;
+    background:rgba(255,255,255,.035);
+    backdrop-filter:blur(10px);
+    transition:opacity .85s ease,transform .85s ease;
+  }
+  .u-answer-card.u-show{opacity:1;transform:translateY(0);pointer-events:auto}
+  .u-answer-question{
+    margin:0 0 12px;
+    color:#f3f7fb;
+    font-size:16px;
+    line-height:1.6;
+  }
+  .u-answer-note{
+    margin:0 0 12px;
+    color:rgba(235,241,247,.44);
+    font-size:11px;
+    line-height:1.5;
+  }
+  #uAnswerText{
+    width:100%;
+    min-height:120px;
+    resize:vertical;
+    box-sizing:border-box;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:18px;
+    outline:none;
+    padding:14px 15px;
+    color:#f6f9fb;
+    background:rgba(2,5,10,.34);
+    font:15px/1.6 Georgia,serif;
+  }
+  #uAnswerText:focus{
+    border-color:rgba(127,255,180,.30);
+    box-shadow:0 0 0 4px rgba(97,255,166,.055)
+  }
+  #uAnswerText::placeholder{color:rgba(237,242,247,.26)}
+  .u-answer-actions{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:9px;
+    margin-top:12px;
+  }
+  .u-save{
+    border:0;border-radius:999px;padding:12px 20px;cursor:pointer;
+    color:#052014;background:linear-gradient(135deg,#d8ffe7,#7cffb3);font:700 13px Georgia,serif
+  }
+  .u-save:disabled{opacity:.45;cursor:default}
+  .u-answer-state{
+    min-height:20px;margin-top:10px;color:rgba(217,255,232,.64);font-size:12px
+  }
+
+  .u-inline-auth{
+    display:none;
+    margin-top:14px;
+    padding:14px;
+    border-radius:18px;
+    background:rgba(0,0,0,.13);
+    border:1px solid rgba(255,255,255,.06)
+  }
+  .u-inline-auth.u-show{display:block}
+  .u-inline-auth p{
+    margin:0 0 10px;
+    color:rgba(238,244,249,.55);
+    font-size:11px;
+    line-height:1.5
+  }
+  .u-auth-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:8px
+  }
+  .u-auth-grid input{
+    min-width:0;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    padding:10px 11px;
+    outline:none;
+    color:#fff;
+    background:rgba(0,0,0,.18);
+    font:13px Georgia,serif
+  }
+  .u-auth-grid button{
+    border:0;border-radius:12px;padding:0 14px;cursor:pointer;
+    color:#052014;background:#a8ffc9;font:700 12px Georgia,serif
+  }
+
+  @media(max-width:760px){
+    #uUniversePortal{right:10px;width:44px;height:44px}
+    .u-memory-card{grid-template-columns:1fr;max-height:85vh;overflow:auto}
+    .u-memory-media{min-height:45vh}
+    .u-memory-media::after{background:linear-gradient(180deg,transparent 72%,rgba(8,10,18,.55))}
+    .u-memory-copy{padding:21px 19px 24px}
+    .u-future-grid{grid-template-columns:1fr}
+    .u-future-door{min-height:250px}
+    .u-future-visual{height:135px}
+    .u-timeline::before{left:18px}
+    .u-time-node,.u-time-node:nth-child(even){width:calc(100% - 48px);margin:13px 0 13px 48px}
+    .u-time-node:nth-child(odd)::after,.u-time-node:nth-child(even)::after{left:-51px;right:auto}
+    .u-auth-grid{grid-template-columns:1fr}
+    .u-auth-grid button{min-height:42px}
+  }
+  @media(max-width:480px){
+    .u-constellation{min-height:430px}
+    .u-memory-progress{top:7px;right:7px}
+    .u-memory-img{object-fit:contain}
+    .u-voice-orb{width:160px;height:160px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #uUniverseOverlay *{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+    .u-final-copy p{opacity:1!important;transform:none!important}
+  }
+</style>
+
+<!-- Удерживать зелёное сердце -->
+<button id="uUniversePortal" type="button" aria-label="Скрытый вход">
+  <span class="u-heart">💚</span>
+</button>
+
+<div id="uUniverseOverlay" aria-hidden="true">
+  <canvas id="uSpaceCanvas"></canvas>
+  <div class="u-nebula" aria-hidden="true"></div>
+  <div class="u-vignette" aria-hidden="true"></div>
+  <div class="u-film" aria-hidden="true"></div>
+  <button class="u-close" id="uUniverseClose" type="button">‹ вернуться</button>
+  <div class="u-hint" id="uHint"></div>
+
+  <!-- Полёт -->
+  <section class="u-scene" id="uSceneIntro">
+    <div class="u-intro-wrap">
+      <div class="u-intro-copy">
+        <span class="u-intro-eyebrow">секретная глава</span>
+        <h2 class="u-intro-title">Наша вселенная</h2>
+        <p class="u-intro-line">Ты нашла место, которое я оставил только для тебя. Здесь не нужно никуда торопиться — просто лети дальше.</p>
+      </div>
+      <button class="u-launch" id="uLaunchStar" type="button" aria-label="Коснуться звезды"></button>
+    </div>
+  </section>
+
+  <!-- Созвездие -->
+  <section class="u-scene" id="uSceneMemories">
+    <div class="u-memory-shell">
+      <header class="u-scene-head">
+        <span class="u-scene-kicker">глава I</span>
+        <h2 class="u-scene-title">Созвездие наших моментов</h2>
+        <p class="u-scene-sub">Каждая звезда хранит что-то маленькое, но важное. Загораются они по одной.</p>
+      </header>
+      <div class="u-constellation" id="uConstellation">
+        <svg class="u-constellation-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="12,68 20,36 30,51 38,21 47,39 56,18 65,34 77,22 86,44 74,63 59,71 43,62 31,79"/>
+        </svg>
+        <div class="u-memory-progress" id="uMemoryProgress">1 / 13</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Временная линия -->
+  <section class="u-scene" id="uSceneTimeline">
+    <div class="u-timeline-shell">
+      <header class="u-scene-head">
+        <span class="u-scene-kicker">глава II</span>
+        <h2 class="u-scene-title">Точки, после которых всё менялось</h2>
+        <p class="u-scene-sub">Не просто даты. Моменты, которые почему-то стали частью нашей общей истории.</p>
+      </header>
+      <div class="u-timeline" id="uTimeline"></div>
+      <button class="u-timeline-next" id="uTimelineNext" type="button">лететь дальше ✦</button>
+    </div>
+  </section>
+
+  <!-- Голос -->
+  <section class="u-scene" id="uSceneVoice">
+    <div class="u-voice-shell" id="uVoiceShell">
+      <header class="u-scene-head">
+        <span class="u-scene-kicker">глава III</span>
+        <h2 class="u-scene-title">Здесь лучше просто послушать</h2>
+        <p class="u-scene-sub">Без длинных подписей. Просто мой голос и то, что я правда хотел тебе сказать.</p>
+      </header>
+
+      <button class="u-voice-orb" id="uVoiceOrb" type="button" aria-label="Включить голосовую запись">
+        <span class="u-voice-ring"></span>
+        <span class="u-voice-ring"></span>
+        <span class="u-voice-play" id="uVoicePlayIcon">▶</span>
+      </button>
+
+      <div class="u-wave" id="uWave" aria-hidden="true"></div>
+      <p class="u-voice-caption">«Я действительно хочу полностью свою жизнь только с тобой… всё наше будущее, счастливые и тяжёлые моменты — проходить вместе.»</p>
+      <button class="u-voice-next" id="uVoiceNext" type="button">дальше — в будущее ✦</button>
+      <audio id="uVoiceAudio" preload="metadata" src="universe_voice.mp3"></audio>
+    </div>
+  </section>
+
+  <!-- Будущее -->
+  <section class="u-scene" id="uSceneFuture">
+    <div class="u-future-shell">
+      <header class="u-scene-head">
+        <span class="u-scene-kicker">глава IV</span>
+        <h2 class="u-scene-title">Какое наше будущее открыть?</h2>
+        <p class="u-scene-sub">Не обещание идеальной жизни. Просто три маленьких картины того, где мне особенно хорошо — потому что там есть ты.</p>
+      </header>
+
+      <div class="u-future-grid">
+        <button class="u-future-door u-door-evening" type="button" data-u-future="evening" style="--uDoorGlow:rgba(255,194,154,.15)">
+          <div class="u-future-visual">
+            <div class="u-window"></div>
+            <div class="u-mug m1"></div>
+            <div class="u-mug m2"></div>
+          </div>
+          <div class="u-future-copy">
+            <strong>Наш тихий (громкий) вечер</strong>
+            <span>готовим, смеёмся, включаем что-нибудь смотреть и остаёмся рядом до глубокой ночи</span>
+          </div>
+        </button>
+
+        <button class="u-future-door u-door-adventure" type="button" data-u-future="adventure" style="--uDoorGlow:rgba(112,176,255,.14)">
+          <div class="u-future-visual">
+            <div class="u-road"></div>
+            <div class="u-road-glow"></div>
+          </div>
+          <div class="u-future-copy">
+            <strong>Наше приключение</strong>
+            <span>за город, в наше место, разговаривать обо всём, баловаться и снова находить маленькие истории</span>
+          </div>
+        </button>
+
+        <button class="u-future-door u-door-cozy" type="button" data-u-future="cozy" style="--uDoorGlow:rgba(112,255,177,.13)">
+          <div class="u-future-visual">
+            <div class="u-cozy-orb a"></div>
+            <div class="u-cozy-orb b"></div>
+          </div>
+          <div class="u-future-copy">
+            <strong>Наш уют</strong>
+            <span>дом, работа, машина или лавочка — место неважно, если мы рядом и можем просто облокотиться друг на друга</span>
+          </div>
+        </button>
+      </div>
+      <button class="u-future-next" id="uFutureNext" type="button">к последней звезде ✦</button>
+    </div>
+  </section>
+
+  <!-- Финал -->
+  <section class="u-scene" id="uSceneFinal">
+    <div class="u-final-shell">
+      <div class="u-final-copy" id="uFinalCopy">
+        <span class="u-scene-kicker">последняя глава</span>
+        <h2>Если всё вокруг однажды станет тихим…</h2>
+        <p>я всё равно хочу, чтобы рядом оставалась именно ты.</p>
+        <p>Я хочу выбирать тебя снова и снова — в счастливые дни, в сложные дни, в самые обычные вечера и в моменты, которые мы запомним навсегда.</p>
+        <p>Ты для меня не просто часть моей жизни. Ты человек, с которым я хочу эту жизнь прожить. Моя единственная любимая Звёздочка — на всю оставшуюся жизнь.</p>
+        <p>Я люблю тебя сильнее, чем умею нормально объяснить словами. И чем больше времени проходит, тем меньше мне хочется искать какие-то идеальные формулировки — мне хочется просто быть рядом и показывать это поступками.</p>
+        <p class="u-final-quote">Из миллиардов людей мне невероятно повезло встретить именно тебя. Я не знаю, сколько всего ещё впереди, но знаю одно: я очень сильно тебя люблю и хочу продолжать создавать с тобой наши маленькие истории.</p>
+      </div>
+
+      <div class="u-answer-card" id="uAnswerCard">
+        <p class="u-answer-question">Если убрать страх ошибиться, неловкость и попытки подобрать «правильные» слова: что ты на самом деле чувствуешь, когда думаешь о нас и о нашем будущем?</p>
+        <p class="u-answer-note">Напиши только то, что действительно чувствуешь. Мне важен именно твой настоящий ответ — каким бы он ни был 💚</p>
+        <textarea id="uAnswerText" minlength="20" maxlength="420" placeholder="Здесь можно написать всё так, как чувствуется…"></textarea>
+        <div class="u-answer-actions">
+          <button class="u-save" id="uAnswerSave" type="button">сохранить для нас ✦</button>
+        </div>
+        <div class="u-answer-state" id="uAnswerState"></div>
+
+        <div class="u-inline-auth" id="uInlineAuth">
+          <p>Чтобы ответ сохранился в вашем общем блокноте и его можно было увидеть позже, войди один раз в тот же аккаунт Firebase. После этого браузер запомнит вход.</p>
+          <div class="u-auth-grid">
+            <input id="uAuthEmail" type="email" autocomplete="username" placeholder="E-mail">
+            <input id="uAuthPassword" type="password" autocomplete="current-password" placeholder="Пароль">
+            <button id="uAuthLogin" type="button">войти</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Карточка воспоминания -->
+  <div class="u-memory-view" id="uMemoryView">
+    <article class="u-memory-card">
+      <div class="u-memory-media">
+        <div class="u-memory-blur" id="uMemoryBlur"></div>
+        <img class="u-memory-img" id="uMemoryImg" src="" alt="">
+      </div>
+      <div class="u-memory-copy">
+        <span class="u-memory-index" id="uMemoryIndex"></span>
+        <h3 id="uMemoryTitle"></h3>
+        <p id="uMemoryText"></p>
+        <button class="u-memory-next" id="uMemoryNext" type="button">следующая звезда ✦</button>
+      </div>
+    </article>
+  </div>
+
+  <!-- Карточка будущего -->
+  <div class="u-future-view" id="uFutureView">
+    <div class="u-future-card">
+      <div class="u-big" id="uFutureIcon">🌙</div>
+      <h3 id="uFutureTitle"></h3>
+      <p id="uFutureText"></p>
+      <button class="u-future-close" id="uFutureClose" type="button">сохранить этот момент ✦</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { getApps, getApp, initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+  getAuth, setPersistence, browserLocalPersistence,
+  onAuthStateChanged, signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+(() => {
+  /* -------------------- Данные истории -------------------- */
+  const memories = [
+    {
+      src:'universe1.jpg',
+      title:'Тот самый диплом',
+      text:'То самое знаменательное событие, когда я получал диплом. Я был безумно рад, что ты была рядом. Для меня это неоценимо ценно.'
+    },
+    {
+      src:'universe2.jpg',
+      title:'Гениальная фотография',
+      text:'Та самая гениальная фотка, где я ещё держал «мозг». В ней вообще идеально всё — и сам момент, и то, что теперь он есть у нас в истории.'
+    },
+    {
+      src:'universe3.jpg',
+      title:'Мы когда-то были совсем мелкими',
+      text:'Маленький я и маленькая сестра — почти как твоя фотография из детства. Забавно смотреть на то, какими мы были задолго до того, как вообще могли представить встречу друг с другом.'
+    },
+    {
+      src:'universe4.jpg',
+      title:'Ты невероятно красивая',
+      text:'Ты всегда невообразимо красивая. В любой момент, в любое время и в любом состоянии ты для меня всё равно самая лучшая Звёздочка.'
+    },
+    {
+      src:'universe5.jpg',
+      title:'Твоя детская глава',
+      text:'Маленькая ты и маленький брат — как будто ещё одна параллель между нашими историями. До нашей встречи было столько отдельных моментов, которые теперь можно узнавать друг у друга.'
+    },
+    {
+      src:'universe6.jpg',
+      title:'Первая косичка от меня',
+      text:'Твоя первая косичка, которую сделал я. Маленький момент, который почему-то хочется оставить здесь — потому что именно из таких мелочей и складывается наше «мы».'
+    },
+    {
+      src:'universe7.jpg',
+      title:'Даже в самых обычных моментах',
+      text:'В тебе всегда есть какая-то невероятная грация и уверенность. Мне нравится замечать тебя и в красивых постановочных моментах, и в самых обычных — для меня ты всё равно особенная.'
+    },
+    {
+      src:'universe8.jpg',
+      title:'Беспалевно сфоткала',
+      text:'Ты меня беспалевно сфоткала. Делай так почаще, любимая моя — мне нравится потом неожиданно находить такие кусочки времени.'
+    },
+    {
+      src:'universe9.jpg',
+      title:'Видеозвонок до самого утра',
+      text:'Наш видеозвонок до утра. Я обожаю проводить с тобой время — даже когда между нами просто экран, разговор всё равно может стать целой маленькой ночью.'
+    },
+    {
+      src:'universe10.jpg',
+      title:'Наша сова',
+      text:'Наша сова. Когда-нибудь мы её приручим… ну или хотя бы аккуратно покормим и торжественно объявим знакомой.'
+    },
+    {
+      src:'universe11.jpg',
+      title:'Та самая зимняя история',
+      text:'Тот случай, когда нас занесло и пришлось откапывать машину. Я тогда больше всего думал о том, чтобы с тобой всё было в порядке, пока ты умудрялась ещё и кайфовать от песни.'
+    },
+    {
+      src:'universe12.jpg',
+      title:'Эти улыбки',
+      text:'Эти яркие улыбки я просто не мог не оставить здесь. Я счастлив, что ты у меня есть, и мне очень дорого то, как естественно ты находишь контакт с моими родными.'
+    },
+    {
+      src:'universe13.jpg',
+      title:'Место, где всё началось заново',
+      text:'То самое место, где мы снова начали общаться — и на этот раз уже по-настоящему. После этого мы стали «мы». Я безумно сильно люблю тебя: дорогую, красивую, умную, дерзкую и мою любимую Звёздочку.'
+    }
+  ];
+
+  const memoryPos = [
+    [12,68],[20,36],[30,51],[38,21],[47,39],[56,18],[65,34],
+    [77,22],[86,44],[74,63],[59,71],[43,62],[31,79]
+  ];
+
+  const timelineData = [
+    {
+      date:'Март 2026',
+      text:'Я впервые сказал тебе вслух, что люблю тебя. С этого момента эти слова перестали быть просто мыслью у меня в голове.'
+    },
+    {
+      date:'Зима 2026',
+      text:'Один из тех важных моментов, когда мы стали ещё ближе друг другу и начали намного сильнее чувствовать наше «мы».'
+    },
+    {
+      date:'Лето · июль',
+      text:'Поездка с друзьями, где мы слишком увлеклись дорогой. Главное для меня сейчас — что всё закончилось хорошо и рядом была ты.'
+    },
+    {
+      date:'20.08.2026',
+      text:'Начало наших отношений. Дата, после которой я уже совсем иначе смотрю на слово «будущее».'
+    },
+    {
+      date:'Зима',
+      text:'Та самая поездка, когда нас занесло и мы улетели в кювет. Нервная история, которая всё равно стала частью нашей общей памяти.'
+    }
+  ];
+
+  const futureData = {
+    evening:{
+      icon:'🌙',
+      title:'Наш тихий (громкий) вечер',
+      text:'Мы готовим что-нибудь вместе, берём любимый напиток, включаем сериал или какую-нибудь передачу, спорим, что смотреть, смеёмся — и в какой-то момент оказывается, что уже очень поздно, а уходить друг от друга всё равно не хочется.'
+    },
+    adventure:{
+      icon:'✦',
+      title:'Наше приключение',
+      text:'Мы едем за город в наше любимое место, разговариваем обо всём подряд, балуемся и снова попадаем в какую-нибудь историю, которую потом будем вспоминать со словами: «ну конечно именно с нами».'
+    },
+    cozy:{
+      icon:'💚',
+      title:'Наш уют',
+      text:'Мы сидим вместе — дома, на работе, в машине или на лавочке. Место вообще неважно. Мы просто рядом, облокотились друг на друга, и весь остальной мир на несколько минут становится очень далёким.'
+    }
+  };
+
+  /* -------------------- DOM -------------------- */
+  const portal = document.getElementById('uUniversePortal');
+  const overlay = document.getElementById('uUniverseOverlay');
+  const closeBtn = document.getElementById('uUniverseClose');
+  const canvas = document.getElementById('uSpaceCanvas');
+  const ctx = canvas.getContext('2d', {alpha:true});
+  const hint = document.getElementById('uHint');
+
+  const scenes = {
+    intro:document.getElementById('uSceneIntro'),
+    memories:document.getElementById('uSceneMemories'),
+    timeline:document.getElementById('uSceneTimeline'),
+    voice:document.getElementById('uSceneVoice'),
+    future:document.getElementById('uSceneFuture'),
+    final:document.getElementById('uSceneFinal')
+  };
+
+  const launchStar = document.getElementById('uLaunchStar');
+  const constellation = document.getElementById('uConstellation');
+  const memProgress = document.getElementById('uMemoryProgress');
+
+  const memView = document.getElementById('uMemoryView');
+  const memImg = document.getElementById('uMemoryImg');
+  const memBlur = document.getElementById('uMemoryBlur');
+  const memIndex = document.getElementById('uMemoryIndex');
+  const memTitle = document.getElementById('uMemoryTitle');
+  const memText = document.getElementById('uMemoryText');
+  const memNext = document.getElementById('uMemoryNext');
+
+  const timeline = document.getElementById('uTimeline');
+  const timelineNext = document.getElementById('uTimelineNext');
+
+  const voiceShell = document.getElementById('uVoiceShell');
+  const voiceOrb = document.getElementById('uVoiceOrb');
+  const voiceAudio = document.getElementById('uVoiceAudio');
+  const voiceIcon = document.getElementById('uVoicePlayIcon');
+  const voiceNext = document.getElementById('uVoiceNext');
+  const wave = document.getElementById('uWave');
+
+  const futureButtons = [...document.querySelectorAll('[data-u-future]')];
+  const futureView = document.getElementById('uFutureView');
+  const futureIcon = document.getElementById('uFutureIcon');
+  const futureTitle = document.getElementById('uFutureTitle');
+  const futureText = document.getElementById('uFutureText');
+  const futureClose = document.getElementById('uFutureClose');
+  const futureNext = document.getElementById('uFutureNext');
+
+  const finalCopy = document.getElementById('uFinalCopy');
+  const answerCard = document.getElementById('uAnswerCard');
+  const answerText = document.getElementById('uAnswerText');
+  const answerSave = document.getElementById('uAnswerSave');
+  const answerState = document.getElementById('uAnswerState');
+  const inlineAuth = document.getElementById('uInlineAuth');
+  const authEmail = document.getElementById('uAuthEmail');
+  const authPassword = document.getElementById('uAuthPassword');
+  const authLogin = document.getElementById('uAuthLogin');
+
+  /* -------------------- Firebase для финального ответа -------------------- */
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCQ4Mx2l60D0KBt8zS6TzroHaJ4SpIlZ7s",
+    authDomain: "zametki-79427.firebaseapp.com",
+    projectId: "zametki-79427",
+    storageBucket: "zametki-79427.firebasestorage.app",
+    messagingSenderId: "630129759584",
+    appId: "1:630129759584:web:b339276bd11ff0ac6a3a05",
+    measurementId: "G-8C8X4GPM59"
+  };
+  const ALLOWED_UIDS = new Set([
+    "BYmhRqqXQQPKPTOnrjzEFTfNL3D3",
+    "IG3jAerjnHZekX8gEn51AQq6Oli1"
+  ]);
+
+  const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  setPersistence(auth,browserLocalPersistence).catch(()=>{});
+
+  let authorized = !!(auth.currentUser && ALLOWED_UIDS.has(auth.currentUser.uid));
+  onAuthStateChanged(auth,user=>{
+    authorized = !!(user && ALLOWED_UIDS.has(user.uid));
+    inlineAuth.classList.toggle('u-show',!authorized);
+    if(authorized && answerState.textContent.includes('войти')){
+      answerState.textContent='';
+    }
+  });
+
+  authLogin.addEventListener('click',async()=>{
+    const email=authEmail.value.trim();
+    const password=authPassword.value;
+    if(!email||!password){
+      answerState.textContent='Заполни e-mail и пароль.';
+      return;
+    }
+    authLogin.disabled=true;
+    answerState.textContent='Входим…';
+    try{
+      const cred=await signInWithEmailAndPassword(auth,email,password);
+      if(!ALLOWED_UIDS.has(cred.user.uid)){
+        answerState.textContent='У этого аккаунта нет доступа к общему блокноту.';
+      }else{
+        answerState.textContent='Готово. Теперь ответ можно сохранить 💚';
+        authPassword.value='';
+      }
+    }catch(e){
+      console.error(e);
+      answerState.textContent='Не получилось войти. Проверь e-mail и пароль.';
+    }finally{
+      authLogin.disabled=false;
+    }
+  });
+
+  /* -------------------- Подсказки через 5 секунд -------------------- */
+  let hintTimer=null;
+  let hintedTarget=null;
+  function clearHint(){
+    clearTimeout(hintTimer);
+    hintTimer=null;
+    hint.classList.remove('u-show');
+    if(hintedTarget) hintedTarget.classList.remove('u-hint-target');
+    hintedTarget=null;
+  }
+  function armHint(text,target=null){
+    clearHint();
+    hintTimer=setTimeout(()=>{
+      hint.textContent=text;
+      hint.classList.add('u-show');
+      hintedTarget=target;
+      if(target) target.classList.add('u-hint-target');
+    },5000);
+  }
+
+  /* -------------------- Starfield / camera -------------------- */
+  let dpr=1,w=0,h=0,raf=0;
+  let stars=[];
+  let flightSpeed=3;
+  let mouseX=0,mouseY=0;
+  let targetPX=0,targetPY=0;
+  let finalMode=false;
+  let finalParticles=[];
+
+  function resize(){
+    dpr=Math.min(2,window.devicePixelRatio||1);
+    w=innerWidth;h=innerHeight;
+    canvas.width=Math.floor(w*dpr);
+    canvas.height=Math.floor(h*dpr);
+    canvas.style.width=w+'px';
+    canvas.style.height=h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function makeStar(resetZ=false){
+    return {
+      x:(Math.random()-.5)*w*1.7,
+      y:(Math.random()-.5)*h*1.7,
+      z:resetZ?1200:Math.random()*1200+1,
+      pz:1200,
+      s:Math.random()*1.35+.25,
+      a:Math.random()*.7+.22
+    };
+  }
+  function initStars(){
+    const count=Math.min(520,Math.max(240,Math.floor((w*h)/3400)));
+    stars=Array.from({length:count},()=>makeStar(false));
+  }
+
+  function initFinalParticles(){
+    finalParticles=[];
+    const cx=w/2,cy=Math.min(h*.33,270);
+    for(let i=0;i<280;i++){
+      const t=Math.random()*Math.PI*2;
+      const scale=Math.min(w,h)*.012;
+      const hx=16*Math.pow(Math.sin(t),3);
+      const hy=-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t));
+      finalParticles.push({
+        x:Math.random()*w,
+        y:Math.random()*h,
+        tx:cx+hx*scale,
+        ty:cy+hy*scale,
+        a:Math.random()*.7+.25,
+        s:Math.random()*1.7+.5,
+        ease:.018+Math.random()*.025
+      });
+    }
+  }
+
+  function renderSpace(){
+    ctx.clearRect(0,0,w,h);
+
+    const cx=w/2+mouseX*18;
+    const cy=h/2+mouseY*13;
+
+    for(const s of stars){
+      s.pz=s.z;
+      s.z-=flightSpeed;
+      if(s.z<1){
+        Object.assign(s,makeStar(true));
+        s.pz=s.z+flightSpeed;
+      }
+      const k=360/s.z;
+      const pk=360/s.pz;
+      const x=cx+s.x*k;
+      const y=cy+s.y*k;
+      const px=cx+s.x*pk;
+      const py=cy+s.y*pk;
+
+      if(x<-80||x>w+80||y<-80||y>h+80){
+        Object.assign(s,makeStar(true));
+        continue;
+      }
+      const alpha=Math.min(1,s.a*(1+(1200-s.z)/650));
+      ctx.beginPath();
+      ctx.moveTo(px,py);
+      ctx.lineTo(x,y);
+      ctx.strokeStyle=`rgba(220,240,255,${alpha})`;
+      ctx.lineWidth=Math.max(.45,s.s*(1+(1200-s.z)/1000));
+      ctx.stroke();
+    }
+
+    if(finalMode){
+      for(const p of finalParticles){
+        p.x+=(p.tx-p.x)*p.ease;
+        p.y+=(p.ty-p.y)*p.ease;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+        ctx.fillStyle=`rgba(155,255,197,${p.a})`;
+        ctx.shadowBlur=10;
+        ctx.shadowColor='rgba(111,255,176,.45)';
+        ctx.fill();
+      }
+      ctx.shadowBlur=0;
+    }
+
+    raf=requestAnimationFrame(renderSpace);
+  }
+
+  function startCanvas(){
+    resize();initStars();
+    cancelAnimationFrame(raf);
+    renderSpace();
+  }
+  function stopCanvas(){
+    cancelAnimationFrame(raf);
+    ctx.clearRect(0,0,w,h);
+  }
+
+  window.addEventListener('resize',()=>{
+    if(overlay.classList.contains('u-open')){resize();initStars();if(finalMode)initFinalParticles()}
+  });
+  overlay.addEventListener('pointermove',e=>{
+    mouseX=(e.clientX/w-.5);
+    mouseY=(e.clientY/h-.5);
+    targetPX=mouseX*-9;
+    targetPY=mouseY*-7;
+    overlay.style.setProperty('--uPX',targetPX+'px');
+    overlay.style.setProperty('--uPY',targetPY+'px');
+  });
+
+  /* -------------------- Вход по удержанию -------------------- */
+  let holdRAF=0,holdStart=0,holding=false,opened=false;
+  const HOLD_MS=2300;
+
+  function holdFrame(now){
+    if(!holding)return;
+    const p=Math.min(1,(now-holdStart)/HOLD_MS);
+    portal.style.setProperty('--uHold',p);
+    if(p>=1){
+      holding=false;
+      portal.classList.remove('u-holding');
+      portal.style.setProperty('--uHold',0);
+      openUniverse();
+      return;
+    }
+    holdRAF=requestAnimationFrame(holdFrame);
+  }
+  function startHold(e){
+    e.preventDefault();
+    if(opened)return;
+    holding=true;
+    holdStart=performance.now();
+    portal.classList.add('u-holding');
+    holdRAF=requestAnimationFrame(holdFrame);
+  }
+  function cancelHold(){
+    if(!holding)return;
+    holding=false;
+    cancelAnimationFrame(holdRAF);
+    portal.classList.remove('u-holding');
+    portal.animate(
+      [{transform:'translateY(-50%) scale(.96)'},{transform:'translateY(-50%) scale(1.04)'},{transform:'translateY(-50%) scale(1)'}],
+      {duration:260,easing:'ease-out'}
+    );
+    portal.style.setProperty('--uHold',0);
+  }
+  portal.addEventListener('pointerdown',startHold);
+  portal.addEventListener('pointerup',cancelHold);
+  portal.addEventListener('pointercancel',cancelHold);
+  portal.addEventListener('pointerleave',cancelHold);
+
+  /* -------------------- Сцены -------------------- */
+  function showScene(name){
+    Object.values(scenes).forEach(s=>s.classList.remove('u-active'));
+    scenes[name].classList.add('u-active');
+    clearHint();
+  }
+
+  function openUniverse(){
+    opened=true;
+    overlay.classList.add('u-open','u-flight');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    finalMode=false;
+    startCanvas();
+    showScene('intro');
+    flightSpeed=3;
+
+    // Плавно разгоняем «камеру».
+    let steps=0;
+    const boost=setInterval(()=>{
+      flightSpeed=Math.min(31,flightSpeed+2.2);
+      if(++steps>13)clearInterval(boost);
+    },120);
+
+    setTimeout(()=>{
+      flightSpeed=5;
+      overlay.classList.add('u-flight-ready');
+      armHint('коснись самой яркой звезды ✦',launchStar);
+    },4300);
+  }
+
+  function closeUniverse(){
+    clearHint();
+    voiceAudio.pause();
+    overlay.classList.remove('u-open','u-flight','u-flight-ready');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    finalMode=false;
+    stopCanvas();
+    opened=false;
+  }
+  closeBtn.addEventListener('click',closeUniverse);
+
+  launchStar.addEventListener('click',()=>{
+    clearHint();
+    showMemories();
+  });
+
+  /* -------------------- Воспоминания -------------------- */
+  let memCursor=0;
+  let memStars=[];
+
+  function buildConstellation(){
+    constellation.querySelectorAll('.u-mem-star').forEach(n=>n.remove());
+    memStars=[];
+    memories.forEach((m,i)=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='u-mem-star';
+      b.style.left=memoryPos[i][0]+'%';
+      b.style.top=memoryPos[i][1]+'%';
+      b.setAttribute('aria-label',`Открыть воспоминание ${i+1}`);
+      b.addEventListener('click',()=>{
+        if(i!==memCursor)return;
+        clearHint();
+        openMemory(i);
+      });
+      constellation.appendChild(b);
+      memStars.push(b);
+    });
+  }
+
+  function updateConstellation(){
+    memStars.forEach((b,i)=>{
+      b.classList.toggle('u-done',i<memCursor);
+      b.classList.toggle('u-current',i===memCursor);
+    });
+    memProgress.textContent=`${Math.min(memCursor+1,13)} / 13`;
+    if(memCursor<memStars.length){
+      armHint('кажется, одна звезда светится ярче остальных…',memStars[memCursor]);
+    }
+  }
+
+  function showMemories(){
+    showScene('memories');
+    memCursor=0;
+    if(!memStars.length)buildConstellation();
+    updateConstellation();
+  }
+
+  function openMemory(i){
+    const m=memories[i];
+    memImg.src=m.src;
+    memImg.alt=m.title;
+    memBlur.style.backgroundImage=`url("${m.src}")`;
+    memIndex.textContent=`воспоминание ${i+1} из ${memories.length}`;
+    memTitle.textContent=m.title;
+    memText.textContent=m.text;
+    memNext.textContent=i===memories.length-1?'к следующей главе ✦':'следующая звезда ✦';
+    memView.classList.add('u-show');
+    armHint('нажми «следующая звезда», когда захочешь продолжить',memNext);
+  }
+
+  memNext.addEventListener('click',()=>{
+    clearHint();
+    memView.classList.remove('u-show');
+    memCursor++;
+    if(memCursor>=memories.length){
+      setTimeout(showTimeline,420);
+    }else{
+      setTimeout(updateConstellation,260);
+    }
+  });
+
+  /* -------------------- Timeline -------------------- */
+  let seenTimes=new Set();
+
+  function showTimeline(){
+    showScene('timeline');
+    seenTimes=new Set();
+    timeline.innerHTML='';
+    timelineNext.classList.remove('u-show');
+
+    timelineData.forEach((item,i)=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='u-time-node';
+      b.innerHTML=`<span class="u-time-date">${item.date}</span><span class="u-time-copy">${item.text}</span>`;
+      b.addEventListener('click',()=>{
+        clearHint();
+        b.classList.add('u-seen');
+        seenTimes.add(i);
+        b.animate(
+          [{transform:'scale(1)'},{transform:'scale(1.025)'},{transform:'scale(1)'}],
+          {duration:360,easing:'ease-out'}
+        );
+        if(seenTimes.size===timelineData.length){
+          timelineNext.classList.add('u-show');
+          armHint('теперь можно лететь дальше ✦',timelineNext);
+        }else{
+          const next=[...timeline.querySelectorAll('.u-time-node')].find((n,idx)=>!seenTimes.has(idx));
+          armHint('здесь осталось ещё несколько точек',next||null);
+        }
+      });
+      timeline.appendChild(b);
+    });
+
+    armHint('коснись любой даты — она откроет маленький кусочек истории',timeline.querySelector('.u-time-node'));
+  }
+
+  timelineNext.addEventListener('click',()=>{
+    clearHint();showVoice();
+  });
+
+  /* -------------------- Голосовая запись -------------------- */
+  for(let i=0;i<31;i++){
+    const bar=document.createElement('i');
+    bar.style.setProperty('--dur',(0.45+Math.random()*.55)+'s');
+    bar.style.setProperty('--delay',(-Math.random()*.65)+'s');
+    wave.appendChild(bar);
+  }
+
+  function showVoice(){
+    showScene('voice');
+    voiceShell.classList.remove('u-playing');
+    voiceNext.classList.remove('u-show');
+    voiceIcon.textContent='▶';
+    armHint('нажми на сияние в центре, чтобы услышать меня',voiceOrb);
+  }
+
+  voiceOrb.addEventListener('click',async()=>{
+    clearHint();
+    if(voiceAudio.paused){
+      try{
+        await voiceAudio.play();
+        voiceShell.classList.add('u-playing');
+        voiceIcon.textContent='❚❚';
+        setTimeout(()=>voiceNext.classList.add('u-show'),3500);
+      }catch(e){
+        console.warn('Не удалось включить universe_voice.mp3:',e);
+        voiceNext.classList.add('u-show');
+        voiceIcon.textContent='!';
+      }
+    }else{
+      voiceAudio.pause();
+      voiceShell.classList.remove('u-playing');
+      voiceIcon.textContent='▶';
+    }
+  });
+  voiceAudio.addEventListener('ended',()=>{
+    voiceShell.classList.remove('u-playing');
+    voiceIcon.textContent='▶';
+    voiceNext.classList.add('u-show');
+  });
+  voiceAudio.addEventListener('error',()=>{
+    voiceShell.classList.remove('u-playing');
+    voiceIcon.textContent='!';
+    voiceNext.classList.add('u-show');
+  });
+  voiceNext.addEventListener('click',()=>{
+    voiceAudio.pause();
+    clearHint();
+    showFuture();
+  });
+
+  /* -------------------- Будущее -------------------- */
+  let futureChosen=false;
+  function showFuture(){
+    showScene('future');
+    futureChosen=false;
+    futureNext.classList.remove('u-show');
+    armHint('выбери одну из трёх дверей — любую, которая сейчас ближе',futureButtons[0]);
+  }
+  futureButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      clearHint();
+      const key=btn.dataset.uFuture;
+      const data=futureData[key];
+      futureIcon.textContent=data.icon;
+      futureTitle.textContent=data.title;
+      futureText.textContent=data.text;
+      futureView.classList.add('u-show');
+      futureChosen=true;
+    });
+  });
+  futureClose.addEventListener('click',()=>{
+    futureView.classList.remove('u-show');
+    if(futureChosen){
+      futureNext.classList.add('u-show');
+      armHint('к последней звезде — когда будешь готова',futureNext);
+    }
+  });
+  futureNext.addEventListener('click',()=>{
+    clearHint();
+    showFinal();
+  });
+
+  /* -------------------- Финал -------------------- */
+  function showFinal(){
+    showScene('final');
+    finalMode=true;
+    initFinalParticles();
+    flightSpeed=1.2;
+    answerCard.classList.remove('u-show');
+
+    const paras=[...finalCopy.querySelectorAll('p')];
+    paras.forEach(p=>p.classList.remove('u-reveal'));
+    paras.forEach((p,i)=>setTimeout(()=>p.classList.add('u-reveal'),900+i*1050));
+
+    setTimeout(()=>{
+      answerCard.classList.add('u-show');
+      inlineAuth.classList.toggle('u-show',!authorized);
+      armHint('здесь я хочу услышать именно твои настоящие слова',answerText);
+    },900+paras.length*1050+700);
+  }
+
+  const FINAL_QUESTION='Если убрать страх ошибиться и попытки подобрать «правильные» слова: что ты на самом деле чувствуешь, когда думаешь о нас и о нашем будущем?';
+
+  answerText.addEventListener('input',()=>{
+    localStorage.setItem('universe_answer_draft',answerText.value);
+  });
+  const oldDraft=localStorage.getItem('universe_answer_draft');
+  if(oldDraft)answerText.value=oldDraft;
+
+  answerSave.addEventListener('click',async()=>{
+    clearHint();
+    const value=answerText.value.trim();
+    if(value.length<20){
+      answerState.textContent='Напиши чуть подробнее — хотя бы пару искренних предложений 💚';
+      answerText.focus();
+      return;
+    }
+    if(!authorized){
+      inlineAuth.classList.add('u-show');
+      answerState.textContent='Чтобы сохранить ответ в общий блокнот, сначала нужно войти.';
+      return;
+    }
+
+    answerSave.disabled=true;
+    answerState.textContent='Сохраняю в наш общий блокнот…';
+    try{
+      const noteText=`[Наша вселенная 💚] ${FINAL_QUESTION} Ответ: ${value}`.slice(0,590);
+      await addDoc(collection(db,'notebooks','zvezdochka-shared-notebook','notes'),{
+        text:noteText,
+        done:false,
+        createdAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      });
+      localStorage.removeItem('universe_answer_draft');
+      answerState.textContent='Сохранено 💚 Теперь этот ответ появился в вашем общем блокноте.';
+      answerText.disabled=true;
+      answerSave.disabled=true;
+      const r=answerCard.getBoundingClientRect();
+      for(let i=0;i<24;i++){
+        const s=document.createElement('span');
+        s.textContent=['💚','✦','✨'][i%3];
+        s.style.position='fixed';
+        s.style.zIndex='10090';
+        s.style.pointerEvents='none';
+        s.style.left=(r.left+r.width/2+(Math.random()*150-75))+'px';
+        s.style.top=(r.top+r.height*.55)+'px';
+        s.style.fontSize=(14+Math.random()*18)+'px';
+        s.animate(
+          [
+            {opacity:0,transform:'translate(-50%,0) scale(.4)'},
+            {opacity:1,offset:.22,transform:'translate(-50%,-20px) scale(1)'},
+            {opacity:0,transform:`translate(${Math.random()*140-70}px,-${90+Math.random()*110}px) scale(.65)`}
+          ],
+          {duration:1200+Math.random()*700,easing:'cubic-bezier(.2,.8,.25,1)',fill:'forwards'}
+        ).onfinish=()=>s.remove();
+        document.body.appendChild(s);
+      }
+    }catch(e){
+      console.error(e);
+      answerState.textContent='Не получилось сохранить. Проверь подключение к интернету и попробуй ещё раз.';
+      answerSave.disabled=false;
+    }
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && overlay.classList.contains('u-open')){
+      if(memView.classList.contains('u-show')){memView.classList.remove('u-show');return}
+      if(futureView.classList.contains('u-show')){futureView.classList.remove('u-show');return}
+      closeUniverse();
+    }
+  });
+})();
+</script>
+<!-- ===== конец «Нашей вселенной» ===== -->
+
 </body>
 </html>
