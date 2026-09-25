@@ -2104,7 +2104,7 @@
   <div class="bottom-actions">
     <div class="miss-tally" id="missTally" aria-live="polite"></div>
     <div class="game-actions" aria-label="Игры">
-      <button class="play-btn" id="playBtn" aria-label="Собрать пары">пары ✦</button>
+      <button class="play-btn" id="playBtn" aria-label="Открыть игры любимой">игры любимой ✦</button>
       <button class="garden-btn" id="gardenBtn" aria-label="Собрать букет">букет 🌷</button>
       <button class="jackpot-btn" id="jackpotBtn" aria-label="Поймать джекпот">джекпот 🎰</button>
       <button class="pigquiz-btn" id="pigQuizOpen" aria-label="Тест на знание меня">тестик 🐷</button>
@@ -2913,7 +2913,7 @@
     { sym: "🍓", note: "Ты ужасно милая, ты в курсе?" },
     { sym: "💫", note: "Ты мне очень-очень нравишься." }
   ];
-  const WIN_TEXT = "Ты собрала все звёздочки ✦ Не грусти — ты особенная, Звёздочка.";
+  const WIN_TEXT = "Ты собрала все звёздочки ✦ Звёздочка, я люблю тебя настолько сильно, что никакой счётчик этого не измерит. Ты для меня бесконечно дорогой человек 💚";
   const DREAM_TEXT = "мечтаю, чтобы ты сказала, что любишь меня";
   const MAX_MISTAKES = 6; // кнопка мечты появится, если ошибок меньше этого числа (т.е. до 5 включительно)
   /* ===================== дальше менять не нужно ======================== */
@@ -3015,11 +3015,12 @@
 
   document.getElementById('gAgain').addEventListener('click',()=>{ gwin.classList.remove('show'); buildGame(); });
 
-  document.getElementById('playBtn').addEventListener('click',()=>{
-    if(!gbuilt){ buildGame(); gbuilt=true; }
-    document.getElementById('game').classList.add('show');
+  // playBtn теперь открывает общее меню «Игры любимой».
+  // «Пары» запускаются из этого меню.
+  document.getElementById('gBack').addEventListener('click',()=>{
+    document.getElementById('game').classList.remove('show');
+    if (typeof window.openLoveGamesHub === 'function') window.openLoveGamesHub();
   });
-  document.getElementById('gBack').addEventListener('click',()=>{ document.getElementById('game').classList.remove('show'); });
 
   let gmuted=false;
   document.getElementById('gMute').addEventListener('click',()=>{
@@ -5950,6 +5951,746 @@ input.addEventListener('keydown', e => {
 })();
 </script>
 <!-- ===== конец блока теста ===== -->
+
+
+<!-- ===== ИГРЫ ЛЮБИМОЙ: ХАБ + 4 НОВЫЕ ИНТЕРАКТИВНЫЕ ИГРЫ ===== -->
+<style>
+  /* Главная кнопка */
+  #playBtn{white-space:nowrap;position:relative;overflow:hidden}
+  #playBtn::after{
+    content:"";position:absolute;top:-45%;left:-55%;width:38%;height:190%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+    transform:rotate(18deg);pointer-events:none;
+    animation:lgBtnShine 3.6s ease-in-out infinite;
+  }
+  @keyframes lgBtnShine{
+    0%,35%{left:-55%;opacity:0}50%{opacity:1}75%,100%{left:125%;opacity:0}
+  }
+
+  /* Хаб */
+  .lg-overlay{
+    position:fixed;inset:0;z-index:240;display:none;overflow:auto;
+    padding:max(20px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 14% 8%,rgba(255,130,179,.18),transparent 28%),
+      radial-gradient(circle at 88% 18%,rgba(91,255,165,.10),transparent 30%),
+      radial-gradient(circle at 48% 94%,rgba(255,215,107,.10),transparent 34%),
+      linear-gradient(155deg,#0d0713,#180b1a 50%,#07140f);
+    color:#fff6fa;font-family:'Georgia','Times New Roman',serif;
+  }
+  .lg-overlay.open{display:block;animation:lgFade .4s ease}
+  .lg-overlay.playing .lg-hub{display:none}
+  .lg-overlay.playing .lg-game{display:block}
+  @keyframes lgFade{from{opacity:0}to{opacity:1}}
+
+  .lg-stars{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .lg-stars i{
+    position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;
+    box-shadow:0 0 9px rgba(255,255,255,.8);
+    animation:lgTwinkle ease-in-out infinite;
+  }
+  @keyframes lgTwinkle{
+    0%,100%{opacity:.10;transform:scale(.7)}
+    50%{opacity:.85;transform:scale(1.4)}
+  }
+
+  .lg-hub,.lg-game{
+    position:relative;z-index:2;width:min(920px,100%);margin:0 auto;
+  }
+  .lg-game{display:none}
+  .lg-top{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;
+  }
+  .lg-back,.lg-close{
+    border:1px solid rgba(255,196,219,.18);border-radius:999px;
+    padding:9px 15px;background:rgba(255,255,255,.06);color:#ffe7f0;
+    font:14px 'Georgia',serif;cursor:pointer;backdrop-filter:blur(8px);
+  }
+  .lg-back:active,.lg-close:active{transform:scale(.96)}
+  .lg-chip{
+    padding:8px 13px;border-radius:999px;font-size:12px;
+    color:rgba(226,255,239,.70);background:rgba(90,255,164,.065);
+    border:1px solid rgba(90,255,164,.13)
+  }
+
+  .lg-hero{text-align:center;max-width:680px;margin:22px auto 27px}
+  .lg-kicker{
+    display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;
+    background:rgba(255,255,255,.055);color:#ffd4e4;font-size:12px;letter-spacing:.07em;
+    text-transform:uppercase
+  }
+  .lg-hero h1{
+    margin:13px 0 7px;font-size:clamp(35px,7vw,58px);font-weight:400;font-style:italic;
+    text-shadow:0 0 34px rgba(255,127,171,.34)
+  }
+  .lg-hero p{
+    margin:0 auto;max-width:600px;line-height:1.65;color:rgba(255,236,244,.70);font-size:15px
+  }
+
+  .lg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;padding-bottom:24px}
+  .lg-card{
+    position:relative;overflow:hidden;min-height:190px;padding:22px;text-align:left;color:#fff;
+    border:1px solid rgba(255,255,255,.08);border-radius:26px;cursor:pointer;
+    background:
+      radial-gradient(circle at 86% 13%,var(--lgGlow,rgba(255,155,196,.18)),transparent 34%),
+      linear-gradient(150deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+    box-shadow:0 18px 48px rgba(0,0,0,.22);
+    transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease
+  }
+  .lg-card:hover{
+    transform:translateY(-4px);border-color:rgba(255,194,219,.25);
+    box-shadow:0 24px 58px rgba(0,0,0,.33)
+  }
+  .lg-card:active{transform:translateY(-1px) scale(.99)}
+  .lg-card-icon{
+    width:55px;height:55px;display:grid;place-items:center;border-radius:18px;
+    background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.09);
+    font-size:29px
+  }
+  .lg-card h3{margin:16px 0 6px;font-size:23px;font-weight:400}
+  .lg-card p{margin:0;color:rgba(255,239,246,.60);font-size:13px;line-height:1.55;max-width:420px}
+  .lg-random{
+    position:absolute;top:18px;right:18px;padding:6px 8px;border-radius:999px;
+    background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.07);
+    color:rgba(255,248,251,.65);font-size:10px
+  }
+  .lg-arrow{
+    position:absolute;right:20px;bottom:17px;font-size:24px;color:#ffd2e3;
+    transition:transform .2s ease
+  }
+  .lg-card:hover .lg-arrow{transform:translateX(5px)}
+
+  /* Экран отдельной игры */
+  .lg-game-head{text-align:center;margin:2px auto 18px}
+  .lg-game-icon{font-size:47px;filter:drop-shadow(0 0 18px rgba(255,190,216,.2))}
+  .lg-game-head h2{
+    margin:8px 0 5px;font-size:clamp(29px,6vw,43px);font-weight:400;font-style:italic
+  }
+  .lg-game-head p{margin:0;color:rgba(255,237,245,.64);font-size:14px}
+
+  .lg-stage{
+    width:min(690px,100%);min-height:440px;margin:0 auto;overflow:hidden;position:relative;
+    border:1px solid rgba(255,255,255,.08);border-radius:29px;
+    background:
+      radial-gradient(circle at 50% 18%,rgba(255,180,209,.09),transparent 35%),
+      linear-gradient(160deg,rgba(255,255,255,.05),rgba(0,0,0,.12));
+    box-shadow:0 24px 70px rgba(0,0,0,.28),inset 0 0 45px rgba(255,255,255,.015)
+  }
+  .lg-status{
+    min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.055);
+    background:rgba(0,0,0,.12);color:rgba(255,240,247,.72);font-size:13px
+  }
+  .lg-status strong{color:#ffd9e7;font-weight:400}
+  .lg-inner{position:relative;min-height:380px;padding:18px}
+  .lg-action{
+    border:0;border-radius:999px;padding:12px 20px;cursor:pointer;
+    color:#3b1021;font:700 14px 'Georgia',serif;
+    background:linear-gradient(135deg,#ffe0ec,#ffb6d2 55%,#9affc9);
+    box-shadow:0 10px 26px rgba(255,136,179,.24)
+  }
+  .lg-action:active{transform:scale(.97)}
+
+  /* Игра: Лови сердечки */
+  .lg-heart-arena{
+    height:340px;position:relative;overflow:hidden;border-radius:22px;
+    background:
+      radial-gradient(circle at 25% 20%,rgba(255,126,170,.14),transparent 30%),
+      radial-gradient(circle at 78% 72%,rgba(100,255,180,.08),transparent 30%)
+  }
+  .lg-catch-heart{
+    position:absolute;width:66px;height:66px;border:0;background:transparent;cursor:pointer;
+    display:grid;place-items:center;font-size:43px;user-select:none;touch-action:manipulation;
+    filter:drop-shadow(0 0 14px rgba(255,113,160,.56));
+    animation:lgHeartIn .25s cubic-bezier(.2,.9,.3,1.4),lgHeartPulse .7s ease-in-out infinite alternate
+  }
+  @keyframes lgHeartIn{from{transform:scale(.2) rotate(-28deg);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes lgHeartPulse{to{filter:drop-shadow(0 0 24px rgba(255,169,198,.9));transform:scale(1.08)}}
+  .lg-catch-pop{position:absolute;pointer-events:none;font-size:25px;animation:lgCatchPop .7s ease-out forwards}
+  @keyframes lgCatchPop{to{transform:translateY(-68px) scale(1.35);opacity:0}}
+
+  /* Игра: Звёздная память */
+  .lg-star-grid{
+    width:min(405px,94%);margin:14px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:12px
+  }
+  .lg-star-pad{
+    aspect-ratio:1;border:1px solid rgba(255,226,237,.11);border-radius:22px;cursor:pointer;
+    background:radial-gradient(circle at 50% 46%,rgba(255,255,255,.045),transparent 44%),rgba(255,255,255,.035);
+    color:rgba(255,255,255,.25);font-size:31px;
+    transition:transform .14s ease,background .18s ease,color .18s ease,box-shadow .18s ease
+  }
+  .lg-star-pad.lit{
+    transform:scale(1.04);color:#fff6bd;
+    background:radial-gradient(circle,#fff9cf 0,#ffd95e 9%,rgba(255,204,64,.24) 32%,rgba(255,255,255,.03) 64%);
+    box-shadow:0 0 34px rgba(255,218,94,.44)
+  }
+  .lg-star-pad.wrong{animation:lgWrong .33s ease}
+  @keyframes lgWrong{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+
+  /* Игра: Где сердце */
+  .lg-hide-grid{
+    width:min(560px,100%);margin:24px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:13px
+  }
+  .lg-hide-card{
+    position:relative;aspect-ratio:1/.82;border:0;background:transparent;perspective:700px;cursor:pointer
+  }
+  .lg-hide-inner{
+    position:absolute;inset:0;transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.2,.75,.25,1)
+  }
+  .lg-hide-card.revealed .lg-hide-inner{transform:rotateY(180deg)}
+  .lg-hide-face{
+    position:absolute;inset:0;border-radius:20px;display:grid;place-items:center;
+    backface-visibility:hidden;-webkit-backface-visibility:hidden
+  }
+  .lg-hide-front{
+    font-size:27px;color:#ffd3e5;
+    background:linear-gradient(145deg,#3d1630,#210d21);
+    border:1px solid rgba(255,166,200,.16);
+    box-shadow:0 12px 24px rgba(0,0,0,.2),inset 0 0 22px rgba(255,113,162,.06)
+  }
+  .lg-hide-back{
+    transform:rotateY(180deg);font-size:40px;background:linear-gradient(145deg,#fff0f6,#ffd3e4);
+    box-shadow:0 10px 28px rgba(0,0,0,.22)
+  }
+
+  /* Игра: Собери послание */
+  .lg-message{width:min(600px,100%);margin:0 auto;padding:6px 0}
+  .lg-message-target{
+    min-height:98px;padding:13px;margin-bottom:18px;display:flex;flex-wrap:wrap;
+    align-items:center;justify-content:center;gap:9px;border-radius:22px;
+    border:1px dashed rgba(255,197,220,.19);background:rgba(255,255,255,.025)
+  }
+  .lg-message-target.empty::before{
+    content:"нажимай на слова по порядку ✦";font-size:13px;color:rgba(255,235,244,.35)
+  }
+  .lg-word{
+    border:1px solid rgba(255,197,220,.16);border-radius:999px;padding:10px 14px;
+    background:rgba(255,255,255,.055);color:#ffe8f1;font:15px 'Georgia',serif;cursor:pointer;
+    transition:.18s ease
+  }
+  .lg-word:hover{transform:translateY(-2px);background:rgba(255,255,255,.09)}
+  .lg-word.used{opacity:.18;pointer-events:none;transform:scale(.94)}
+  .lg-message-target .lg-word{
+    cursor:default;background:linear-gradient(135deg,rgba(255,192,216,.17),rgba(100,255,180,.08))
+  }
+  .lg-message-source{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;min-height:95px;padding:12px}
+  .lg-shake{animation:lgShake .35s ease}
+  @keyframes lgShake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+
+  /* Финал */
+  .lg-win{
+    position:fixed;inset:0;z-index:270;display:none;align-items:center;justify-content:center;
+    padding:24px;background:rgba(8,3,13,.86);backdrop-filter:blur(8px)
+  }
+  .lg-win.show{display:flex;animation:lgFade .35s ease}
+  .lg-win-card{
+    position:relative;width:min(490px,100%);overflow:hidden;text-align:center;padding:32px 26px 27px;
+    border-radius:29px;border:1px solid rgba(255,200,221,.17);
+    background:
+      radial-gradient(circle at 50% 0,rgba(255,205,225,.16),transparent 34%),
+      linear-gradient(155deg,#26101f,#111c18);
+    box-shadow:0 30px 90px rgba(0,0,0,.55)
+  }
+  .lg-win-icon{font-size:58px;animation:lgWinFloat 1.7s ease-in-out infinite}
+  @keyframes lgWinFloat{50%{transform:translateY(-7px) scale(1.04)}}
+  .lg-win-card h2{
+    margin:10px 0 9px;font-size:clamp(30px,7vw,43px);font-weight:400;font-style:italic
+  }
+  .lg-win-card p{
+    margin:0 auto 22px;max-width:420px;color:#ffd9e7;line-height:1.65;font-size:16px
+  }
+  .lg-win-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .lg-win-btn{
+    border:0;border-radius:999px;padding:12px 19px;cursor:pointer;font:700 14px 'Georgia',serif
+  }
+  .lg-win-btn.again{color:#35101f;background:linear-gradient(135deg,#ffd9e8,#ffaccb)}
+  .lg-win-btn.menu{color:#fff0f6;background:rgba(255,255,255,.08)}
+
+  /* Победные сердечки */
+  .lg-fx{position:fixed;inset:0;z-index:280;pointer-events:none;overflow:hidden}
+  .lg-fx span{
+    position:absolute;bottom:-45px;animation:lgFly linear forwards;
+    filter:drop-shadow(0 0 9px rgba(255,166,198,.4))
+  }
+  @keyframes lgFly{
+    to{transform:translate(var(--drift),-112vh) rotate(var(--rot));opacity:0}
+  }
+
+  @media(max-width:680px){
+    .lg-grid{grid-template-columns:1fr}
+    .lg-card{min-height:165px}
+    .lg-stage{min-height:420px}
+    .lg-inner{padding:13px}
+    .lg-hide-grid{gap:9px}
+    .lg-status{align-items:flex-start;flex-direction:column}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .lg-overlay *{animation-duration:.001ms!important;animation-iteration-count:1!important}
+  }
+</style>
+
+<div class="lg-overlay" id="loveGamesOverlay" aria-hidden="true">
+  <div class="lg-stars" id="loveGamesStars" aria-hidden="true"></div>
+
+  <section class="lg-hub">
+    <div class="lg-top">
+      <button class="lg-close" id="loveGamesClose">‹ на сайт</button>
+      <span class="lg-chip">5 маленьких игр для Звёздочки ✦</span>
+    </div>
+
+    <div class="lg-hero">
+      <span class="lg-kicker">💚 специально для любимой</span>
+      <h1>Игры любимой</h1>
+      <p>Выбирай любую. Четыре новые игры каждый раз собираются немного по-другому, поэтому их можно проходить снова и снова.</p>
+    </div>
+
+    <div class="lg-grid">
+      <button class="lg-card" data-love-game="pairs" style="--lgGlow:rgba(255,207,107,.18)">
+        <span class="lg-card-icon">✦</span>
+        <span class="lg-random">классика</span>
+        <h3>Собери пары</h3>
+        <p>Та самая игра со звёздочками, карточками и маленькими словами для тебя.</p>
+        <span class="lg-arrow">›</span>
+      </button>
+
+      <button class="lg-card" data-love-game="hearts" style="--lgGlow:rgba(255,122,169,.22)">
+        <span class="lg-card-icon">💗</span>
+        <span class="lg-random">каждый раз новая</span>
+        <h3>Поймай мою любовь</h3>
+        <p>Сердечки появляются в случайных местах. Поймай их все, пока они не убежали.</p>
+        <span class="lg-arrow">›</span>
+      </button>
+
+      <button class="lg-card" data-love-game="stars" style="--lgGlow:rgba(255,222,100,.19)">
+        <span class="lg-card-icon">⭐</span>
+        <span class="lg-random">случайная цепочка</span>
+        <h3>Звёздная память</h3>
+        <p>Запомни, какие звёзды загорелись, и повтори их порядок.</p>
+        <span class="lg-arrow">›</span>
+      </button>
+
+      <button class="lg-card" data-love-game="hidden" style="--lgGlow:rgba(128,255,190,.16)">
+        <span class="lg-card-icon">💚</span>
+        <span class="lg-random">новое место</span>
+        <h3>Где моё сердце?</h3>
+        <p>Сердце каждый раунд прячется под новой карточкой. Найди его три раза.</p>
+        <span class="lg-arrow">›</span>
+      </button>
+
+      <button class="lg-card" data-love-game="message" style="--lgGlow:rgba(202,161,255,.17)">
+        <span class="lg-card-icon">💌</span>
+        <span class="lg-random">разные фразы</span>
+        <h3>Собери послание</h3>
+        <p>Слова перемешались. Собери их правильно и прочитай, что я хотел тебе сказать.</p>
+        <span class="lg-arrow">›</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="lg-game">
+    <div class="lg-top">
+      <button class="lg-back" id="loveGameBack">‹ игры</button>
+      <span class="lg-chip" id="loveGameChip">новая партия ✦</span>
+    </div>
+
+    <div class="lg-game-head">
+      <div class="lg-game-icon" id="loveGameIcon">💗</div>
+      <h2 id="loveGameTitle">Поймай мою любовь</h2>
+      <p id="loveGameSub">маленькая игра для Звёздочки</p>
+    </div>
+
+    <div class="lg-stage">
+      <div class="lg-status">
+        <strong id="loveGameStatus">готова?</strong>
+        <span id="loveGameMeta">✦</span>
+      </div>
+      <div class="lg-inner" id="loveGameInner"></div>
+    </div>
+  </section>
+</div>
+
+<div class="lg-win" id="loveGameWin" aria-hidden="true">
+  <div class="lg-win-card">
+    <div class="lg-win-icon" id="loveWinIcon">💚</div>
+    <h2 id="loveWinTitle">Ты победила ✦</h2>
+    <p id="loveWinText"></p>
+    <div class="lg-win-actions">
+      <button class="lg-win-btn again" id="loveWinAgain">сыграть ещё раз</button>
+      <button class="lg-win-btn menu" id="loveWinMenu">к выбору игр</button>
+    </div>
+  </div>
+</div>
+<div class="lg-fx" id="loveGamesFx" aria-hidden="true"></div>
+
+<script>
+(() => {
+  const overlay = document.getElementById('loveGamesOverlay');
+  const stars = document.getElementById('loveGamesStars');
+  const playBtn = document.getElementById('playBtn');
+  const closeBtn = document.getElementById('loveGamesClose');
+  const backBtn = document.getElementById('loveGameBack');
+  const cards = [...document.querySelectorAll('[data-love-game]')];
+
+  const gameIcon = document.getElementById('loveGameIcon');
+  const gameTitle = document.getElementById('loveGameTitle');
+  const gameSub = document.getElementById('loveGameSub');
+  const statusEl = document.getElementById('loveGameStatus');
+  const metaEl = document.getElementById('loveGameMeta');
+  const inner = document.getElementById('loveGameInner');
+
+  const win = document.getElementById('loveGameWin');
+  const winIcon = document.getElementById('loveWinIcon');
+  const winTitle = document.getElementById('loveWinTitle');
+  const winText = document.getElementById('loveWinText');
+  const winAgain = document.getElementById('loveWinAgain');
+  const winMenu = document.getElementById('loveWinMenu');
+  const fx = document.getElementById('loveGamesFx');
+
+  let activeGame = null;
+  let cleanups = [];
+  let audioCtx = null;
+
+  const WIN_WORDS = [
+    'Звёздочка, я люблю тебя безгранично. Ты для меня намного больше, чем можно нормально уместить в одно сообщение 💚',
+    'Ты снова победила. А я снова напоминаю: я люблю тебя очень-очень сильно и безумно ценю каждый наш маленький момент ✦',
+    'Если бы любовь можно было посчитать, у меня всё равно сломался бы счётчик. Ты невероятно дорогой для меня человек 💚',
+    'Ты моя любимая Звёздочка. Я люблю тебя нежно, сильно и совершенно не умею делать это «чуть-чуть» 💗',
+    'Победа твоя, а моё сердце давно твоё. Я люблю тебя сильнее, чем умею красиво объяснять словами ✦'
+  ];
+
+  const gameNames = {
+    hearts:{icon:'💗',title:'Поймай мою любовь',sub:'сердечки каждый раз появляются в новых местах'},
+    stars:{icon:'⭐',title:'Звёздная память',sub:'последовательность каждый раз создаётся заново'},
+    hidden:{icon:'💚',title:'Где моё сердце?',sub:'оно снова спряталось где-то рядом'},
+    message:{icon:'💌',title:'Собери послание',sub:'слова перемешиваются при каждом запуске'}
+  };
+
+  function rand(n){ return Math.floor(Math.random()*n); }
+  function shuffle(a){
+    a=[...a];
+    for(let i=a.length-1;i>0;i--){
+      const j=rand(i+1); [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+  function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  function initStars(){
+    if(stars.children.length) return;
+    for(let i=0;i<55;i++){
+      const s=document.createElement('i');
+      s.style.left=Math.random()*100+'%';
+      s.style.top=Math.random()*100+'%';
+      s.style.animationDuration=(2.2+Math.random()*3.5)+'s';
+      s.style.animationDelay=(-Math.random()*4)+'s';
+      stars.appendChild(s);
+    }
+  }
+
+  function getAudio(){
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx) return null;
+    if(!audioCtx) audioCtx=new Ctx();
+    if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+    return audioCtx;
+  }
+  function chime(){
+    const ctx=getAudio(); if(!ctx) return;
+    const now=ctx.currentTime;
+    [659.25,783.99,987.77].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine';o.frequency.value=f;
+      const t=now+i*.065;
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.055,t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.28);
+      o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.3);
+    });
+  }
+  function tinyPop(){
+    const ctx=getAudio(); if(!ctx) return;
+    const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;
+    o.type='sine';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(760,t+.08);
+    g.gain.setValueAtTime(.035,t);g.gain.exponentialRampToValueAtTime(.0001,t+.12);
+    o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.13);
+  }
+
+  function rain(count=34){
+    const set=['💚','💗','💕','✦','✨','🌸'];
+    for(let i=0;i<count;i++){
+      const e=document.createElement('span');
+      e.textContent=set[rand(set.length)];
+      e.style.left=Math.random()*100+'vw';
+      e.style.fontSize=(16+Math.random()*24)+'px';
+      e.style.setProperty('--drift',(Math.random()*160-80)+'px');
+      e.style.setProperty('--rot',(Math.random()*120-60)+'deg');
+      e.style.animationDuration=(3+Math.random()*2.8)+'s';
+      e.style.animationDelay=(Math.random()*.55)+'s';
+      fx.appendChild(e);
+      setTimeout(()=>e.remove(),6500);
+    }
+  }
+
+  function cleanup(){
+    cleanups.forEach(fn=>{try{fn()}catch(e){}});
+    cleanups=[];
+    inner.innerHTML='';
+  }
+
+  function openHub(){
+    cleanup();
+    overlay.classList.remove('playing');
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    initStars();
+  }
+  window.openLoveGamesHub=openHub;
+
+  function closeHub(){
+    cleanup();
+    overlay.classList.remove('open','playing');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+
+  function startGame(type){
+    cleanup();
+    activeGame=type;
+    const d=gameNames[type];
+    gameIcon.textContent=d.icon;
+    gameTitle.textContent=d.title;
+    gameSub.textContent=d.sub;
+    overlay.classList.add('playing');
+    if(type==='hearts') startHearts();
+    if(type==='stars') startStars();
+    if(type==='hidden') startHidden();
+    if(type==='message') startMessage();
+  }
+
+  function victory(icon='💚', title='Ты победила ✦'){
+    chime(); rain();
+    if(navigator.vibrate) navigator.vibrate([25,35,25]);
+    winIcon.textContent=icon;
+    winTitle.textContent=title;
+    winText.textContent=WIN_WORDS[rand(WIN_WORDS.length)];
+    win.classList.add('show');
+    win.setAttribute('aria-hidden','false');
+  }
+
+  /* 1. Лови сердечки */
+  function startHearts(){
+    let score=0, alive=true, heart=null, spawnTimer=null;
+    const need=9;
+    statusEl.textContent='поймай все сердечки';
+    metaEl.textContent=`0 / ${need}`;
+    inner.innerHTML='<div class="lg-heart-arena" id="lgHeartArena"></div>';
+    const arena=document.getElementById('lgHeartArena');
+
+    function spawn(){
+      if(!alive||score>=need)return;
+      if(heart) heart.remove();
+      heart=document.createElement('button');
+      heart.className='lg-catch-heart';
+      heart.textContent=['💗','💚','💕','💖'][rand(4)];
+      const maxX=Math.max(0,arena.clientWidth-72);
+      const maxY=Math.max(0,arena.clientHeight-72);
+      heart.style.left=(10+Math.random()*Math.max(10,maxX-20))+'px';
+      heart.style.top=(8+Math.random()*Math.max(10,maxY-16))+'px';
+      heart.addEventListener('click',()=>{
+        tinyPop();
+        const p=document.createElement('span');
+        p.className='lg-catch-pop';p.textContent='✦';
+        p.style.left=heart.style.left;p.style.top=heart.style.top;
+        arena.appendChild(p);setTimeout(()=>p.remove(),750);
+        score++;metaEl.textContent=`${score} / ${need}`;
+        heart.remove();heart=null;
+        if(score>=need){alive=false;setTimeout(()=>victory('💗','Все сердечки пойманы ✦'),300)}
+        else spawnTimer=setTimeout(spawn,130+rand(260));
+      });
+      arena.appendChild(heart);
+      spawnTimer=setTimeout(spawn,900+rand(650));
+    }
+    spawn();
+    cleanups.push(()=>{alive=false;clearTimeout(spawnTimer);if(heart)heart.remove()});
+  }
+
+  /* 2. Звёздная память */
+  async function startStars(){
+    let seq=[], pos=0, locked=true, stopped=false, round=1;
+    statusEl.textContent='запомни порядок';
+    metaEl.textContent='раунд 1 / 3';
+    inner.innerHTML='<div class="lg-star-grid" id="lgStarGrid"></div>';
+    const grid=document.getElementById('lgStarGrid');
+    const pads=[];
+    for(let i=0;i<9;i++){
+      const b=document.createElement('button');
+      b.className='lg-star-pad';b.textContent='✦';
+      b.addEventListener('click',()=>press(i));
+      grid.appendChild(b);pads.push(b);
+    }
+
+    function newSeq(){
+      const len=3+round;
+      seq=Array.from({length:len},()=>rand(9));
+      pos=0;
+    }
+    async function showSeq(){
+      locked=true;statusEl.textContent='смотри внимательно…';
+      await wait(450);
+      for(const idx of seq){
+        if(stopped)return;
+        pads[idx].classList.add('lit'); tinyPop();
+        await wait(360);
+        pads[idx].classList.remove('lit');
+        await wait(150);
+      }
+      locked=false;statusEl.textContent='теперь повтори ✦';
+    }
+    async function press(idx){
+      if(locked||stopped)return;
+      pads[idx].classList.add('lit');setTimeout(()=>pads[idx].classList.remove('lit'),180);
+      tinyPop();
+      if(idx!==seq[pos]){
+        locked=true;
+        pads[idx].classList.add('wrong');
+        statusEl.textContent='почти! покажу новую цепочку';
+        await wait(650);
+        pads[idx].classList.remove('wrong');
+        newSeq();await showSeq();return;
+      }
+      pos++;
+      if(pos===seq.length){
+        locked=true;
+        if(round===3){setTimeout(()=>victory('⭐','Ты запомнила все звёзды ✦'),300);return}
+        round++;metaEl.textContent=`раунд ${round} / 3`;statusEl.textContent='идеально! следующая ✦';
+        await wait(650);newSeq();await showSeq();
+      }
+    }
+    newSeq();showSeq();
+    cleanups.push(()=>{stopped=true});
+  }
+
+  /* 3. Где моё сердце */
+  function startHidden(){
+    let round=1, target=rand(6), locked=false;
+    statusEl.textContent='найди сердце';
+    metaEl.textContent='раунд 1 / 3';
+    inner.innerHTML='<div class="lg-hide-grid" id="lgHideGrid"></div>';
+    const grid=document.getElementById('lgHideGrid');
+
+    function build(){
+      locked=false;
+      target=rand(6);
+      grid.innerHTML='';
+      const order=shuffle([0,1,2,3,4,5]);
+      order.forEach((slot)=>{
+        const b=document.createElement('button');
+        b.className='lg-hide-card';
+        const isHeart=slot===target;
+        b.innerHTML=`<span class="lg-hide-inner">
+          <span class="lg-hide-face lg-hide-front">✦</span>
+          <span class="lg-hide-face lg-hide-back">${isHeart?'💚':'🌸'}</span>
+        </span>`;
+        b.addEventListener('click',()=>{
+          if(locked||b.classList.contains('revealed'))return;
+          b.classList.add('revealed'); tinyPop();
+          if(isHeart){
+            locked=true;statusEl.textContent='нашла 💚';
+            if(round===3){setTimeout(()=>victory('💚','Ты нашла моё сердце ✦'),650)}
+            else{
+              round++;metaEl.textContent=`раунд ${round} / 3`;
+              setTimeout(()=>{statusEl.textContent='оно спряталось снова…';build()},850);
+            }
+          }else{
+            statusEl.textContent='тут цветочек — ищи дальше ✦';
+          }
+        });
+        grid.appendChild(b);
+      });
+    }
+    build();
+  }
+
+  /* 4. Собери послание */
+  function startMessage(){
+    const phrases=[
+      'ты моя самая любимая Звёздочка',
+      'я люблю тебя безгранично сильно',
+      'ты делаешь мои дни теплее',
+      'моё сердце всегда выбирает тебя',
+      'рядом с тобой мне особенно хорошо',
+      'я очень сильно дорожу тобой'
+    ];
+    const phrase=phrases[rand(phrases.length)];
+    const words=phrase.split(' ');
+    let pos=0;
+    statusEl.textContent='собери фразу по порядку';
+    metaEl.textContent=`0 / ${words.length}`;
+    inner.innerHTML='<div class="lg-message"><div class="lg-message-target empty" id="lgMsgTarget"></div><div class="lg-message-source" id="lgMsgSource"></div></div>';
+    const targetEl=document.getElementById('lgMsgTarget');
+    const sourceEl=document.getElementById('lgMsgSource');
+
+    shuffle(words.map((w,i)=>({w,i}))).forEach(obj=>{
+      const b=document.createElement('button');
+      b.className='lg-word';b.textContent=obj.w;
+      b.addEventListener('click',()=>{
+        if(obj.i===pos){
+          tinyPop();b.classList.add('used');
+          const copy=document.createElement('span');copy.className='lg-word';copy.textContent=obj.w;
+          targetEl.appendChild(copy);targetEl.classList.remove('empty');
+          pos++;metaEl.textContent=`${pos} / ${words.length}`;
+          if(pos===words.length){
+            statusEl.textContent='послание собрано 💌';
+            setTimeout(()=>victory('💌','Послание собрано ✦'),450);
+          }
+        }else{
+          sourceEl.classList.remove('lg-shake');void sourceEl.offsetWidth;sourceEl.classList.add('lg-shake');
+          statusEl.textContent='не это слово — попробуй другое ✦';
+        }
+      });
+      sourceEl.appendChild(b);
+    });
+  }
+
+  playBtn.addEventListener('click',openHub);
+  closeBtn.addEventListener('click',closeHub);
+  backBtn.addEventListener('click',()=>{
+    cleanup();overlay.classList.remove('playing');
+  });
+
+  cards.forEach(card=>card.addEventListener('click',()=>{
+    const type=card.dataset.loveGame;
+    if(type==='pairs'){
+      closeHub();
+      if(typeof buildGame==='function') buildGame();
+      document.getElementById('game').classList.add('show');
+      return;
+    }
+    startGame(type);
+  }));
+
+  winAgain.addEventListener('click',()=>{
+    win.classList.remove('show');win.setAttribute('aria-hidden','true');
+    startGame(activeGame);
+  });
+  winMenu.addEventListener('click',()=>{
+    win.classList.remove('show');win.setAttribute('aria-hidden','true');
+    cleanup();overlay.classList.remove('playing');
+  });
+
+  document.addEventListener('keydown',(e)=>{
+    if(e.key!=='Escape')return;
+    if(win.classList.contains('show')){
+      win.classList.remove('show');win.setAttribute('aria-hidden','true');return;
+    }
+    if(overlay.classList.contains('playing')){cleanup();overlay.classList.remove('playing');return}
+    if(overlay.classList.contains('open'))closeHub();
+  });
+})();
+</script>
+<!-- ===== конец блока «Игры любимой» ===== -->
 
 </body>
 </html>
