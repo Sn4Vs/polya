@@ -6692,5 +6692,826 @@ input.addEventListener('keydown', e => {
 </script>
 <!-- ===== конец блока «Игры любимой» ===== -->
 
+
+<!-- ===== МУЗЫКА + ВЕЧЕРНИЕ СКАЗКИ ===== -->
+<style>
+  /* ---------- Панель фоновой музыки ---------- */
+  .music-dock{
+    position:fixed;
+    top:max(16px,env(safe-area-inset-top));
+    right:16px;
+    z-index:45;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px;
+    border-radius:18px;
+    background:rgba(16,11,22,.56);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 12px 34px rgba(0,0,0,.28);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+  }
+  .music-dock-btn{
+    height:40px;
+    border:0;
+    border-radius:12px;
+    padding:0 13px;
+    cursor:pointer;
+    color:#fff0f6;
+    background:rgba(255,255,255,.07);
+    font:13px/1 'Georgia',serif;
+    transition:transform .2s ease,background .2s ease,box-shadow .2s ease;
+  }
+  .music-dock-btn:hover{
+    transform:translateY(-1px);
+    background:rgba(255,255,255,.12);
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+  }
+  .music-dock-btn:active{transform:scale(.96)}
+  .music-dock-btn .ico{font-size:16px;margin-right:5px}
+  .music-track-label{
+    min-width:54px;
+    text-align:center;
+    color:rgba(255,232,242,.52);
+    font-size:10px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- Кнопка сна в левом нижнем углу ---------- */
+  .bedtime-open{
+    position:fixed;
+    left:18px;
+    bottom:max(18px,env(safe-area-inset-bottom));
+    z-index:45;
+    width:58px;
+    height:58px;
+    border:1px solid rgba(188,205,255,.24);
+    border-radius:19px;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    background:
+      radial-gradient(circle at 36% 28%,rgba(255,255,255,.10),transparent 36%),
+      linear-gradient(145deg,rgba(20,24,50,.95),rgba(42,22,60,.95));
+    color:#e8ebff;
+    box-shadow:0 13px 34px rgba(0,0,0,.35),0 0 30px rgba(128,142,255,.12);
+    backdrop-filter:blur(10px);
+    transition:transform .24s ease,box-shadow .24s ease;
+  }
+  .bedtime-open:hover{
+    transform:translateY(-3px) rotate(-2deg);
+    box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 34px rgba(163,175,255,.20);
+  }
+  .bedtime-open:active{transform:scale(.95)}
+  .bedtime-open span{
+    position:relative;
+    font-size:28px;
+    filter:drop-shadow(0 0 10px rgba(220,225,255,.35));
+    animation:bedMoonFloat 2.8s ease-in-out infinite;
+  }
+  .bedtime-open span::after{
+    content:"✦";
+    position:absolute;
+    right:-8px;
+    top:-6px;
+    font-size:10px;
+    color:#fff8c6;
+    animation:bedStarBlink 1.7s ease-in-out infinite;
+  }
+  @keyframes bedMoonFloat{50%{transform:translateY(-3px) rotate(4deg)}}
+  @keyframes bedStarBlink{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.35)}}
+
+  /* ---------- Экран сказок ---------- */
+  .bedtime-overlay{
+    position:fixed;
+    inset:0;
+    z-index:320;
+    display:none;
+    overflow:auto;
+    padding:max(18px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));
+    color:#f8f5ff;
+    font-family:'Georgia','Times New Roman',serif;
+    background:
+      radial-gradient(circle at 50% 0,rgba(114,111,190,.18),transparent 31%),
+      radial-gradient(circle at 14% 78%,rgba(255,167,205,.09),transparent 26%),
+      linear-gradient(165deg,#080b19,#111225 48%,#170d1e);
+    backdrop-filter:blur(10px);
+  }
+  .bedtime-overlay.open{display:block;animation:bedFade .42s ease}
+  @keyframes bedFade{from{opacity:0}to{opacity:1}}
+
+  .bedtime-shell{
+    position:relative;
+    z-index:2;
+    width:min(860px,100%);
+    margin:0 auto;
+  }
+  .bedtime-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .bedtime-close{
+    border:1px solid rgba(220,224,255,.14);
+    border-radius:999px;
+    padding:9px 15px;
+    background:rgba(255,255,255,.06);
+    color:#f2efff;
+    cursor:pointer;
+    font:14px 'Georgia',serif;
+  }
+  .bedtime-label{
+    color:rgba(238,237,255,.58);
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+
+  .bedtime-hero{
+    text-align:center;
+    margin:8px auto 20px;
+  }
+  .bedtime-hero h2{
+    margin:8px 0 4px;
+    font-size:clamp(31px,7vw,52px);
+    font-weight:400;
+    font-style:italic;
+    text-shadow:0 0 28px rgba(183,181,255,.20);
+  }
+  .bedtime-hero p{
+    margin:0 auto;
+    max-width:620px;
+    color:rgba(241,237,255,.62);
+    font-size:14px;
+  }
+
+  /* ---------- «как видео»: анимированная сцена волчка и свинки ---------- */
+  .bed-cinema{
+    position:relative;
+    width:min(760px,100%);
+    margin:0 auto 18px;
+    overflow:hidden;
+    border-radius:30px;
+    border:1px solid rgba(224,225,255,.11);
+    background:
+      radial-gradient(circle at 76% 16%,rgba(245,243,204,.11),transparent 18%),
+      linear-gradient(180deg,#10152c,#151328 64%,#211126);
+    box-shadow:0 28px 70px rgba(0,0,0,.36),inset 0 0 70px rgba(255,255,255,.018);
+  }
+  .bed-cinema::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      linear-gradient(90deg,rgba(255,255,255,.014),transparent 22%,transparent 78%,rgba(255,255,255,.014)),
+      linear-gradient(180deg,rgba(255,255,255,.025),transparent 25%);
+    mix-blend-mode:screen;
+  }
+  .bed-scene-svg{
+    display:block;
+    width:100%;
+    height:auto;
+    min-height:280px;
+  }
+
+  .bed-cinema.playing .bed-wolf{
+    transform-box:fill-box;
+    transform-origin:58% 70%;
+    animation:wolfLean 4.6s cubic-bezier(.45,.05,.25,1) infinite;
+  }
+  .bed-cinema.playing .bed-wolf-head{
+    transform-box:fill-box;
+    transform-origin:60% 72%;
+    animation:wolfHeadKiss 4.6s cubic-bezier(.45,.05,.25,1) infinite;
+  }
+  .bed-cinema.playing .bed-pig-head{
+    transform-box:fill-box;
+    transform-origin:50% 70%;
+    animation:pigReact 4.6s ease-in-out infinite;
+  }
+  .bed-cinema.playing .bed-pig-blush{
+    animation:pigBlush 4.6s ease-in-out infinite;
+  }
+  .bed-cinema.playing .bed-kiss-heart{
+    transform-box:fill-box;
+    transform-origin:center;
+    animation:kissHeart 4.6s ease-in-out infinite;
+  }
+  .bed-cinema.playing .bed-star-svg{
+    animation:sceneStar 2.2s ease-in-out infinite;
+  }
+  .bed-cinema.playing .bed-star-svg:nth-of-type(2){animation-delay:.4s}
+  .bed-cinema.playing .bed-star-svg:nth-of-type(3){animation-delay:.9s}
+  @keyframes wolfLean{
+    0%,22%,78%,100%{transform:translate(0,0) rotate(0deg)}
+    38%,58%{transform:translate(26px,1px) rotate(3deg)}
+  }
+  @keyframes wolfHeadKiss{
+    0%,24%,78%,100%{transform:translate(0,0) rotate(0deg)}
+    40%,57%{transform:translate(15px,3px) rotate(5deg)}
+  }
+  @keyframes pigReact{
+    0%,35%,72%,100%{transform:translate(0,0) rotate(0deg)}
+    45%,60%{transform:translate(3px,-2px) rotate(-2deg)}
+  }
+  @keyframes pigBlush{
+    0%,31%,72%,100%{opacity:.16}
+    42%,60%{opacity:.72}
+  }
+  @keyframes kissHeart{
+    0%,35%,70%,100%{opacity:0;transform:translate(0,8px) scale(.35)}
+    44%{opacity:1;transform:translate(0,0) scale(1.15)}
+    58%{opacity:.95;transform:translate(10px,-18px) scale(.9)}
+    68%{opacity:0;transform:translate(18px,-34px) scale(.55)}
+  }
+  @keyframes sceneStar{
+    0%,100%{opacity:.22;transform:scale(.85)}
+    50%{opacity:.9;transform:scale(1.35)}
+  }
+
+  .bed-intro{
+    opacity:0;
+    transform:translateY(10px);
+    text-align:center;
+    max-width:710px;
+    margin:0 auto 22px;
+    padding:18px 20px;
+    border-radius:22px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.055);
+    color:rgba(247,241,255,.76);
+    line-height:1.7;
+    font-size:15px;
+  }
+  .bedtime-overlay.ready .bed-intro{
+    animation:bedIntroIn .8s ease forwards;
+  }
+  @keyframes bedIntroIn{to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- Кнопки сказок ---------- */
+  .story-list{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin:0 auto 18px;
+  }
+  .story-btn{
+    position:relative;
+    overflow:hidden;
+    min-height:92px;
+    padding:17px 18px;
+    text-align:left;
+    border-radius:20px;
+    border:1px solid rgba(225,217,255,.10);
+    background:
+      radial-gradient(circle at 90% 5%,rgba(184,180,255,.11),transparent 35%),
+      rgba(255,255,255,.035);
+    color:#f8f3ff;
+    cursor:pointer;
+    transition:transform .22s ease,background .22s ease,border-color .22s ease;
+  }
+  .story-btn:hover{
+    transform:translateY(-2px);
+    background:rgba(255,255,255,.06);
+    border-color:rgba(225,217,255,.18);
+  }
+  .story-btn strong{
+    display:block;
+    margin-bottom:5px;
+    font-size:16px;
+    font-weight:400;
+  }
+  .story-btn small{
+    color:rgba(240,235,255,.50);
+    font-size:11px;
+  }
+  .story-btn .story-num{
+    position:absolute;
+    right:14px;
+    top:13px;
+    color:rgba(255,248,206,.38);
+    font-size:23px;
+  }
+
+  /* ---------- Плеер сказки ---------- */
+  .story-player{
+    display:none;
+    width:min(720px,100%);
+    margin:0 auto 24px;
+    padding:18px;
+    border-radius:23px;
+    border:1px solid rgba(255,255,255,.09);
+    background:linear-gradient(150deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+    box-shadow:0 18px 50px rgba(0,0,0,.20);
+  }
+  .story-player.show{display:block;animation:bedFade .3s ease}
+  .story-player-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:15px;
+  }
+  .story-player-title{
+    min-width:0;
+  }
+  .story-player-title strong{
+    display:block;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    font-size:16px;
+    font-weight:400;
+  }
+  .story-player-title small{
+    color:rgba(242,237,255,.48);
+    font-size:11px;
+  }
+  .story-play{
+    flex:0 0 auto;
+    width:48px;
+    height:48px;
+    border:0;
+    border-radius:50%;
+    cursor:pointer;
+    background:linear-gradient(145deg,#efe9ff,#c4c8ff 55%,#ffd2e5);
+    color:#17162d;
+    font-size:19px;
+    box-shadow:0 10px 26px rgba(164,165,255,.20);
+  }
+  .story-progress{
+    width:100%;
+    accent-color:#c4c7ff;
+    cursor:pointer;
+  }
+  .story-times{
+    display:flex;
+    justify-content:space-between;
+    margin-top:6px;
+    color:rgba(238,235,255,.45);
+    font-size:10px;
+  }
+
+  .bed-night-stars{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .bed-night-stars i{
+    position:absolute;
+    width:2px;
+    height:2px;
+    border-radius:50%;
+    background:#fff;
+    box-shadow:0 0 8px rgba(255,255,255,.8);
+    animation:bedNightTwinkle ease-in-out infinite;
+  }
+  @keyframes bedNightTwinkle{
+    0%,100%{opacity:.10}
+    50%{opacity:.8;transform:scale(1.5)}
+  }
+
+  @media(max-width:680px){
+    .music-dock{
+      right:10px;
+      top:max(10px,env(safe-area-inset-top));
+      gap:5px;
+      padding:5px;
+    }
+    .music-dock-btn{
+      height:37px;
+      padding:0 10px;
+      font-size:11px;
+    }
+    .music-track-label{display:none}
+    .story-list{grid-template-columns:1fr}
+    .bedtime-open{left:12px;bottom:max(12px,env(safe-area-inset-bottom))}
+    .bed-cinema{border-radius:22px}
+    .bed-intro{font-size:14px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .bedtime-overlay *,.bedtime-open span{animation-duration:.001ms!important;animation-iteration-count:1!important}
+    .bed-intro{opacity:1!important;transform:none!important}
+  }
+</style>
+
+<!-- Управление фоновой музыкой -->
+<div class="music-dock" id="musicDock" aria-label="Управление музыкой">
+  <button class="music-dock-btn" id="musicSwitchBtn" type="button" title="Сменить мелодию">
+    <span class="ico">♫</span>сменить
+  </button>
+  <span class="music-track-label" id="musicTrackLabel">мелодия 1</span>
+  <button class="music-dock-btn" id="musicToggleBtn" type="button" title="Выключить или включить музыку">
+    <span class="ico">♪</span><span id="musicToggleText">выкл.</span>
+  </button>
+</div>
+
+<!-- Кнопка сна -->
+<button class="bedtime-open" id="bedtimeOpen" type="button" aria-label="Открыть любимые сказки перед сном">
+  <span>☾</span>
+</button>
+
+<!-- Экран сказок -->
+<div class="bedtime-overlay" id="bedtimeOverlay" aria-hidden="true">
+  <div class="bed-night-stars" id="bedNightStars" aria-hidden="true"></div>
+
+  <div class="bedtime-shell">
+    <div class="bedtime-top">
+      <button class="bedtime-close" id="bedtimeClose" type="button">‹ назад</button>
+      <span class="bedtime-label">спокойной ночи, Звёздочка ✦</span>
+    </div>
+
+    <div class="bedtime-hero">
+      <div style="font-size:35px">☾</div>
+      <h2>Сказки перед сном</h2>
+      <p>маленькое тихое место для вечеров, когда хочется просто слушать и отдыхать</p>
+    </div>
+
+    <div class="bed-cinema" id="bedCinema">
+      <svg class="bed-scene-svg" viewBox="0 0 700 340" role="img" aria-label="Волчок нежно целует свинку, ночная анимированная сцена">
+        <defs>
+          <linearGradient id="nightBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#131b3a"/>
+            <stop offset="100%" stop-color="#27152d"/>
+          </linearGradient>
+          <linearGradient id="wolfFur" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#a8b3c7"/>
+            <stop offset="55%" stop-color="#77839b"/>
+            <stop offset="100%" stop-color="#59657d"/>
+          </linearGradient>
+          <linearGradient id="pigSkin" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffd1df"/>
+            <stop offset="58%" stop-color="#f4a9c3"/>
+            <stop offset="100%" stop-color="#df7fa6"/>
+          </linearGradient>
+          <linearGradient id="blanketGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#4f3866"/>
+            <stop offset="55%" stop-color="#76506e"/>
+            <stop offset="100%" stop-color="#4a416c"/>
+          </linearGradient>
+          <filter id="softGlow">
+            <feGaussianBlur stdDeviation="7"/>
+          </filter>
+          <filter id="sceneShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#05040b" flood-opacity=".38"/>
+          </filter>
+        </defs>
+
+        <rect width="700" height="340" fill="url(#nightBg)"/>
+        <circle cx="574" cy="65" r="38" fill="#fff4c8" opacity=".88"/>
+        <circle cx="589" cy="54" r="38" fill="#18203d"/>
+        <circle cx="574" cy="65" r="52" fill="#fff4c8" opacity=".08" filter="url(#softGlow)"/>
+
+        <g fill="#fff9d2" opacity=".72">
+          <circle class="bed-star-svg" cx="88" cy="52" r="2.4"/>
+          <circle class="bed-star-svg" cx="156" cy="89" r="1.7"/>
+          <circle class="bed-star-svg" cx="246" cy="46" r="2.1"/>
+          <circle class="bed-star-svg" cx="329" cy="74" r="1.5"/>
+          <circle class="bed-star-svg" cx="457" cy="45" r="1.9"/>
+          <circle class="bed-star-svg" cx="633" cy="116" r="2.2"/>
+        </g>
+
+        <path d="M0 254 C110 229 181 260 271 242 C377 222 460 270 700 233 L700 340 L0 340 Z"
+              fill="#201226"/>
+        <ellipse cx="350" cy="295" rx="255" ry="34" fill="#05040b" opacity=".28"/>
+
+        <!-- Волчок -->
+        <g class="bed-wolf" filter="url(#sceneShadow)">
+          <ellipse cx="283" cy="244" rx="87" ry="72" fill="url(#wolfFur)"/>
+          <path d="M217 218 C183 204 177 166 203 145 C216 134 234 133 247 141 C229 155 224 181 237 202 Z"
+                fill="#68758d"/>
+          <path d="M231 141 L218 103 L257 131 Z" fill="#8e9ab0"/>
+          <path d="M300 135 L318 101 L336 145 Z" fill="#8e9ab0"/>
+
+          <g class="bed-wolf-head">
+            <ellipse cx="277" cy="168" rx="65" ry="59" fill="url(#wolfFur)"/>
+            <ellipse cx="321" cy="184" rx="42" ry="31" fill="#c2c9d5"/>
+            <ellipse cx="351" cy="184" rx="10" ry="8" fill="#3e4657"/>
+            <path d="M250 156 Q259 150 269 156" stroke="#303848" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M297 153 Q306 148 314 154" stroke="#303848" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M313 196 Q323 202 334 196" stroke="#657084" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <ellipse cx="226" cy="180" rx="12" ry="7" fill="#cf879e" opacity=".28"/>
+          </g>
+
+          <path d="M224 248 Q184 270 173 306" stroke="#66738a" stroke-width="25" stroke-linecap="round" fill="none"/>
+          <path d="M323 252 Q355 271 370 304" stroke="#66738a" stroke-width="25" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- Свинка -->
+        <g filter="url(#sceneShadow)">
+          <ellipse cx="435" cy="248" rx="91" ry="70" fill="url(#pigSkin)"/>
+          <path d="M383 156 L369 116 Q404 124 416 147 Z" fill="#f2a5be"/>
+          <path d="M464 147 Q478 119 506 117 L490 162 Z" fill="#f2a5be"/>
+
+          <g class="bed-pig-head">
+            <ellipse cx="438" cy="177" rx="68" ry="60" fill="url(#pigSkin)"/>
+            <ellipse cx="438" cy="192" rx="34" ry="25" fill="#ffc1d4"/>
+            <ellipse cx="426" cy="191" rx="5" ry="8" fill="#a95e7b" opacity=".7"/>
+            <ellipse cx="450" cy="191" rx="5" ry="8" fill="#a95e7b" opacity=".7"/>
+            <path d="M402 163 Q411 158 420 163" stroke="#925873" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M456 163 Q465 158 474 163" stroke="#925873" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M427 214 Q438 222 450 214" stroke="#a45e79" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <ellipse class="bed-pig-blush" cx="394" cy="190" rx="18" ry="9" fill="#ff6f9f" opacity=".18"/>
+            <ellipse class="bed-pig-blush" cx="483" cy="190" rx="18" ry="9" fill="#ff6f9f" opacity=".18"/>
+          </g>
+
+          <path d="M402 250 Q369 273 361 307" stroke="#e398b3" stroke-width="26" stroke-linecap="round" fill="none"/>
+          <path d="M471 253 Q496 274 507 306" stroke="#e398b3" stroke-width="26" stroke-linecap="round" fill="none"/>
+          <path d="M508 245 Q542 230 526 207 Q510 193 497 210 Q489 223 502 229 Q515 235 522 224"
+                stroke="#e98cab" stroke-width="7" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- Плед -->
+        <path d="M160 270 Q350 242 545 272 L574 340 L126 340 Z" fill="url(#blanketGrad)" opacity=".95"/>
+        <path d="M169 283 Q347 259 541 285" stroke="#a8789a" stroke-width="3" opacity=".32" fill="none"/>
+        <path d="M147 309 Q349 278 558 311" stroke="#a8789a" stroke-width="3" opacity=".25" fill="none"/>
+
+        <!-- Поцелуй -->
+        <g class="bed-kiss-heart" opacity="0">
+          <path d="M363 150 C357 139 340 141 340 155 C340 168 363 180 363 180 C363 180 386 168 386 155 C386 141 369 139 363 150 Z"
+                fill="#ff9fc2"/>
+          <circle cx="363" cy="160" r="23" fill="#ff9fc2" opacity=".08" filter="url(#softGlow)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="bed-intro" id="bedIntro">
+      Здесь будут появляться твои любимые сказки, которые ты уже слушала и ещё будешь слушать перед сном.
+      Они сделаны и рассказаны специально для тебя — с любовью и теплом. Устраивайся поудобнее и наслаждайся, любимая 💚
+    </div>
+
+    <div class="story-list" id="storyList">
+      <button class="story-btn" type="button" data-story="0">
+        <span class="story-num">01</span>
+        <strong>Два брата Ханзо и Гендзи</strong>
+        <small>нажми, чтобы слушать</small>
+      </button>
+      <button class="story-btn" type="button" data-story="1">
+        <span class="story-num">02</span>
+        <strong>Про бобрят</strong>
+        <small>нажми, чтобы слушать</small>
+      </button>
+      <button class="story-btn" type="button" data-story="2">
+        <span class="story-num">03</span>
+        <strong>Про Василису</strong>
+        <small>нажми, чтобы слушать</small>
+      </button>
+      <button class="story-btn" type="button" data-story="3">
+        <span class="story-num">04</span>
+        <strong>Про настоящую любовь</strong>
+        <small>нажми, чтобы слушать</small>
+      </button>
+      <button class="story-btn" type="button" data-story="4">
+        <span class="story-num">05</span>
+        <strong>Сказка 5</strong>
+        <small>нажми, чтобы слушать</small>
+      </button>
+    </div>
+
+    <div class="story-player" id="storyPlayer">
+      <div class="story-player-head">
+        <div class="story-player-title">
+          <strong id="storyPlayerTitle">Сказка 1</strong>
+          <small>запись специально для тебя ✦</small>
+        </div>
+        <button class="story-play" id="storyPlayBtn" type="button" aria-label="Воспроизвести">▶</button>
+      </div>
+      <input class="story-progress" id="storyProgress" type="range" min="0" max="1000" value="0" aria-label="Прогресс сказки">
+      <div class="story-times">
+        <span id="storyCurrent">0:00</span>
+        <span id="storyDuration">0:00</span>
+      </div>
+      <audio id="bedtimeAudio" preload="metadata"></audio>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const bgm = document.getElementById('bgm');
+  if(!bgm) return;
+
+  /* Файлы фоновой музыки:
+     1) music.mp3
+     2) music2.mp3
+  */
+  const MUSIC_TRACKS = ['music.mp3','music2.mp3'];
+  let trackIndex = Number(localStorage.getItem('zvezdochka_music_track') || 0);
+  if(!Number.isInteger(trackIndex) || trackIndex < 0 || trackIndex >= MUSIC_TRACKS.length) trackIndex = 0;
+
+  const switchBtn = document.getElementById('musicSwitchBtn');
+  const toggleBtn = document.getElementById('musicToggleBtn');
+  const toggleText = document.getElementById('musicToggleText');
+  const trackLabel = document.getElementById('musicTrackLabel');
+
+  function syncMusicUi(){
+    trackLabel.textContent = `мелодия ${trackIndex + 1}`;
+    toggleText.textContent = (!bgm.paused && !bgm.muted) ? 'выкл.' : 'вкл.';
+  }
+
+  // Если раньше уже выбиралась мелодия №2 — подготавливаем её.
+  if(trackIndex !== 0){
+    bgm.src = MUSIC_TRACKS[trackIndex];
+    try{ bgm.load(); }catch(e){}
+  }
+  syncMusicUi();
+
+  switchBtn.addEventListener('click', async () => {
+    const wasPlaying = !bgm.paused;
+    trackIndex = (trackIndex + 1) % MUSIC_TRACKS.length;
+    localStorage.setItem('zvezdochka_music_track', String(trackIndex));
+
+    bgm.src = MUSIC_TRACKS[trackIndex];
+    bgm.loop = true;
+    try{ bgm.load(); }catch(e){}
+
+    if(wasPlaying){
+      try{ await bgm.play(); }catch(e){}
+    }
+    syncMusicUi();
+  });
+
+  toggleBtn.addEventListener('click', async () => {
+    if(!bgm.paused && !bgm.muted){
+      bgm.pause();
+    }else{
+      bgm.muted = false;
+      try{ await bgm.play(); }catch(e){}
+    }
+    syncMusicUi();
+
+    const gMute = document.getElementById('gMute');
+    if(gMute) gMute.textContent = bgm.paused ? '♪ без звука' : '♪ музыка';
+  });
+
+  bgm.addEventListener('play',syncMusicUi);
+  bgm.addEventListener('pause',syncMusicUi);
+
+  /* ---------- Сказки ---------- */
+  const STORY_FILES = [
+    'fairytale1.mp3',
+    'fairytale2.mp3',
+    'fairytale3.mp3',
+    'fairytale4.mp3',
+    'fairytale5.mp3'
+  ];
+  const STORY_TITLES = [
+    'Два брата Ханзо и Гендзи',
+    'Про бобрят',
+    'Про Василису',
+    'Про настоящую любовь',
+    'Сказка 5'
+  ];
+
+  const openBtn = document.getElementById('bedtimeOpen');
+  const overlay = document.getElementById('bedtimeOverlay');
+  const closeBtn = document.getElementById('bedtimeClose');
+  const cinema = document.getElementById('bedCinema');
+  const nightStars = document.getElementById('bedNightStars');
+  const storyButtons = [...document.querySelectorAll('.story-btn')];
+
+  const player = document.getElementById('storyPlayer');
+  const audio = document.getElementById('bedtimeAudio');
+  const playBtn = document.getElementById('storyPlayBtn');
+  const titleEl = document.getElementById('storyPlayerTitle');
+  const progress = document.getElementById('storyProgress');
+  const currentEl = document.getElementById('storyCurrent');
+  const durationEl = document.getElementById('storyDuration');
+
+  let currentStory = -1;
+  let bgmWasPlayingBeforeStory = false;
+  let readyTimer = null;
+
+  function makeNightStars(){
+    if(nightStars.children.length) return;
+    for(let i=0;i<58;i++){
+      const s=document.createElement('i');
+      s.style.left=Math.random()*100+'%';
+      s.style.top=Math.random()*100+'%';
+      s.style.animationDuration=(2.2+Math.random()*4)+'s';
+      s.style.animationDelay=(-Math.random()*5)+'s';
+      nightStars.appendChild(s);
+    }
+  }
+
+  function restartCinema(){
+    cinema.classList.remove('playing');
+    void cinema.offsetWidth;
+    cinema.classList.add('playing');
+    overlay.classList.remove('ready');
+    clearTimeout(readyTimer);
+    readyTimer=setTimeout(()=>overlay.classList.add('ready'),2700);
+  }
+
+  function openBedtime(){
+    makeNightStars();
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    restartCinema();
+  }
+
+  function resumeBgmIfNeeded(){
+    if(bgmWasPlayingBeforeStory && !bgm.muted){
+      bgm.play().catch(()=>{});
+    }
+    bgmWasPlayingBeforeStory=false;
+  }
+
+  function closeBedtime(){
+    overlay.classList.remove('open','ready');
+    overlay.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+    clearTimeout(readyTimer);
+
+    if(!audio.paused) audio.pause();
+    resumeBgmIfNeeded();
+  }
+
+  function fmt(sec){
+    if(!Number.isFinite(sec)) return '0:00';
+    sec=Math.max(0,Math.floor(sec));
+    const m=Math.floor(sec/60);
+    const s=String(sec%60).padStart(2,'0');
+    return `${m}:${s}`;
+  }
+
+  async function chooseStory(index){
+    currentStory=index;
+    if(!bgm.paused && !bgm.muted){
+      bgmWasPlayingBeforeStory = true;
+      bgm.pause();
+    }
+
+    audio.src=STORY_FILES[index];
+    titleEl.textContent=STORY_TITLES[index];
+    player.classList.add('show');
+    progress.value='0';
+    currentEl.textContent='0:00';
+    durationEl.textContent='0:00';
+
+    try{
+      await audio.play();
+    }catch(e){
+      playBtn.textContent='▶';
+    }
+  }
+
+  storyButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      chooseStory(Number(btn.dataset.story));
+    });
+  });
+
+  playBtn.addEventListener('click',async()=>{
+    if(currentStory<0) return;
+    if(audio.paused){
+      if(!bgm.paused && !bgm.muted){
+        bgmWasPlayingBeforeStory=true;
+        bgm.pause();
+      }
+      try{await audio.play()}catch(e){}
+    }else{
+      audio.pause();
+    }
+  });
+
+  audio.addEventListener('play',()=>{playBtn.textContent='❚❚'});
+  audio.addEventListener('pause',()=>{playBtn.textContent='▶'});
+  audio.addEventListener('ended',()=>{
+    playBtn.textContent='▶';
+    resumeBgmIfNeeded();
+  });
+  audio.addEventListener('loadedmetadata',()=>{
+    durationEl.textContent=fmt(audio.duration);
+  });
+  audio.addEventListener('timeupdate',()=>{
+    currentEl.textContent=fmt(audio.currentTime);
+    if(Number.isFinite(audio.duration) && audio.duration>0){
+      progress.value=String(Math.round((audio.currentTime/audio.duration)*1000));
+    }
+  });
+  progress.addEventListener('input',()=>{
+    if(Number.isFinite(audio.duration) && audio.duration>0){
+      audio.currentTime=(Number(progress.value)/1000)*audio.duration;
+    }
+  });
+
+  openBtn.addEventListener('click',openBedtime);
+  closeBtn.addEventListener('click',closeBedtime);
+
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='Escape' && overlay.classList.contains('open')) closeBedtime();
+  });
+})();
+</script>
+<!-- ===== конец блока музыки и сказок ===== -->
+
 </body>
 </html>
