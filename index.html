@@ -9357,5 +9357,1906 @@ import {
 </script>
 <!-- ===== конец «Нашей вселенной» ===== -->
 
+
+<!-- =====================================================================
+     ПИТОМЕЦ ЗВЁЗДОЧКИ — ЁЖИК
+     Облачный прогресс + уход + рост + магазин + письма
+     ===================================================================== -->
+<style>
+  /* ---------- Кнопка входа к питомцу ---------- */
+  #hedgePetOpen{
+    position:fixed;
+    left:18px;
+    bottom:max(90px,calc(env(safe-area-inset-bottom) + 90px));
+    z-index:46;
+    width:58px;
+    height:58px;
+    border:1px solid rgba(153,255,195,.20);
+    border-radius:19px;
+    cursor:pointer;
+    display:grid;
+    place-items:center;
+    background:
+      radial-gradient(circle at 32% 26%,rgba(255,255,255,.12),transparent 32%),
+      linear-gradient(145deg,rgba(22,62,43,.97),rgba(17,30,29,.97));
+    color:#eafff1;
+    box-shadow:0 14px 35px rgba(0,0,0,.34),0 0 26px rgba(91,255,159,.10);
+    transition:transform .24s ease,box-shadow .24s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #hedgePetOpen:hover{
+    transform:translateY(-3px) rotate(2deg);
+    box-shadow:0 17px 42px rgba(0,0,0,.4),0 0 34px rgba(91,255,159,.18);
+  }
+  #hedgePetOpen:active{transform:scale(.95)}
+  #hedgePetOpen .hedge-mini{
+    position:relative;
+    font-size:29px;
+    filter:drop-shadow(0 0 8px rgba(173,255,207,.24));
+    animation:hedgeMiniBob 2.5s ease-in-out infinite;
+  }
+  #hedgePetOpen .hedge-mini::after{
+    content:"✦";
+    position:absolute;
+    right:-8px;
+    top:-5px;
+    font-size:9px;
+    color:#fff1aa;
+    animation:hedgeMiniStar 1.7s ease-in-out infinite;
+  }
+  @keyframes hedgeMiniBob{50%{transform:translateY(-3px) rotate(-3deg)}}
+  @keyframes hedgeMiniStar{0%,100%{opacity:.25;transform:scale(.75)}50%{opacity:1;transform:scale(1.35)}}
+
+  /* ---------- Основной экран ---------- */
+  #hedgePetOverlay{
+    position:fixed;
+    inset:0;
+    z-index:10300;
+    display:none;
+    overflow:auto;
+    color:#f7fff9;
+    font-family:Georgia,'Times New Roman',serif;
+    background:
+      radial-gradient(circle at 12% 8%,rgba(82,210,139,.13),transparent 27%),
+      radial-gradient(circle at 85% 15%,rgba(255,173,206,.10),transparent 28%),
+      linear-gradient(155deg,#08110e,#111915 50%,#170d17);
+  }
+  #hedgePetOverlay.open{display:block;animation:hedgeFade .36s ease}
+  @keyframes hedgeFade{from{opacity:0}to{opacity:1}}
+
+  .hedge-shell{
+    width:min(1080px,100%);
+    margin:0 auto;
+    padding:max(18px,env(safe-area-inset-top)) 16px max(30px,env(safe-area-inset-bottom));
+  }
+  .hedge-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:13px;
+  }
+  .hedge-close{
+    min-height:42px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:999px;
+    padding:0 15px;
+    cursor:pointer;
+    background:rgba(255,255,255,.055);
+    color:#effff4;
+    font:13px Georgia,serif;
+  }
+  .hedge-cloud{
+    max-width:58%;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    color:rgba(231,255,240,.52);
+    font-size:11px;
+    text-align:right;
+  }
+
+  .hedge-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:14px;
+    margin:4px 0 16px;
+  }
+  .hedge-title-wrap{min-width:0}
+  .hedge-eyebrow{
+    color:rgba(168,255,202,.60);
+    font-size:10px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+  }
+  .hedge-name{
+    margin:4px 0 2px;
+    font-size:clamp(30px,6vw,49px);
+    line-height:1;
+    font-weight:400;
+    font-style:italic;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hedge-stage-label{
+    color:rgba(238,250,243,.52);
+    font-size:12px;
+  }
+  .hedge-stars{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:9px 13px;
+    border:1px solid rgba(255,226,114,.14);
+    border-radius:999px;
+    background:rgba(255,226,114,.055);
+    color:#fff1a9;
+    font-size:14px;
+    box-shadow:inset 0 0 20px rgba(255,226,114,.025);
+  }
+
+  .hedge-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:13px;
+  }
+  .hedge-tab{
+    min-height:42px;
+    border:1px solid rgba(255,255,255,.075);
+    border-radius:999px;
+    padding:0 15px;
+    cursor:pointer;
+    background:rgba(255,255,255,.035);
+    color:rgba(242,251,246,.62);
+    font:13px Georgia,serif;
+    transition:.2s ease;
+  }
+  .hedge-tab.active{
+    color:#092014;
+    border-color:transparent;
+    background:linear-gradient(135deg,#d8ffe7,#87ffb8);
+    box-shadow:0 8px 25px rgba(91,255,159,.13);
+  }
+  .hedge-panel{display:none}
+  .hedge-panel.active{display:block;animation:hedgeFade .28s ease}
+
+  /* ---------- Дом ---------- */
+  .hedge-home-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.32fr) minmax(290px,.68fr);
+    gap:14px;
+  }
+  .hedge-room-card,.hedge-side-card,.hedge-shop-card,.hedge-mail-card{
+    border:1px solid rgba(255,255,255,.075);
+    border-radius:28px;
+    background:rgba(255,255,255,.032);
+    box-shadow:0 22px 60px rgba(0,0,0,.20);
+  }
+  .hedge-room-card{padding:13px;overflow:hidden}
+  .hedge-room{
+    position:relative;
+    min-height:560px;
+    overflow:hidden;
+    border-radius:22px;
+    background:
+      radial-gradient(circle at 73% 12%,rgba(255,244,196,.12),transparent 18%),
+      linear-gradient(180deg,#173025 0,#1b2b25 55%,#213120 56%,#172418 100%);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.25);
+  }
+  .hedge-room.night{
+    background:
+      radial-gradient(circle at 76% 12%,rgba(222,223,255,.10),transparent 17%),
+      linear-gradient(180deg,#10182a 0,#19212c 55%,#1e2724 56%,#141d19 100%);
+  }
+  .hedge-room.morning{
+    background:
+      radial-gradient(circle at 74% 12%,rgba(255,228,165,.21),transparent 19%),
+      linear-gradient(180deg,#4b6657 0,#415846 55%,#47563a 56%,#334332 100%);
+  }
+  .hedge-wall-line{
+    position:absolute;left:0;right:0;top:56%;height:1px;background:rgba(255,255,255,.045)
+  }
+  .hedge-window{
+    position:absolute;
+    right:7%;
+    top:7%;
+    width:28%;
+    max-width:170px;
+    aspect-ratio:1.15;
+    border:7px solid rgba(230,237,225,.13);
+    border-radius:5px;
+    background:linear-gradient(180deg,#101f32,#293944);
+    box-shadow:0 12px 28px rgba(0,0,0,.20),inset 0 0 28px rgba(255,255,255,.03)
+  }
+  .hedge-window::before,.hedge-window::after{
+    content:"";position:absolute;background:rgba(230,237,225,.12)
+  }
+  .hedge-window::before{left:50%;top:0;bottom:0;width:3px}
+  .hedge-window::after{top:50%;left:0;right:0;height:3px}
+  .hedge-moon{
+    position:absolute;right:14%;top:11%;width:20px;height:20px;border-radius:50%;
+    background:#fff1be;box-shadow:0 0 22px rgba(255,241,190,.35)
+  }
+  .hedge-room.morning .hedge-moon{
+    background:#ffd58e;box-shadow:0 0 30px rgba(255,207,116,.42)
+  }
+
+  .hedge-floor-rug{
+    position:absolute;left:50%;bottom:11%;transform:translateX(-50%);
+    width:55%;height:18%;border-radius:50%;
+    background:radial-gradient(ellipse,#385343 0,#284135 64%,transparent 66%);
+    opacity:.75
+  }
+  .hedge-floor-rug.cloud{
+    background:
+      radial-gradient(circle at 25% 55%,#dcefe7 0 25%,transparent 26%),
+      radial-gradient(circle at 45% 43%,#e9f5f0 0 32%,transparent 33%),
+      radial-gradient(circle at 66% 56%,#dcefe7 0 26%,transparent 27%),
+      linear-gradient(180deg,#eaf6f0,#cfe6dc);
+    width:52%;height:13%;border-radius:999px;opacity:.76
+  }
+
+  .hedge-decor{
+    position:absolute;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .35s ease,transform .35s ease;
+  }
+  .hedge-decor.show{opacity:1}
+
+  .hedge-star-lamp{
+    left:7%;bottom:20%;width:62px;height:125px;
+  }
+  .hedge-star-lamp::before{
+    content:"★";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    font-size:42px;color:#fff0a5;text-shadow:0 0 20px rgba(255,235,130,.68)
+  }
+  .hedge-star-lamp::after{
+    content:"";position:absolute;left:50%;top:42px;bottom:0;width:5px;
+    transform:translateX(-50%);background:#7c7767;border-radius:999px;
+    box-shadow:0 79px 0 13px #555248
+  }
+  .hedge-plant{
+    left:7%;bottom:12%;width:82px;height:105px;
+  }
+  .hedge-plant .pot{
+    position:absolute;bottom:0;left:18px;width:48px;height:38px;
+    border-radius:5px 5px 17px 17px;background:#80634f
+  }
+  .hedge-plant i{
+    position:absolute;bottom:34px;left:40px;width:16px;height:54px;border-radius:70% 5% 70% 5%;
+    transform-origin:bottom;background:linear-gradient(135deg,#74af7e,#3c7150)
+  }
+  .hedge-plant i:nth-child(2){transform:rotate(-42deg);height:45px}
+  .hedge-plant i:nth-child(3){transform:rotate(38deg);height:48px}
+  .hedge-plant i:nth-child(4){transform:rotate(-12deg);height:59px}
+
+  .hedge-photo-garland{
+    left:8%;top:12%;width:35%;height:80px;
+  }
+  .hedge-photo-garland::before{
+    content:"";position:absolute;left:0;right:0;top:13px;height:1px;
+    background:rgba(255,238,204,.35);transform:rotate(-3deg)
+  }
+  .hedge-photo-garland span{
+    position:absolute;top:18px;width:35px;height:43px;padding:3px;background:#f8f0e9;
+    box-shadow:0 5px 12px rgba(0,0,0,.18);transform:rotate(var(--r))
+  }
+  .hedge-photo-garland span::before{
+    content:"💚";display:grid;place-items:center;width:100%;height:30px;background:#c9ddd3;font-size:13px
+  }
+  .hedge-photo-garland span:nth-child(1){left:4%;--r:-7deg}
+  .hedge-photo-garland span:nth-child(2){left:34%;--r:5deg}
+  .hedge-photo-garland span:nth-child(3){left:65%;--r:-3deg}
+
+  .hedge-moon-pillow{
+    right:10%;bottom:15%;font-size:68px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.18));
+    transform:rotate(-10deg)
+  }
+
+  /* ---------- Ёжик ---------- */
+  .hedge-pet-zone{
+    position:absolute;
+    left:50%;
+    bottom:13%;
+    width:min(62%,430px);
+    aspect-ratio:1.25;
+    transform:translateX(-50%) scale(var(--hedgeScale,.78));
+    transform-origin:center bottom;
+    transition:transform .6s cubic-bezier(.2,.85,.25,1.15);
+  }
+  .hedge-pet-svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 20px 24px rgba(0,0,0,.28))}
+  .hedge-body-breathe{
+    transform-box:fill-box;transform-origin:center bottom;
+    animation:hedgeBreathe 2.8s ease-in-out infinite
+  }
+  @keyframes hedgeBreathe{50%{transform:scale(1.012,.985) translateY(1px)}}
+  .hedge-eye{transform-box:fill-box;transform-origin:center;animation:hedgeBlink 5.3s infinite}
+  @keyframes hedgeBlink{0%,45%,49%,100%{transform:scaleY(1)}47%{transform:scaleY(.08)}}
+  .hedge-ear{transform-box:fill-box;transform-origin:center bottom;animation:hedgeEar 6.2s ease-in-out infinite}
+  @keyframes hedgeEar{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(8deg)}94%{transform:rotate(-4deg)}}
+  .hedge-nose{animation:hedgeSniff 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes hedgeSniff{50%{transform:scale(1.08)}}
+
+  .hedge-outfit{opacity:0;transition:opacity .25s ease}
+  .hedge-outfit.show{opacity:1}
+  .hedge-sleep-eyes{opacity:0}
+  .hedge-sleeping .hedge-eye{opacity:0}
+  .hedge-sleeping .hedge-sleep-eyes{opacity:1}
+  .hedge-sleeping .hedge-body-breathe{animation-duration:4.4s}
+  .hedge-sleeping{filter:brightness(.88) saturate(.88)}
+
+  .hedge-zzz{
+    position:absolute;
+    right:13%;
+    top:7%;
+    opacity:0;
+    color:#dce4ff;
+    font-size:22px;
+    letter-spacing:6px;
+    pointer-events:none
+  }
+  .hedge-sleeping + .hedge-zzz,
+  .hedge-pet-zone.sleeping .hedge-zzz{opacity:.82;animation:hedgeZ 2.2s ease-in-out infinite}
+  @keyframes hedgeZ{50%{transform:translateY(-12px);opacity:.38}}
+
+  .hedge-toy{
+    position:absolute;left:67%;bottom:16%;font-size:52px;
+    transform:translateX(-50%);filter:drop-shadow(0 8px 8px rgba(0,0,0,.2));
+    opacity:0;transition:opacity .25s ease
+  }
+  .hedge-toy.show{opacity:1}
+  .hedge-toy.playing{animation:hedgeToyBounce .55s ease-in-out infinite alternate}
+  @keyframes hedgeToyBounce{to{transform:translate(-50%,-16px) rotate(9deg)}}
+
+  /* Action animation overlays */
+  .hedge-action-fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .hedge-action-fx span{
+    position:absolute;left:50%;top:57%;font-size:27px;opacity:0;
+    animation:hedgeFxFloat 1.15s cubic-bezier(.2,.8,.25,1) forwards
+  }
+  @keyframes hedgeFxFloat{
+    0%{opacity:0;transform:translate(-50%,0) scale(.4)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translate(var(--dx),-120px) scale(.85) rotate(var(--rot))}
+  }
+  .hedge-pet-zone.act-feed{animation:hedgeNibble .24s ease-in-out 7 alternate}
+  @keyframes hedgeNibble{to{transform:translateX(-50%) scale(var(--hedgeScale,.78)) translateY(3px) rotate(1.4deg)}}
+  .hedge-pet-zone.act-play{animation:hedgeHop .48s cubic-bezier(.2,.9,.25,1.2) 3}
+  @keyframes hedgeHop{
+    0%,100%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) translateY(0)}
+    50%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) translateY(-24px) rotate(-3deg)}
+  }
+  .hedge-pet-zone.act-bath{animation:hedgeBath .35s ease-in-out 5 alternate}
+  @keyframes hedgeBath{to{transform:translateX(-50%) scale(var(--hedgeScale,.78)) rotate(2deg)}}
+  .hedge-pet-zone.act-brush .hedge-pet-svg{animation:hedgeShine 1.4s ease}
+  @keyframes hedgeShine{50%{filter:drop-shadow(0 20px 24px rgba(0,0,0,.28)) drop-shadow(0 0 26px rgba(196,255,221,.58))}}
+  .hedge-pet-zone.rare-spin{animation:hedgeRareSpin .82s cubic-bezier(.2,.8,.25,1.2)}
+  @keyframes hedgeRareSpin{
+    0%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) rotate(0)}
+    55%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) rotate(365deg) translateY(-12px)}
+    100%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) rotate(360deg)}
+  }
+  .hedge-pet-zone.rare-float{animation:hedgeRareFloat 1.8s ease-in-out}
+  @keyframes hedgeRareFloat{
+    0%,100%{transform:translateX(-50%) scale(var(--hedgeScale,.78))}
+    45%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) translateY(-72px) rotate(-4deg)}
+    68%{transform:translateX(-50%) scale(var(--hedgeScale,.78)) translateY(-66px) rotate(4deg)}
+  }
+  .hedge-pet-zone.rare-zoom{animation:hedgeZoomies .32s ease-in-out 6 alternate}
+  @keyframes hedgeZoomies{
+    from{transform:translateX(calc(-50% - 70px)) scale(var(--hedgeScale,.78)) rotate(-3deg)}
+    to{transform:translateX(calc(-50% + 70px)) scale(var(--hedgeScale,.78)) rotate(3deg)}
+  }
+  .hedge-pet-zone.rare-rainbow .hedge-pet-svg{animation:hedgeRainbow 1.8s linear}
+  @keyframes hedgeRainbow{to{filter:hue-rotate(360deg) drop-shadow(0 20px 24px rgba(0,0,0,.28))}}
+
+  /* ---------- Правая колонка ---------- */
+  .hedge-side{display:grid;gap:12px;align-content:start}
+  .hedge-side-card{padding:16px}
+  .hedge-side-title{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-bottom:12px;color:#f3fff7;font-size:15px
+  }
+  .hedge-stat{margin:10px 0}
+  .hedge-stat-top{
+    display:flex;justify-content:space-between;gap:10px;margin-bottom:5px;
+    color:rgba(239,250,243,.58);font-size:11px
+  }
+  .hedge-stat-bar{
+    height:9px;border-radius:999px;background:rgba(255,255,255,.055);overflow:hidden
+  }
+  .hedge-stat-bar i{
+    display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,#72eaa5,#b8ffd1);
+    transition:width .6s ease
+  }
+  .hedge-stat-bar.energy i{background:linear-gradient(90deg,#aebcff,#d9e0ff)}
+  .hedge-stat-bar.fun i{background:linear-gradient(90deg,#ff9cc0,#ffd0e0)}
+  .hedge-stat-bar.clean i{background:linear-gradient(90deg,#8fcdf7,#d7f1ff)}
+
+  .hedge-growth{
+    margin-top:13px;padding-top:12px;border-top:1px solid rgba(255,255,255,.055)
+  }
+  .hedge-growth-top{
+    display:flex;justify-content:space-between;gap:10px;margin-bottom:7px;
+    color:rgba(236,248,241,.58);font-size:11px
+  }
+  .hedge-growth-bar{height:8px;border-radius:999px;background:rgba(255,255,255,.055);overflow:hidden}
+  .hedge-growth-bar i{
+    display:block;height:100%;width:0;background:linear-gradient(90deg,#fff0a5,#99ffc2);
+    transition:width .6s ease
+  }
+
+  .hedge-daily-list{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:7px
+  }
+  .hedge-daily-item{
+    min-width:0;text-align:center;padding:9px 3px;border-radius:13px;
+    background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.045);
+    color:rgba(244,252,247,.38);font-size:16px
+  }
+  .hedge-daily-item span{display:block;margin-top:3px;font-size:9px}
+  .hedge-daily-item.done{
+    color:#b9ffd1;background:rgba(94,255,157,.055);border-color:rgba(94,255,157,.11)
+  }
+  .hedge-daily-bonus{
+    margin-top:9px;color:rgba(255,235,156,.55);font-size:10px;line-height:1.45
+  }
+
+  .hedge-actions{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:8px;
+    margin-top:13px
+  }
+  .hedge-action{
+    min-height:72px;
+    border:1px solid rgba(255,255,255,.065);
+    border-radius:17px;
+    padding:9px 5px;
+    cursor:pointer;
+    background:rgba(255,255,255,.038);
+    color:#f1fff5;
+    font:11px/1.25 Georgia,serif;
+    transition:.2s ease
+  }
+  .hedge-action b{display:block;font-size:21px;margin-bottom:5px}
+  .hedge-action:hover{transform:translateY(-2px);background:rgba(255,255,255,.065)}
+  .hedge-action:disabled{opacity:.33;cursor:default;transform:none}
+  .hedge-action.sleeping{
+    background:rgba(178,187,255,.06);border-color:rgba(178,187,255,.11)
+  }
+
+  .hedge-message{
+    min-height:52px;
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:17px;
+    display:flex;
+    align-items:center;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.045);
+    color:rgba(244,252,247,.67);
+    font-size:12px;
+    line-height:1.5
+  }
+  .hedge-message strong{color:#c7ffd9;font-weight:400}
+
+  /* ---------- Магазин ---------- */
+  .hedge-shop-card{padding:18px}
+  .hedge-shop-head{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:13px
+  }
+  .hedge-shop-head h3,.hedge-mail-head h3{margin:0;font-weight:400;font-size:28px}
+  .hedge-shop-head p,.hedge-mail-head p{
+    margin:5px 0 0;color:rgba(237,249,242,.52);font-size:12px;line-height:1.5
+  }
+  .hedge-shop-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:15px 0}
+  .hedge-shop-tab{
+    min-height:38px;border:1px solid rgba(255,255,255,.06);border-radius:999px;
+    padding:0 13px;cursor:pointer;background:rgba(255,255,255,.03);
+    color:rgba(242,251,246,.56);font:12px Georgia,serif
+  }
+  .hedge-shop-tab.active{color:#082014;background:#a9ffca;border-color:transparent}
+  .hedge-shop-grid{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px
+  }
+  .hedge-item{
+    min-width:0;position:relative;padding:15px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.065);
+    background:linear-gradient(155deg,rgba(255,255,255,.047),rgba(255,255,255,.022))
+  }
+  .hedge-item-icon{
+    width:48px;height:48px;display:grid;place-items:center;border-radius:15px;
+    background:rgba(255,255,255,.055);font-size:27px
+  }
+  .hedge-item h4{margin:11px 0 5px;font-size:16px;font-weight:400}
+  .hedge-item p{
+    min-height:35px;margin:0;color:rgba(239,249,243,.45);font-size:10px;line-height:1.45
+  }
+  .hedge-item-bottom{
+    display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:12px
+  }
+  .hedge-price{color:#fff0a9;font-size:11px}
+  .hedge-buy{
+    min-height:34px;border:0;border-radius:999px;padding:0 11px;cursor:pointer;
+    color:#072015;background:linear-gradient(135deg,#dcffe8,#88ffb9);font:700 10px Georgia,serif
+  }
+  .hedge-buy.secondary{color:#f0fff5;background:rgba(255,255,255,.075)}
+  .hedge-buy:disabled{opacity:.38;cursor:default}
+  .hedge-owned{
+    position:absolute;right:10px;top:10px;font-size:9px;color:rgba(174,255,204,.62)
+  }
+
+  /* ---------- Письма ---------- */
+  .hedge-mail-card{padding:18px}
+  .hedge-mail-head{margin-bottom:15px}
+  .hedge-mail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .hedge-letter{
+    position:relative;min-height:120px;padding:17px;border-radius:20px;
+    border:1px solid rgba(255,255,255,.065);
+    background:
+      radial-gradient(circle at 92% 10%,rgba(255,187,213,.09),transparent 34%),
+      rgba(255,255,255,.032)
+  }
+  .hedge-letter.locked{
+    display:grid;place-items:center;color:rgba(242,250,246,.25);font-size:13px;text-align:center
+  }
+  .hedge-letter .num{color:rgba(171,255,204,.48);font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+  .hedge-letter p{margin:9px 0 0;color:rgba(246,252,248,.70);font-size:13px;line-height:1.58}
+  .hedge-mail-empty{
+    padding:30px 18px;text-align:center;color:rgba(241,250,245,.42);font-size:13px
+  }
+
+  /* ---------- Naming / auth ---------- */
+  .hedge-modal{
+    position:fixed;inset:0;z-index:10380;display:none;align-items:center;justify-content:center;
+    padding:22px;background:rgba(2,5,4,.82);backdrop-filter:blur(10px)
+  }
+  .hedge-modal.show{display:flex;animation:hedgeFade .28s ease}
+  .hedge-modal-card{
+    width:min(470px,100%);
+    text-align:center;
+    padding:28px 24px;
+    border-radius:27px;
+    background:
+      radial-gradient(circle at 50% 0,rgba(117,255,174,.11),transparent 35%),
+      linear-gradient(155deg,#15231d,#17131b);
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 30px 90px rgba(0,0,0,.55)
+  }
+  .hedge-modal-icon{font-size:65px;margin-bottom:7px}
+  .hedge-modal-card h3{margin:0 0 8px;font-size:29px;font-weight:400}
+  .hedge-modal-card p{margin:0 auto 16px;max-width:390px;color:rgba(239,249,243,.58);font-size:13px;line-height:1.6}
+  .hedge-name-input,.hedge-auth-input{
+    width:100%;box-sizing:border-box;min-height:44px;border:1px solid rgba(255,255,255,.08);
+    border-radius:13px;padding:0 13px;outline:none;background:rgba(0,0,0,.18);
+    color:#f7fff9;font:15px Georgia,serif
+  }
+  .hedge-name-input:focus,.hedge-auth-input:focus{
+    border-color:rgba(121,255,177,.27);box-shadow:0 0 0 4px rgba(82,255,155,.045)
+  }
+  .hedge-modal-main{
+    width:100%;min-height:44px;margin-top:10px;border:0;border-radius:999px;cursor:pointer;
+    color:#062014;background:linear-gradient(135deg,#d8ffe7,#83ffb7);font:700 13px Georgia,serif
+  }
+  .hedge-auth-grid{display:grid;gap:8px;margin-top:11px}
+  .hedge-modal-state{min-height:18px;margin-top:9px;color:rgba(255,220,230,.67);font-size:11px}
+
+  /* ---------- Toast / level up ---------- */
+  .hedge-toast{
+    position:fixed;left:50%;bottom:max(23px,calc(env(safe-area-inset-bottom) + 16px));
+    z-index:10420;
+    width:min(88vw,520px);
+    transform:translate(-50%,18px);
+    opacity:0;
+    pointer-events:none;
+    padding:13px 15px;
+    border-radius:18px;
+    text-align:center;
+    background:rgba(15,23,19,.92);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 18px 48px rgba(0,0,0,.42);
+    color:#f2fff6;
+    font-size:12px;
+    line-height:1.5;
+    transition:opacity .28s ease,transform .28s ease
+  }
+  .hedge-toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .hedge-level{
+    position:fixed;inset:0;z-index:10410;display:none;align-items:center;justify-content:center;
+    pointer-events:none;background:rgba(3,6,5,.38)
+  }
+  .hedge-level.show{display:flex;animation:hedgeFade .25s ease}
+  .hedge-level-card{
+    text-align:center;padding:27px 30px;border-radius:25px;
+    background:rgba(15,25,20,.94);border:1px solid rgba(152,255,194,.15);
+    box-shadow:0 24px 80px rgba(0,0,0,.5)
+  }
+  .hedge-level-card b{display:block;font-size:47px;margin-bottom:6px}
+  .hedge-level-card strong{display:block;font-size:27px;font-weight:400;margin-bottom:6px}
+  .hedge-level-card span{color:rgba(237,249,242,.57);font-size:12px}
+
+  .hedge-fx-layer{
+    position:fixed;inset:0;z-index:10430;pointer-events:none;overflow:hidden
+  }
+  .hedge-fx-layer span{
+    position:absolute;animation:hedgeGlobalFx 1.45s cubic-bezier(.18,.8,.25,1) forwards;
+    filter:drop-shadow(0 4px 7px rgba(0,0,0,.18))
+  }
+  @keyframes hedgeGlobalFx{
+    0%{opacity:0;transform:translate(-50%,0) scale(.3)}
+    18%{opacity:1}
+    100%{opacity:0;transform:translate(var(--dx),-150px) scale(.72) rotate(var(--rot))}
+  }
+
+  @media(max-width:820px){
+    .hedge-home-grid{grid-template-columns:1fr}
+    .hedge-room{min-height:500px}
+    .hedge-shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media(max-width:560px){
+    #hedgePetOpen{left:12px;bottom:max(82px,calc(env(safe-area-inset-bottom) + 82px));width:52px;height:52px}
+    .hedge-shell{padding-left:10px;padding-right:10px}
+    .hedge-head{align-items:flex-start}
+    .hedge-stars{padding:8px 10px}
+    .hedge-room{min-height:445px}
+    .hedge-pet-zone{width:79%;bottom:13%}
+    .hedge-window{width:34%;right:5%}
+    .hedge-actions{grid-template-columns:repeat(3,1fr)}
+    .hedge-shop-grid,.hedge-mail-grid{grid-template-columns:1fr}
+    .hedge-daily-list{gap:5px}
+    .hedge-daily-item{font-size:14px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #hedgePetOverlay *{animation-duration:.001ms!important;animation-iteration-count:1!important}
+  }
+</style>
+
+<button id="hedgePetOpen" type="button" aria-label="Открыть питомца Звёздочки">
+  <span class="hedge-mini">🦔</span>
+</button>
+
+<div id="hedgePetOverlay" aria-hidden="true">
+  <div class="hedge-shell">
+    <div class="hedge-top">
+      <button class="hedge-close" id="hedgePetClose" type="button">‹ на сайт</button>
+      <div class="hedge-cloud" id="hedgeCloudState">● подключаем облако…</div>
+    </div>
+
+    <div class="hedge-head">
+      <div class="hedge-title-wrap">
+        <div class="hedge-eyebrow">питомец Звёздочки ✦</div>
+        <h2 class="hedge-name" id="hedgePetName">ёжик</h2>
+        <div class="hedge-stage-label" id="hedgeStageLabel">колючий малыш</div>
+      </div>
+      <div class="hedge-stars">⭐ <span id="hedgeStarsCount">0</span></div>
+    </div>
+
+    <div class="hedge-tabs">
+      <button class="hedge-tab active" type="button" data-hedge-tab="home">домик</button>
+      <button class="hedge-tab" type="button" data-hedge-tab="shop">магазин</button>
+      <button class="hedge-tab" type="button" data-hedge-tab="mail">почта от меня <span id="hedgeMailBadge"></span></button>
+    </div>
+
+    <!-- ДОМ -->
+    <section class="hedge-panel active" id="hedgePanelHome">
+      <div class="hedge-home-grid">
+        <div class="hedge-room-card">
+          <div class="hedge-room" id="hedgeRoom">
+            <div class="hedge-wall-line"></div>
+            <div class="hedge-window"></div>
+            <div class="hedge-moon"></div>
+            <div class="hedge-floor-rug" id="hedgeRug"></div>
+
+            <div class="hedge-decor hedge-star-lamp" id="hedgeDecorLamp"></div>
+
+            <div class="hedge-decor hedge-plant" id="hedgeDecorPlant">
+              <i></i><i></i><i></i><i></i><span class="pot"></span>
+            </div>
+
+            <div class="hedge-decor hedge-photo-garland" id="hedgeDecorPhotos">
+              <span></span><span></span><span></span>
+            </div>
+
+            <div class="hedge-decor hedge-moon-pillow" id="hedgeDecorPillow">🌙</div>
+
+            <div class="hedge-pet-zone" id="hedgePetZone" style="--hedgeScale:.72">
+              <svg class="hedge-pet-svg" viewBox="0 0 440 350" role="img" aria-label="Анимированный ёжик">
+                <defs>
+                  <radialGradient id="hedgeBelly" cx="42%" cy="33%" r="70%">
+                    <stop offset="0%" stop-color="#f6d7b7"/>
+                    <stop offset="62%" stop-color="#dcae84"/>
+                    <stop offset="100%" stop-color="#bd8566"/>
+                  </radialGradient>
+                  <linearGradient id="hedgeQuills" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#4e463d"/>
+                    <stop offset="52%" stop-color="#332f2c"/>
+                    <stop offset="100%" stop-color="#201f20"/>
+                  </linearGradient>
+                  <linearGradient id="hedgeFace" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#e7bf98"/>
+                    <stop offset="100%" stop-color="#bd8c6b"/>
+                  </linearGradient>
+                  <filter id="hedgeSoftShadow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity=".22"/>
+                  </filter>
+                </defs>
+
+                <g class="hedge-body-breathe" filter="url(#hedgeSoftShadow)">
+                  <!-- иголки -->
+                  <path d="M101 222 C62 187 70 119 119 82 C167 45 252 45 316 89
+                           C365 122 383 187 344 237 C310 280 238 297 173 276
+                           C143 266 119 247 101 222 Z"
+                        fill="url(#hedgeQuills)"/>
+                  <!-- колючки -->
+                  <g stroke="#665d51" stroke-width="8" stroke-linecap="round" opacity=".92">
+                    <path d="M102 169 L67 137"/><path d="M115 129 L91 90"/><path d="M145 105 L132 61"/>
+                    <path d="M181 91 L177 45"/><path d="M220 87 L225 42"/><path d="M260 93 L276 50"/>
+                    <path d="M296 108 L322 70"/><path d="M324 131 L357 101"/><path d="M342 164 L383 145"/>
+                    <path d="M348 198 L390 190"/><path d="M333 231 L374 241"/><path d="M305 257 L337 286"/>
+                    <path d="M270 273 L287 312"/><path d="M229 281 L231 320"/><path d="M188 276 L178 315"/>
+                    <path d="M151 262 L125 297"/><path d="M123 238 L87 263"/><path d="M104 207 L61 216"/>
+                  </g>
+
+                  <!-- лицо и пузико -->
+                  <ellipse cx="224" cy="205" rx="118" ry="95" fill="url(#hedgeBelly)"/>
+                  <path d="M251 145 C303 138 343 157 369 188
+                           C342 204 320 218 292 233
+                           C287 195 274 167 251 145 Z"
+                        fill="url(#hedgeFace)"/>
+                  <ellipse cx="348" cy="188" rx="26" ry="23" fill="url(#hedgeFace)"/>
+
+                  <!-- ушки -->
+                  <ellipse class="hedge-ear" cx="252" cy="147" rx="24" ry="25" fill="#b97f68"/>
+                  <ellipse cx="252" cy="148" rx="14" ry="15" fill="#e0a58a"/>
+
+                  <!-- глаза -->
+                  <ellipse class="hedge-eye" cx="299" cy="171" rx="7" ry="9" fill="#211e20"/>
+                  <ellipse cx="301" cy="168" rx="2.2" ry="2.5" fill="#fff" opacity=".86"/>
+                  <path class="hedge-sleep-eyes" d="M291 173 Q300 181 309 173" stroke="#3a2d2c" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+                  <!-- нос -->
+                  <ellipse class="hedge-nose" cx="374" cy="188" rx="13" ry="10" fill="#17171a"/>
+                  <ellipse cx="370" cy="184" rx="3" ry="2" fill="#fff" opacity=".55"/>
+
+                  <!-- улыбка -->
+                  <path d="M326 207 Q338 217 350 207" stroke="#765149" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+
+                  <!-- румянец -->
+                  <ellipse cx="302" cy="202" rx="17" ry="9" fill="#e78491" opacity=".18"/>
+
+                  <!-- лапки -->
+                  <ellipse cx="180" cy="281" rx="31" ry="15" fill="#bb8669"/>
+                  <ellipse cx="286" cy="282" rx="31" ry="15" fill="#bb8669"/>
+
+                  <!-- шарфик -->
+                  <g class="hedge-outfit" id="hedgeOutfitScarf">
+                    <path d="M257 222 Q298 230 329 216 Q327 239 298 246 Q271 244 257 222Z" fill="#51bf79"/>
+                    <path d="M292 241 Q310 254 300 287 L281 278 Q293 261 292 241Z" fill="#3f9e63"/>
+                  </g>
+
+                  <!-- бантик -->
+                  <g class="hedge-outfit" id="hedgeOutfitBow">
+                    <path d="M278 227 C258 212 248 224 254 240 C263 253 276 245 286 237Z" fill="#e981aa"/>
+                    <path d="M299 227 C319 212 329 224 323 240 C314 253 301 245 291 237Z" fill="#e981aa"/>
+                    <circle cx="289" cy="234" r="10" fill="#c95d89"/>
+                  </g>
+
+                  <!-- пижамка -->
+                  <g class="hedge-outfit" id="hedgeOutfitPajamas">
+                    <path d="M157 223 Q224 251 291 228 L304 273 Q232 304 166 274Z" fill="#6c77aa" opacity=".92"/>
+                    <g fill="#dce2ff" opacity=".82">
+                      <circle cx="190" cy="250" r="4"/><circle cx="221" cy="270" r="4"/><circle cx="256" cy="248" r="4"/><circle cx="279" cy="272" r="3.5"/>
+                    </g>
+                  </g>
+
+                  <!-- корона -->
+                  <g class="hedge-outfit" id="hedgeOutfitCrown">
+                    <path d="M222 104 L238 78 L253 100 L270 73 L286 102 L301 81 L309 115 Q265 126 222 115Z" fill="#f1c94f"/>
+                    <circle cx="270" cy="91" r="5" fill="#85e4ad"/>
+                  </g>
+                </g>
+              </svg>
+              <div class="hedge-zzz">z z z</div>
+              <div class="hedge-action-fx" id="hedgeActionFx"></div>
+            </div>
+
+            <div class="hedge-toy" id="hedgeToy"></div>
+          </div>
+
+          <div class="hedge-actions">
+            <button class="hedge-action" type="button" data-hedge-action="feed"><b>🍎</b>покормить</button>
+            <button class="hedge-action" type="button" data-hedge-action="play"><b>🧶</b>поиграть</button>
+            <button class="hedge-action" type="button" data-hedge-action="bath"><b>🫧</b>помыть</button>
+            <button class="hedge-action" type="button" data-hedge-action="brush"><b>🪮</b>иголки</button>
+            <button class="hedge-action sleeping" type="button" data-hedge-action="sleep"><b>🌙</b>уложить</button>
+          </div>
+
+          <div class="hedge-message" id="hedgePetMessage">
+            <strong>Ёжик&nbsp;</strong> ждёт свою Звёздочку.
+          </div>
+        </div>
+
+        <aside class="hedge-side">
+          <div class="hedge-side-card">
+            <div class="hedge-side-title"><span>как он себя чувствует</span><span id="hedgeMoodEmoji">💚</span></div>
+
+            <div class="hedge-stat">
+              <div class="hedge-stat-top"><span>🍎 сытость</span><span id="hedgeHungerText">100%</span></div>
+              <div class="hedge-stat-bar"><i id="hedgeHungerBar"></i></div>
+            </div>
+            <div class="hedge-stat">
+              <div class="hedge-stat-top"><span>💗 настроение</span><span id="hedgeFunText">100%</span></div>
+              <div class="hedge-stat-bar fun"><i id="hedgeFunBar"></i></div>
+            </div>
+            <div class="hedge-stat">
+              <div class="hedge-stat-top"><span>🫧 чистота</span><span id="hedgeCleanText">100%</span></div>
+              <div class="hedge-stat-bar clean"><i id="hedgeCleanBar"></i></div>
+            </div>
+            <div class="hedge-stat">
+              <div class="hedge-stat-top"><span>🌙 энергия</span><span id="hedgeEnergyText">100%</span></div>
+              <div class="hedge-stat-bar energy"><i id="hedgeEnergyBar"></i></div>
+            </div>
+
+            <div class="hedge-growth">
+              <div class="hedge-growth-top"><span>рост</span><span id="hedgeGrowthText">0 / 35</span></div>
+              <div class="hedge-growth-bar"><i id="hedgeGrowthBar"></i></div>
+            </div>
+          </div>
+
+          <div class="hedge-side-card">
+            <div class="hedge-side-title"><span>забота сегодня</span><span>+8 ⭐</span></div>
+            <div class="hedge-daily-list">
+              <div class="hedge-daily-item" data-daily="feed">🍎<span>еда</span></div>
+              <div class="hedge-daily-item" data-daily="play">🧶<span>игра</span></div>
+              <div class="hedge-daily-item" data-daily="bath">🫧<span>ванна</span></div>
+              <div class="hedge-daily-item" data-daily="brush">🪮<span>иголки</span></div>
+              <div class="hedge-daily-item" data-daily="sleep">🌙<span>сон</span></div>
+            </div>
+            <div class="hedge-daily-bonus" id="hedgeDailyBonus">За полный круг заботы ёжик дарит бонусные звёздочки и иногда открывает новое письмо от меня.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- МАГАЗИН -->
+    <section class="hedge-panel" id="hedgePanelShop">
+      <div class="hedge-shop-card">
+        <div class="hedge-shop-head">
+          <div>
+            <h3>Магазин ёжика</h3>
+            <p>Звёздочки нельзя купить за деньги — только заработать заботой о ёжике.</p>
+          </div>
+          <div class="hedge-stars">⭐ <span id="hedgeShopStars">0</span></div>
+        </div>
+
+        <div class="hedge-shop-tabs">
+          <button class="hedge-shop-tab active" type="button" data-shop-cat="outfit">наряды</button>
+          <button class="hedge-shop-tab" type="button" data-shop-cat="decor">домик</button>
+          <button class="hedge-shop-tab" type="button" data-shop-cat="toy">игрушки</button>
+          <button class="hedge-shop-tab" type="button" data-shop-cat="treat">вкусняшки</button>
+        </div>
+
+        <div class="hedge-shop-grid" id="hedgeShopGrid"></div>
+      </div>
+    </section>
+
+    <!-- ПОЧТА -->
+    <section class="hedge-panel" id="hedgePanelMail">
+      <div class="hedge-mail-card">
+        <div class="hedge-mail-head">
+          <h3>Почта от меня 💌</h3>
+          <p>Некоторые записки открываются, пока ты заботишься о ёжике. Они никуда не пропадут.</p>
+        </div>
+        <div class="hedge-mail-grid" id="hedgeMailGrid"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Первое имя -->
+<div class="hedge-modal" id="hedgeNameModal">
+  <div class="hedge-modal-card">
+    <div class="hedge-modal-icon">🦔</div>
+    <h3>Он только что появился</h3>
+    <p>Это твой маленький ёжик. Имя останется с ним и будет храниться вместе со всем прогрессом.</p>
+    <input class="hedge-name-input" id="hedgeNameInput" maxlength="18" placeholder="Как его назовём?">
+    <button class="hedge-modal-main" id="hedgeNameSave" type="button">дать имя ✦</button>
+    <div class="hedge-modal-state" id="hedgeNameState"></div>
+  </div>
+</div>
+
+<!-- Одноразовый вход, если Firebase ещё не запомнил сессию -->
+<div class="hedge-modal" id="hedgeAuthModal">
+  <div class="hedge-modal-card">
+    <div class="hedge-modal-icon">☁️</div>
+    <h3>Сохраним ёжика в облаке</h3>
+    <p>Войди в тот же аккаунт Firebase, что используется для общего блокнота. После первого входа браузер запомнит тебя, и прогресс не придётся начинать заново.</p>
+    <div class="hedge-auth-grid">
+      <input class="hedge-auth-input" id="hedgeAuthEmail" type="email" autocomplete="username" placeholder="E-mail">
+      <input class="hedge-auth-input" id="hedgeAuthPassword" type="password" autocomplete="current-password" placeholder="Пароль">
+    </div>
+    <button class="hedge-modal-main" id="hedgeAuthLogin" type="button">войти и открыть ёжика ✦</button>
+    <div class="hedge-modal-state" id="hedgeAuthState"></div>
+  </div>
+</div>
+
+<div class="hedge-toast" id="hedgeToast"></div>
+<div class="hedge-level" id="hedgeLevel">
+  <div class="hedge-level-card">
+    <b>🦔✨</b>
+    <strong id="hedgeLevelTitle">Ёжик подрос!</strong>
+    <span id="hedgeLevelText"></span>
+  </div>
+</div>
+<div class="hedge-fx-layer" id="hedgeFxLayer" aria-hidden="true"></div>
+
+<script type="module">
+import { getApps, getApp, initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+  getAuth, setPersistence, browserLocalPersistence,
+  onAuthStateChanged, signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {
+  getFirestore, doc, onSnapshot, setDoc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+(() => {
+  /* ============================================================
+     Настройки Firebase / права
+     ============================================================ */
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCQ4Mx2l60D0KBt8zS6TzroHaJ4SpIlZ7s",
+    authDomain: "zametki-79427.firebaseapp.com",
+    projectId: "zametki-79427",
+    storageBucket: "zametki-79427.firebasestorage.app",
+    messagingSenderId: "630129759584",
+    appId: "1:630129759584:web:b339276bd11ff0ac6a3a05",
+    measurementId: "G-8C8X4GPM59"
+  };
+
+  const HER_UID = "BYmhRqqXQQPKPTOnrjzEFTfNL3D3";
+  const HIS_UID = "IG3jAerjnHZekX8gEn51AQq6Oli1";
+  const PAIR_UIDS = new Set([HER_UID,HIS_UID]);
+  const LOCAL_KEY = "zvezdochka_hedgehog_v1";
+  const PET_DOC_PATH = ["pets","zvezdochka-hedgehog"];
+
+  const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const petRef = doc(db,...PET_DOC_PATH);
+  setPersistence(auth,browserLocalPersistence).catch(()=>{});
+
+  /* ============================================================
+     Игровой баланс
+     ============================================================ */
+  const HOUR = 3600000;
+  const COOLDOWNS = {
+    feed: 1.5 * HOUR,
+    play: 1.5 * HOUR,
+    bath: 3 * HOUR,
+    brush: 2 * HOUR,
+    sleep: 4 * HOUR
+  };
+  const SLEEP_MS = 45 * 60 * 1000;
+  const DAILY_ACTIONS = ["feed","play","bath","brush","sleep"];
+
+  const STAGES = [
+    {xp:0,   next:35,  name:"колючий малыш",        scale:.72},
+    {xp:35,  next:90,  name:"любопытный ёжик",      scale:.80},
+    {xp:90,  next:170, name:"смелый исследователь", scale:.89},
+    {xp:170, next:280, name:"уютный взрослый ёж",   scale:.98},
+    {xp:280, next:null,name:"звёздный хранитель",   scale:1.07}
+  ];
+
+  const CARE_MESSAGES = [
+    "Ты умеешь заботиться о маленьких вещах так тепло. Мне в тебе это очень нравится 💚",
+    "Мне нравится твоя нежность — даже когда ты делаешь вид, что совсем не нежная.",
+    "Ты невероятно важный для меня человек. Просто напоминание на случай, если сегодня ты об этом забыла.",
+    "Когда ты улыбаешься, у меня будто становится немного спокойнее весь мир.",
+    "Я очень люблю то, насколько ты живая, настоящая и совершенно не похожая ни на кого.",
+    "Ты умеешь делать обычные моменты теми, которые потом почему-то хочется помнить.",
+    "Мне нравится быть рядом с тобой даже тогда, когда мы вообще ничего особенного не делаем.",
+    "Я очень дорожу тобой. Не за что-то конкретное — просто потому что ты это ты.",
+    "Ты моя любимая Звёздочка, и я всё ещё каждый раз радуюсь тому, что встретил именно тебя.",
+    "Пусть сегодня у тебя найдётся хотя бы один момент, когда тебе станет по-настоящему спокойно и хорошо.",
+    "Если день был тяжёлым — ты не обязана быть идеальной. Для меня ты всё равно очень дорогая.",
+    "Мне нравится твоя дерзость, твоя мягкость, твой характер и все эти совершенно разные стороны тебя.",
+    "Иногда мне достаточно просто знать, что ты есть, чтобы настроение уже стало лучше.",
+    "Я хочу, чтобы у тебя было как можно больше дней, которыми ты сама будешь довольна.",
+    "Ты гораздо сильнее и красивее внутри, чем иногда сама себе позволяешь заметить.",
+    "Спасибо за наши разговоры, глупости, тишину, смех и всё то маленькое, из чего складываемся мы.",
+    "Мне очень нравится заботиться о тебе — и ещё больше нравится видеть, когда ты заботишься о себе.",
+    "Пускай этот маленький ёжик сегодня напомнит: ты заслуживаешь тепла, отдыха и добрых слов.",
+    "Я люблю тебя не только в яркие моменты. Мне дороги и самые обычные твои дни.",
+    "Ты тот человек, к которому мне хочется возвращаться снова и снова."
+  ];
+
+  const SHOP = [
+    {id:"scarf",cat:"outfit",icon:"🧣",name:"Зелёный шарфик",desc:"Маленький шарфик любимого зелёного цвета.",cost:12},
+    {id:"bow",cat:"outfit",icon:"🎀",name:"Розовый бантик",desc:"Когда ёжик решил выглядеть особенно нарядно.",cost:18},
+    {id:"pajamas",cat:"outfit",icon:"🌙",name:"Звёздная пижамка",desc:"Для максимально серьёзного вечернего отдыха.",cost:28},
+    {id:"crown",cat:"outfit",icon:"👑",name:"Крошечная корона",desc:"Потому что иногда он явно считает себя королём квартиры.",cost:45},
+
+    {id:"lamp",cat:"decor",icon:"⭐",name:"Звёздная лампа",desc:"Тёплый свет рядом с домиком.",cost:15},
+    {id:"plant",cat:"decor",icon:"🌿",name:"Колючее растение",desc:"Сосед, с которым можно молчать часами.",cost:12},
+    {id:"rug",cat:"decor",icon:"☁️",name:"Облачный коврик",desc:"Мягкое облако прямо на полу.",cost:20},
+    {id:"pillow",cat:"decor",icon:"🌙",name:"Лунная подушка",desc:"Для особенно уютного сна.",cost:24},
+    {id:"photos",cat:"decor",icon:"🖼️",name:"Гирлянда воспоминаний",desc:"Несколько маленьких сердечек на стене.",cost:35},
+
+    {id:"ball",cat:"toy",icon:"⚽",name:"Мячик",desc:"Почти профессиональный ёжовый спорт.",cost:8},
+    {id:"pig",cat:"toy",icon:"🐷",name:"Плюшевая свинка",desc:"Очень серьёзный товарищ для разговоров.",cost:18},
+    {id:"owl",cat:"toy",icon:"🦉",name:"Игрушечная сова",desc:"Наша сова получила миниатюрную версию.",cost:22},
+    {id:"car",cat:"toy",icon:"🚗",name:"Маленькая машинка",desc:"Главное — не улететь на ней в кювет.",cost:26},
+
+    {id:"strawberry",cat:"treat",icon:"🍓",name:"Клубничка",desc:"Просто очень вкусная. + немного настроения.",cost:5},
+    {id:"starcookie",cat:"treat",icon:"🌟",name:"Звёздное печенье",desc:"Иногда после него ёжик внезапно начинает танцевать.",cost:10},
+    {id:"moonberry",cat:"treat",icon:"🫐",name:"Лунная ягодка",desc:"Редкая вкусняшка с очень странным эффектом.",cost:14},
+    {id:"mystery",cat:"treat",icon:"🌰",name:"Таинственный жёлудь",desc:"Никто не знает, что ёжик вытворит после него.",cost:18}
+  ];
+
+  const TOY_ICONS = {ball:"⚽",pig:"🐷",owl:"🦉",car:"🚗"};
+
+  /* ============================================================
+     DOM
+     ============================================================ */
+  const openBtn = document.getElementById("hedgePetOpen");
+  const overlay = document.getElementById("hedgePetOverlay");
+  const closeBtn = document.getElementById("hedgePetClose");
+  const cloudState = document.getElementById("hedgeCloudState");
+  const petNameEl = document.getElementById("hedgePetName");
+  const stageLabel = document.getElementById("hedgeStageLabel");
+  const starsCount = document.getElementById("hedgeStarsCount");
+  const shopStars = document.getElementById("hedgeShopStars");
+  const mailBadge = document.getElementById("hedgeMailBadge");
+
+  const tabs = [...document.querySelectorAll(".hedge-tab")];
+  const panels = {
+    home:document.getElementById("hedgePanelHome"),
+    shop:document.getElementById("hedgePanelShop"),
+    mail:document.getElementById("hedgePanelMail")
+  };
+
+  const room = document.getElementById("hedgeRoom");
+  const rug = document.getElementById("hedgeRug");
+  const zone = document.getElementById("hedgePetZone");
+  const actionFx = document.getElementById("hedgeActionFx");
+  const toyEl = document.getElementById("hedgeToy");
+  const petMessage = document.getElementById("hedgePetMessage");
+
+  const decorLamp = document.getElementById("hedgeDecorLamp");
+  const decorPlant = document.getElementById("hedgeDecorPlant");
+  const decorPhotos = document.getElementById("hedgeDecorPhotos");
+  const decorPillow = document.getElementById("hedgeDecorPillow");
+
+  const outfitEls = {
+    scarf:document.getElementById("hedgeOutfitScarf"),
+    bow:document.getElementById("hedgeOutfitBow"),
+    pajamas:document.getElementById("hedgeOutfitPajamas"),
+    crown:document.getElementById("hedgeOutfitCrown")
+  };
+
+  const hungerBar = document.getElementById("hedgeHungerBar");
+  const funBar = document.getElementById("hedgeFunBar");
+  const cleanBar = document.getElementById("hedgeCleanBar");
+  const energyBar = document.getElementById("hedgeEnergyBar");
+  const hungerText = document.getElementById("hedgeHungerText");
+  const funText = document.getElementById("hedgeFunText");
+  const cleanText = document.getElementById("hedgeCleanText");
+  const energyText = document.getElementById("hedgeEnergyText");
+  const moodEmoji = document.getElementById("hedgeMoodEmoji");
+  const growthText = document.getElementById("hedgeGrowthText");
+  const growthBar = document.getElementById("hedgeGrowthBar");
+  const dailyEls = [...document.querySelectorAll(".hedge-daily-item")];
+  const dailyBonus = document.getElementById("hedgeDailyBonus");
+  const actionBtns = [...document.querySelectorAll("[data-hedge-action]")];
+
+  const shopTabs = [...document.querySelectorAll(".hedge-shop-tab")];
+  const shopGrid = document.getElementById("hedgeShopGrid");
+  const mailGrid = document.getElementById("hedgeMailGrid");
+
+  const nameModal = document.getElementById("hedgeNameModal");
+  const nameInput = document.getElementById("hedgeNameInput");
+  const nameSave = document.getElementById("hedgeNameSave");
+  const nameState = document.getElementById("hedgeNameState");
+
+  const authModal = document.getElementById("hedgeAuthModal");
+  const authEmail = document.getElementById("hedgeAuthEmail");
+  const authPassword = document.getElementById("hedgeAuthPassword");
+  const authLogin = document.getElementById("hedgeAuthLogin");
+  const authState = document.getElementById("hedgeAuthState");
+
+  const toast = document.getElementById("hedgeToast");
+  const levelOverlay = document.getElementById("hedgeLevel");
+  const levelTitle = document.getElementById("hedgeLevelTitle");
+  const levelText = document.getElementById("hedgeLevelText");
+  const fxLayer = document.getElementById("hedgeFxLayer");
+
+  /* ============================================================
+     State
+     ============================================================ */
+  function freshState(){
+    const now=Date.now();
+    return {
+      version:1,
+      name:"",
+      bornAt:now,
+      lastUpdated:now,
+      stats:{hunger:90,fun:88,clean:92,energy:90},
+      stars:4,
+      growthXp:0,
+      careCount:0,
+      sleepUntil:0,
+      lastActions:{feed:0,play:0,bath:0,brush:0,sleep:0},
+      daily:{key:dayKey(now),actions:[],bonusClaimed:false},
+      owned:[],
+      consumables:{},
+      equipped:{outfit:"",toy:""},
+      letters:[],
+      recent:[],
+      rareSeen:[]
+    };
+  }
+
+  let state=freshState();
+  let currentUser=null;
+  let canWrite=false;
+  let unsubscribe=null;
+  let shopCategory="outfit";
+  let tickTimer=null;
+  let toastTimer=null;
+
+  function clone(v){return JSON.parse(JSON.stringify(v))}
+  function clamp(n,min=0,max=100){return Math.max(min,Math.min(max,n))}
+  function dayKey(ts=Date.now()){
+    const d=new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+  function normalizeShape(s){
+    const base=freshState();
+    s=s&&typeof s==="object"?s:{};
+    return {
+      ...base,
+      ...s,
+      stats:{...base.stats,...(s.stats||{})},
+      lastActions:{...base.lastActions,...(s.lastActions||{})},
+      daily:{...base.daily,...(s.daily||{})},
+      consumables:{...(s.consumables||{})},
+      equipped:{...base.equipped,...(s.equipped||{})},
+      owned:Array.isArray(s.owned)?s.owned:[],
+      letters:Array.isArray(s.letters)?s.letters:[],
+      recent:Array.isArray(s.recent)?s.recent:[],
+      rareSeen:Array.isArray(s.rareSeen)?s.rareSeen:[]
+    };
+  }
+
+  function localLoad(){
+    try{
+      const raw=localStorage.getItem(LOCAL_KEY);
+      return raw?normalizeShape(JSON.parse(raw)):null;
+    }catch(e){return null}
+  }
+  function localSave(s){
+    try{localStorage.setItem(LOCAL_KEY,JSON.stringify(s))}catch(e){}
+  }
+
+  function applyDecay(raw,now=Date.now()){
+    const s=normalizeShape(clone(raw));
+    const from=Number(s.lastUpdated)||now;
+    if(now<=from)return s;
+
+    const sleepUntil=Number(s.sleepUntil)||0;
+    let cursor=from;
+
+    if(sleepUntil>cursor){
+      const sleepEnd=Math.min(now,sleepUntil);
+      const sh=Math.max(0,(sleepEnd-cursor)/HOUR);
+      s.stats.hunger=clamp(s.stats.hunger-1.15*sh);
+      s.stats.fun=clamp(s.stats.fun-.45*sh);
+      s.stats.clean=clamp(s.stats.clean-.38*sh);
+      s.stats.energy=clamp(s.stats.energy+13.5*sh);
+      cursor=sleepEnd;
+    }
+    if(now>cursor){
+      const ah=(now-cursor)/HOUR;
+      s.stats.hunger=clamp(s.stats.hunger-3.0*ah);
+      s.stats.fun=clamp(s.stats.fun-1.65*ah);
+      s.stats.clean=clamp(s.stats.clean-1.0*ah);
+      s.stats.energy=clamp(s.stats.energy-2.1*ah);
+    }
+
+    if(s.sleepUntil && now>=s.sleepUntil)s.sleepUntil=0;
+    s.lastUpdated=now;
+    return s;
+  }
+
+  function ensureDaily(s){
+    const k=dayKey();
+    if(!s.daily||s.daily.key!==k){
+      s.daily={key:k,actions:[],bonusClaimed:false};
+    }
+    return s;
+  }
+
+  function stageIndex(xp){
+    let idx=0;
+    for(let i=0;i<STAGES.length;i++)if(xp>=STAGES[i].xp)idx=i;
+    return idx;
+  }
+
+  function viewState(){
+    const s=ensureDaily(applyDecay(state));
+    return s;
+  }
+
+  async function persist(reason=""){
+    localSave(state);
+    if(canWrite){
+      try{
+        await setDoc(petRef,state,{merge:false});
+        cloudState.textContent="● прогресс сохранён в облаке";
+      }catch(e){
+        console.error(e);
+        cloudState.textContent="● облако недоступно · локальная копия сохранена";
+      }
+    }
+  }
+
+  /* ============================================================
+     Firebase auth + realtime
+     ============================================================ */
+  onAuthStateChanged(auth,user=>{
+    currentUser=user||null;
+    canWrite=!!(user&&user.uid===HER_UID);
+
+    if(unsubscribe){unsubscribe();unsubscribe=null}
+
+    if(!user||!PAIR_UIDS.has(user.uid)){
+      cloudState.textContent="● нужен один вход для облачного прогресса";
+      authModal.classList.toggle("show",overlay.classList.contains("open"));
+      const local=localLoad();
+      if(local)state=local;
+      renderAll();
+      return;
+    }
+
+    authModal.classList.remove("show");
+    cloudState.textContent=user.uid===HER_UID
+      ?"● аккаунт Звёздочки · синхронизация включена"
+      :"● режим просмотра · питомец Звёздочки";
+
+    unsubscribe=onSnapshot(petRef,async snap=>{
+      if(snap.exists()){
+        state=normalizeShape(snap.data());
+        localSave(state);
+        renderAll();
+        maybeAskName();
+      }else{
+        const local=localLoad();
+        if(canWrite){
+          state=local&&local.name?normalizeShape(local):freshState();
+          await persist("create");
+          renderAll();
+          maybeAskName();
+        }else{
+          state=local||freshState();
+          renderAll();
+          petMessage.innerHTML="<strong>Пока тихо.&nbsp;</strong> Звёздочка ещё не назвала ёжика.";
+        }
+      }
+    },err=>{
+      console.error(err);
+      cloudState.textContent="● ошибка доступа к питомцу · проверь Firestore Rules";
+      const local=localLoad();
+      if(local)state=local;
+      renderAll();
+    });
+  });
+
+  authLogin.addEventListener("click",async()=>{
+    const email=authEmail.value.trim();
+    const pass=authPassword.value;
+    if(!email||!pass){
+      authState.textContent="Заполни e-mail и пароль.";
+      return;
+    }
+    authLogin.disabled=true;
+    authState.textContent="Входим…";
+    try{
+      const cred=await signInWithEmailAndPassword(auth,email,pass);
+      if(!PAIR_UIDS.has(cred.user.uid)){
+        authState.textContent="У этого аккаунта нет доступа к питомцу.";
+      }else{
+        authPassword.value="";
+        authState.textContent="";
+        authModal.classList.remove("show");
+      }
+    }catch(e){
+      console.error(e);
+      authState.textContent="Не получилось войти. Проверь e-mail и пароль.";
+    }finally{
+      authLogin.disabled=false;
+    }
+  });
+
+  /* ============================================================
+     Open / close / tabs
+     ============================================================ */
+  function openPet(){
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+
+    const local=localLoad();
+    if(local&&!state.name)state=local;
+    renderAll();
+
+    if(!currentUser||!PAIR_UIDS.has(currentUser.uid)){
+      authModal.classList.add("show");
+      setTimeout(()=>authEmail.focus(),100);
+    }else{
+      maybeAskName();
+    }
+
+    clearInterval(tickTimer);
+    tickTimer=setInterval(renderAll,30000);
+  }
+  function closePet(){
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+    authModal.classList.remove("show");
+    nameModal.classList.remove("show");
+    clearInterval(tickTimer);
+  }
+  openBtn.addEventListener("click",openPet);
+  closeBtn.addEventListener("click",closePet);
+
+  tabs.forEach(btn=>btn.addEventListener("click",()=>{
+    const name=btn.dataset.hedgeTab;
+    tabs.forEach(b=>b.classList.toggle("active",b===btn));
+    Object.entries(panels).forEach(([k,p])=>p.classList.toggle("active",k===name));
+    if(name==="shop")renderShop();
+    if(name==="mail")renderMail();
+  }));
+
+  /* ============================================================
+     Naming
+     ============================================================ */
+  function maybeAskName(){
+    if(!overlay.classList.contains("open"))return;
+    if(canWrite&&!state.name){
+      nameModal.classList.add("show");
+      setTimeout(()=>nameInput.focus(),120);
+    }else{
+      nameModal.classList.remove("show");
+    }
+  }
+
+  nameSave.addEventListener("click",async()=>{
+    const v=nameInput.value.trim().replace(/\s+/g," ");
+    if(v.length<2){
+      nameState.textContent="Имя должно быть хотя бы из двух символов.";
+      return;
+    }
+    if(v.length>18){
+      nameState.textContent="Сделай имя чуть короче.";
+      return;
+    }
+    state=ensureDaily(applyDecay(state));
+    state.name=v;
+    state.recent=[`Сегодня у ёжика появилось имя — ${v} ✦`,...(state.recent||[])].slice(0,8);
+    nameSave.disabled=true;
+    await persist("name");
+    nameModal.classList.remove("show");
+    nameState.textContent="";
+    nameInput.value="";
+    showToast(`${v} запомнил своё имя 💚`);
+    renderAll();
+    nameSave.disabled=false;
+  });
+
+  nameInput.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();nameSave.click()}
+  });
+
+  /* ============================================================
+     Care loop
+     ============================================================ */
+  function actionReady(type,s){
+    return Date.now()-(Number(s.lastActions[type])||0)>=COOLDOWNS[type];
+  }
+
+  function actionFriendlyCooldown(type,s){
+    const left=COOLDOWNS[type]-(Date.now()-(Number(s.lastActions[type])||0));
+    if(left<=0)return "";
+    const mins=Math.ceil(left/60000);
+    if(mins<60)return `Ёжик совсем недавно это делал. Ещё примерно ${mins} мин.`;
+    return `Он пока в порядке. Ещё примерно ${Math.ceil(mins/60)} ч.`;
+  }
+
+  function addRecent(s,text){
+    s.recent=[text,...(s.recent||[])].slice(0,8);
+  }
+
+  function unlockLetter(s,force=false){
+    const locked=CARE_MESSAGES.map((_,i)=>i).filter(i=>!s.letters.includes(i));
+    if(!locked.length)return null;
+    if(!force&&Math.random()>.34)return null;
+    const idx=locked[Math.floor(Math.random()*locked.length)];
+    s.letters.push(idx);
+    return idx;
+  }
+
+  async function care(type){
+    if(!canWrite){
+      showToast(currentUser?.uid===HIS_UID
+        ?"Ты сейчас в режиме просмотра — ухаживает за ним Звёздочка 💚"
+        :"Сначала войди в аккаунт Звёздочки, чтобы прогресс сохранился.");
+      return;
+    }
+
+    state=ensureDaily(applyDecay(state));
+    const s=state;
+
+    if(s.sleepUntil>Date.now()&&type!=="sleep"){
+      showToast(`${s.name||"Ёжик"} сейчас сладко спит. Пусть немного отдохнёт 🌙`);
+      return;
+    }
+
+    if(type==="sleep"&&s.sleepUntil>Date.now()){
+      const min=Math.ceil((s.sleepUntil-Date.now())/60000);
+      showToast(`Он уже спит. Проснётся примерно через ${min} мин. 🌙`);
+      return;
+    }
+
+    if(!actionReady(type,s)){
+      showToast(actionFriendlyCooldown(type,s));
+      return;
+    }
+
+    const beforeStage=stageIndex(s.growthXp);
+    const now=Date.now();
+    s.lastActions[type]=now;
+    s.daily.actions=[...new Set([...(s.daily.actions||[]),type])];
+    s.careCount=(s.careCount||0)+1;
+    s.growthXp=(s.growthXp||0)+2;
+    s.stars=(s.stars||0)+1;
+
+    let msg="";
+    if(type==="feed"){
+      s.stats.hunger=clamp(s.stats.hunger+34);
+      s.stats.fun=clamp(s.stats.fun+3);
+      msg=`${s.name} довольно хрустит яблочком 🍎`;
+    }
+    if(type==="play"){
+      if(s.stats.energy<15){
+        showToast("Он очень устал для активной игры. Лучше сначала дать ему поспать 🌙");
+        return;
+      }
+      s.stats.fun=clamp(s.stats.fun+32);
+      s.stats.energy=clamp(s.stats.energy-8);
+      s.stats.clean=clamp(s.stats.clean-3);
+      msg=`${s.name} носится по домику так, будто тренируется на чемпионат 🧶`;
+    }
+    if(type==="bath"){
+      s.stats.clean=clamp(s.stats.clean+42);
+      s.stats.fun=clamp(s.stats.fun+3);
+      msg=`${s.name} теперь подозрительно чистый и пахнет уютом 🫧`;
+    }
+    if(type==="brush"){
+      s.stats.clean=clamp(s.stats.clean+19);
+      s.stats.fun=clamp(s.stats.fun+12);
+      msg=`Иголки ${s.name} теперь лежат почти идеально ✨`;
+      if(Math.random()<.25){
+        s.stars+=2;
+        msg+=" Между иголками случайно нашлись ещё 2 ⭐";
+      }
+    }
+    if(type==="sleep"){
+      s.sleepUntil=now+SLEEP_MS;
+      s.stats.fun=clamp(s.stats.fun+5);
+      msg=`${s.name} свернулся клубочком и заснул. Тише… 🌙`;
+    }
+
+    const dailyComplete=DAILY_ACTIONS.every(a=>s.daily.actions.includes(a));
+    let newLetter=null;
+    if(dailyComplete&&!s.daily.bonusClaimed){
+      s.daily.bonusClaimed=true;
+      s.stars+=8;
+      s.growthXp+=8;
+      newLetter=unlockLetter(s,true);
+      msg+=" Полный круг заботы выполнен: +8 ⭐";
+    }else if(s.careCount%4===0){
+      newLetter=unlockLetter(s,false);
+    }
+
+    if(Math.random()<.10){
+      s.stars+=2;
+      msg+=" Ёжик нашёл под ковриком ещё 2 ⭐";
+    }
+
+    addRecent(s,msg);
+    animateAction(type);
+    const afterStage=stageIndex(s.growthXp);
+
+    await persist(type);
+    renderAll();
+
+    showToast(msg);
+    if(newLetter!==null){
+      setTimeout(()=>showToast("Новое письмо от меня появилось в почте 💌"),1200);
+    }
+    if(afterStage>beforeStage){
+      setTimeout(()=>showLevel(afterStage),700);
+    }
+  }
+
+  actionBtns.forEach(btn=>btn.addEventListener("click",()=>care(btn.dataset.hedgeAction)));
+
+  /* ============================================================
+     Visual care / rare animations
+     ============================================================ */
+  function fxBurst(symbols=["💚","✦"],count=9){
+    const roomRect=room.getBoundingClientRect();
+    for(let i=0;i<count;i++){
+      const e=document.createElement("span");
+      e.textContent=symbols[i%symbols.length];
+      e.style.left=(roomRect.left+roomRect.width*(.42+Math.random()*.18))+"px";
+      e.style.top=(roomRect.top+roomRect.height*(.56+Math.random()*.12))+"px";
+      e.style.fontSize=(15+Math.random()*17)+"px";
+      e.style.setProperty("--dx",(Math.random()*140-70)+"px");
+      e.style.setProperty("--rot",(Math.random()*100-50)+"deg");
+      fxLayer.appendChild(e);
+      setTimeout(()=>e.remove(),1600);
+    }
+  }
+
+  function localPetFx(symbols,count=8){
+    actionFx.innerHTML="";
+    for(let i=0;i<count;i++){
+      const e=document.createElement("span");
+      e.textContent=symbols[i%symbols.length];
+      e.style.setProperty("--dx",(Math.random()*130-65)+"px");
+      e.style.setProperty("--rot",(Math.random()*100-50)+"deg");
+      e.style.animationDelay=(Math.random()*.12)+"s";
+      actionFx.appendChild(e);
+    }
+    setTimeout(()=>{actionFx.innerHTML=""},1500);
+  }
+
+  function animateAction(type){
+    zone.classList.remove("act-feed","act-play","act-bath","act-brush");
+    void zone.offsetWidth;
+    if(type==="feed"){zone.classList.add("act-feed");localPetFx(["🍎","💚"],7)}
+    if(type==="play"){
+      zone.classList.add("act-play");
+      toyEl.classList.add("playing");
+      localPetFx(["💗","✦"],10);
+      setTimeout(()=>toyEl.classList.remove("playing"),1700);
+    }
+    if(type==="bath"){zone.classList.add("act-bath");localPetFx(["🫧","🫧","✨"],12)}
+    if(type==="brush"){zone.classList.add("act-brush");localPetFx(["✨","✦"],12)}
+    if(type==="sleep"){localPetFx(["🌙","✦"],7)}
+    setTimeout(()=>zone.classList.remove("act-feed","act-play","act-bath","act-brush"),1900);
+  }
+
+  function rareAnimation(kind){
+    const classes=["rare-spin","rare-float","rare-zoom","rare-rainbow"];
+    classes.forEach(c=>zone.classList.remove(c));
+    void zone.offsetWidth;
+
+    let cls="rare-spin",symbols=["✨","💚","🌟"];
+    if(kind==="moonberry"){cls="rare-float";symbols=["🌙","✨","💫"]}
+    if(kind==="mystery"){
+      cls=classes[Math.floor(Math.random()*classes.length)];
+      symbols=cls==="rare-zoom"?["💨","✦","😂"]:cls==="rare-rainbow"?["🌈","✨","💚"]:["💗","✨","✦"];
+    }
+    if(kind==="starcookie"){cls="rare-spin"}
+    zone.classList.add(cls);
+    localPetFx(symbols,16);
+    fxBurst(symbols,16);
+    setTimeout(()=>zone.classList.remove(cls),2100);
+  }
+
+  /* ============================================================
+     Shop
+     ============================================================ */
+  function owns(id,s=state){return (s.owned||[]).includes(id)}
+  function itemById(id){return SHOP.find(x=>x.id===id)}
+
+  function renderShop(){
+    const s=viewState();
+    shopStars.textContent=Math.floor(s.stars);
+    shopGrid.innerHTML="";
+
+    SHOP.filter(x=>x.cat===shopCategory).forEach(item=>{
+      const owned=owns(item.id,s);
+      const count=Number(s.consumables[item.id]||0);
+      const card=document.createElement("article");
+      card.className="hedge-item";
+
+      let actionText="купить";
+      let secondary=false;
+      let disabled=!canWrite;
+
+      if(item.cat==="outfit"&&owned){
+        actionText=s.equipped.outfit===item.id?"надето":"надеть";
+        secondary=s.equipped.outfit===item.id;
+      }
+      if(item.cat==="decor"&&owned){
+        actionText="куплено";
+        secondary=true;disabled=true;
+      }
+      if(item.cat==="toy"&&owned){
+        actionText=s.equipped.toy===item.id?"рядом":"поставить";
+        secondary=s.equipped.toy===item.id;
+      }
+      if(item.cat==="treat"&&count>0){
+        actionText=`дать ×${count}`;
+        secondary=true;
+      }
+
+      card.innerHTML=`
+        ${owned&&item.cat!=="treat"?'<div class="hedge-owned">есть ✓</div>':""}
+        <div class="hedge-item-icon">${item.icon}</div>
+        <h4>${item.name}</h4>
+        <p>${item.desc}</p>
+        <div class="hedge-item-bottom">
+          <span class="hedge-price">${item.cat==="treat"&&count>0?`в запасе: ${count}`:`⭐ ${item.cost}`}</span>
+          <button class="hedge-buy ${secondary?"secondary":""}" type="button" ${disabled?"disabled":""}>${actionText}</button>
+        </div>
+      `;
+
+      const btn=card.querySelector(".hedge-buy");
+      btn.addEventListener("click",()=>shopAction(item));
+      shopGrid.appendChild(card);
+    });
+  }
+
+  async function shopAction(item){
+    if(!canWrite){
+      showToast("Магазином управляет Звёздочка 💚");
+      return;
+    }
+    state=ensureDaily(applyDecay(state));
+
+    if(item.cat==="outfit"&&owns(item.id)){
+      state.equipped.outfit=state.equipped.outfit===item.id?"":item.id;
+      await persist("equip outfit");
+      renderAll();renderShop();
+      showToast(state.equipped.outfit?`${item.name} теперь на ёжике ✦`:"Наряд снят.");
+      return;
+    }
+    if(item.cat==="toy"&&owns(item.id)){
+      state.equipped.toy=state.equipped.toy===item.id?"":item.id;
+      await persist("equip toy");
+      renderAll();renderShop();
+      showToast(state.equipped.toy?`${item.name} теперь лежит рядом 🧸`:"Игрушка убрана.");
+      return;
+    }
+    if(item.cat==="decor"&&owns(item.id))return;
+
+    if(item.cat==="treat"&&(state.consumables[item.id]||0)>0){
+      state.consumables[item.id]-=1;
+      state.stats.hunger=clamp(state.stats.hunger+11);
+      state.stats.fun=clamp(state.stats.fun+13);
+      addRecent(state,`${state.name} получил особую вкусняшку: ${item.name}.`);
+      if(item.id==="strawberry"){
+        animateAction("feed");localPetFx(["🍓","💗"],10);
+      }else{
+        rareAnimation(item.id);
+      }
+      await persist("use treat");
+      renderAll();renderShop();
+      showToast(item.id==="mystery"
+        ?"Кажется, таинственный жёлудь был очень подозрительным… 😂"
+        :`${state.name} попробовал: ${item.name} ✦`);
+      return;
+    }
+
+    if(state.stars<item.cost){
+      showToast(`Не хватает ${Math.ceil(item.cost-state.stars)} ⭐. Их можно заработать заботой.`);
+      return;
+    }
+
+    state.stars-=item.cost;
+    if(item.cat==="treat"){
+      state.consumables[item.id]=(state.consumables[item.id]||0)+1;
+    }else{
+      state.owned=[...new Set([...(state.owned||[]),item.id])];
+      if(item.cat==="outfit")state.equipped.outfit=item.id;
+      if(item.cat==="toy")state.equipped.toy=item.id;
+    }
+    addRecent(state,`В домике появилась новая покупка: ${item.name}.`);
+    await persist("shop");
+    renderAll();renderShop();
+    showToast(`${item.name} куплено ✦`);
+  }
+
+  shopTabs.forEach(btn=>btn.addEventListener("click",()=>{
+    shopCategory=btn.dataset.shopCat;
+    shopTabs.forEach(b=>b.classList.toggle("active",b===btn));
+    renderShop();
+  }));
+
+  /* ============================================================
+     Mail
+     ============================================================ */
+  function renderMail(){
+    const unlocked=new Set(state.letters||[]);
+    mailGrid.innerHTML="";
+    if(!unlocked.size){
+      mailGrid.innerHTML='<div class="hedge-mail-empty">Пока писем нет. Они начнут появляться по мере заботы о ёжике 💚</div>';
+      return;
+    }
+
+    CARE_MESSAGES.forEach((text,i)=>{
+      const card=document.createElement("article");
+      if(unlocked.has(i)){
+        card.className="hedge-letter";
+        card.innerHTML=`<span class="num">письмо ${String(i+1).padStart(2,"0")}</span><p>${text}</p>`;
+      }else{
+        card.className="hedge-letter locked";
+        card.textContent="✦ письмо пока закрыто";
+      }
+      mailGrid.appendChild(card);
+    });
+  }
+
+  /* ============================================================
+     Render
+     ============================================================ */
+  function roomTime(){
+    const h=new Date().getHours();
+    if(h>=6&&h<11)return "morning";
+    if(h>=20||h<6)return "night";
+    return "day";
+  }
+
+  function renderAll(){
+    const s=viewState();
+    petNameEl.textContent=s.name||"без имени";
+    starsCount.textContent=Math.floor(s.stars);
+    shopStars.textContent=Math.floor(s.stars);
+
+    const idx=stageIndex(s.growthXp);
+    const st=STAGES[idx];
+    stageLabel.textContent=`${st.name} · ${Math.max(1,Math.floor((Date.now()-s.bornAt)/86400000)+1)} день`;
+    zone.style.setProperty("--hedgeScale",st.scale);
+
+    // time / sleep
+    room.classList.remove("night","morning");
+    const rt=roomTime();
+    if(rt==="night")room.classList.add("night");
+    if(rt==="morning")room.classList.add("morning");
+    zone.classList.toggle("hedge-sleeping",s.sleepUntil>Date.now());
+    zone.classList.toggle("sleeping",s.sleepUntil>Date.now());
+
+    // stats
+    const setStat=(bar,text,val)=>{
+      const v=Math.round(clamp(val));
+      bar.style.width=v+"%";text.textContent=v+"%";
+    };
+    setStat(hungerBar,hungerText,s.stats.hunger);
+    setStat(funBar,funText,s.stats.fun);
+    setStat(cleanBar,cleanText,s.stats.clean);
+    setStat(energyBar,energyText,s.stats.energy);
+
+    const avg=(s.stats.hunger+s.stats.fun+s.stats.clean+s.stats.energy)/4;
+    moodEmoji.textContent=avg>82?"🥰":avg>62?"😊":avg>40?"🦔":"🥺";
+
+    const next=st.next;
+    if(next){
+      const span=next-st.xp;
+      const prog=clamp(((s.growthXp-st.xp)/span)*100);
+      growthBar.style.width=prog+"%";
+      growthText.textContent=`${Math.floor(s.growthXp)} / ${next}`;
+    }else{
+      growthBar.style.width="100%";
+      growthText.textContent="максимальный рост ✦";
+    }
+
+    // daily
+    const today=ensureDaily(clone(s)).daily;
+    dailyEls.forEach(el=>el.classList.toggle("done",(today.actions||[]).includes(el.dataset.daily)));
+    dailyBonus.textContent=today.bonusClaimed
+      ?"Сегодняшний полный круг заботы уже выполнен ✦"
+      :"За полный круг заботы ёжик дарит +8 ⭐ и может открыть новое письмо.";
+
+    // actions
+    actionBtns.forEach(btn=>{
+      const type=btn.dataset.hedgeAction;
+      const sleeping=s.sleepUntil>Date.now();
+      btn.disabled=!canWrite || (sleeping&&type!=="sleep");
+      if(type==="sleep"&&sleeping){
+        const mins=Math.max(1,Math.ceil((s.sleepUntil-Date.now())/60000));
+        btn.innerHTML=`<b>💤</b>спит ${mins}м`;
+        btn.disabled=true;
+      }else if(type==="sleep"){
+        btn.innerHTML="<b>🌙</b>уложить";
+      }
+    });
+
+    // default message
+    if(s.sleepUntil>Date.now()){
+      petMessage.innerHTML=`<strong>${s.name||"Ёжик"}&nbsp;</strong> сладко спит. Энергия понемногу восстанавливается 🌙`;
+    }else if(avg<42){
+      petMessage.innerHTML=`<strong>${s.name||"Ёжик"}&nbsp;</strong> явно рад, что ты заглянула. Посмотри, чего ему сейчас не хватает 💚`;
+    }else if(avg>82){
+      petMessage.innerHTML=`<strong>${s.name||"Ёжик"}&nbsp;</strong> выглядит максимально довольным жизнью ✦`;
+    }
+
+    // outfit
+    Object.entries(outfitEls).forEach(([id,el])=>el.classList.toggle("show",s.equipped.outfit===id));
+
+    // decor
+    decorLamp.classList.toggle("show",owns("lamp",s));
+    decorPlant.classList.toggle("show",owns("plant",s));
+    decorPhotos.classList.toggle("show",owns("photos",s));
+    decorPillow.classList.toggle("show",owns("pillow",s));
+    rug.classList.toggle("cloud",owns("rug",s));
+
+    // toy
+    if(s.equipped.toy&&TOY_ICONS[s.equipped.toy]){
+      toyEl.textContent=TOY_ICONS[s.equipped.toy];
+      toyEl.classList.add("show");
+    }else{
+      toyEl.textContent="";
+      toyEl.classList.remove("show");
+    }
+
+    // mail
+    const unlocked=(s.letters||[]).length;
+    mailBadge.textContent=unlocked?`· ${unlocked}`:"";
+
+    if(panels.shop.classList.contains("active"))renderShop();
+    if(panels.mail.classList.contains("active"))renderMail();
+  }
+
+  /* ============================================================
+     Feedback
+     ============================================================ */
+  function showToast(text){
+    clearTimeout(toastTimer);
+    toast.textContent=text;
+    toast.classList.add("show");
+    toastTimer=setTimeout(()=>toast.classList.remove("show"),3100);
+  }
+
+  function showLevel(idx){
+    const st=STAGES[idx];
+    levelTitle.textContent="Ёжик подрос!";
+    levelText.textContent=`Теперь он — ${st.name}. И за это ещё +3 ⭐`;
+    state.stars=(state.stars||0)+3;
+    persist("level reward");
+    renderAll();
+    levelOverlay.classList.add("show");
+    fxBurst(["⭐","💚","✨"],22);
+    setTimeout(()=>levelOverlay.classList.remove("show"),2500);
+  }
+
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"&&overlay.classList.contains("open")){
+      if(nameModal.classList.contains("show")||authModal.classList.contains("show"))return;
+      closePet();
+    }
+  });
+
+  /* Initial local mirror */
+  const cached=localLoad();
+  if(cached)state=cached;
+  renderAll();
+})();
+</script>
+<!-- ===== конец питомца-ёжика ===== -->
+
 </body>
 </html>
