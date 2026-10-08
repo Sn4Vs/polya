@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -10905,7 +10905,7 @@ import {
     nameModal.classList.remove("show");
     clearInterval(tickTimer);
   }
-  openBtn.addEventListener("click",openPet);
+  openBtn.addEventListener("click",()=>{ window.location.assign(new URL("gazik/", window.location.href).href); });
   closeBtn.addEventListener("click",closePet);
 
   tabs.forEach(btn=>btn.addEventListener("click",()=>{
@@ -11670,3 +11670,4 @@ import {
 
 </body>
 </html>
+

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07140d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Ёжик Газик</title>
+  <style>
+    :root{color-scheme:dark;--green:#2fa65a;--gold:#e6bd58;--panel:rgba(5,25,14,.88)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020805;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    body{overscroll-behavior:none;touch-action:none}
+    #shell{position:fixed;inset:0;background:radial-gradient(circle at 50% 18%,#173f25 0,#07170e 40%,#020805 100%)}
+    #unity-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#07140d;outline:none}
+    #loading{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:linear-gradient(180deg,rgba(2,8,5,.94),rgba(6,22,12,.96));transition:opacity .35s ease}
+    #loading.hide{opacity:0;pointer-events:none}
+    .loading-card{width:min(88vw,420px);text-align:center;color:#f5ffe9}
+    .hedgehog{font-size:54px;filter:drop-shadow(0 8px 24px rgba(0,0,0,.45));animation:bob 1.2s ease-in-out infinite alternate}
+    @keyframes bob{to{transform:translateY(-7px) rotate(2deg)}}
+    .title{font-weight:850;font-size:24px;margin:8px 0 16px}
+    .bar{height:10px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.10);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+    .bar>i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2e9b51,#9bd56c,#e6bd58);transition:width .15s ease}
+    #status{font-size:12px;opacity:.72;margin-top:9px;min-height:18px}
+    #back{position:absolute;z-index:15;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));height:42px;padding:0 15px;border-radius:16px;border:1px solid rgba(180,255,192,.22);background:rgba(4,22,12,.75);backdrop-filter:blur(10px);color:#eaffdf;font-weight:800;cursor:pointer}
+    #cloud{position:absolute;z-index:15;right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));max-width:46vw;padding:8px 11px;border-radius:14px;background:rgba(4,22,12,.66);backdrop-filter:blur(10px);color:#c9e9cd;font-size:11px;text-align:right;pointer-events:none}
+    #auth{position:absolute;inset:0;z-index:30;display:none;place-items:center;padding:24px;background:rgba(1,7,4,.78);backdrop-filter:blur(15px)}
+    #auth.show{display:grid}
+    .auth-card{width:min(92vw,390px);padding:22px;border-radius:26px;background:linear-gradient(180deg,rgba(15,54,30,.98),rgba(6,29,16,.98));border:1px solid rgba(180,255,190,.18);box-shadow:0 24px 70px rgba(0,0,0,.55);color:#f3ffed}
+    .auth-card h2{margin:0 0 8px;font-size:22px}.auth-card p{margin:0 0 16px;font-size:13px;line-height:1.45;opacity:.78}
+    .auth-card input{width:100%;height:48px;margin:6px 0;padding:0 13px;border-radius:14px;border:1px solid rgba(255,255,255,.13);background:rgba(0,0,0,.22);color:#fff;font-size:16px;outline:none}
+    .auth-card button{width:100%;height:48px;margin-top:10px;border:0;border-radius:14px;background:linear-gradient(135deg,#2d9a51,#a8cc58);color:#06150b;font-weight:900;font-size:15px;cursor:pointer}
+    #auth-state{min-height:18px;margin-top:9px;font-size:12px;color:#e9d58d}
+    @media (orientation:landscape){#back{height:36px}#cloud{font-size:10px}}
+  </style>
+</head>
+<body>
+<div id="shell">
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <button id="back" type="button">‹ на сайт</button>
+  <div id="cloud">облако: подключение…</div>
+  <div id="loading"><div class="loading-card"><div class="hedgehog">🦔</div><div class="title">Ёжик Газик</div><div class="bar"><i id="progress"></i></div><div id="status">загружаем лесную комнату…</div></div></div>
+  <div id="auth">
+    <div class="auth-card">
+      <h2>Облачный прогресс</h2>
+      <p>Войди в тот же Firebase-аккаунт, что используется на основном сайте. На этом устройстве вход сохранится.</p>
+      <input id="email" type="email" autocomplete="username" placeholder="E-mail">
+      <input id="password" type="password" autocomplete="current-password" placeholder="Пароль">
+      <button id="login" type="button">войти и продолжить</button>
+      <div id="auth-state"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore-compat.js"></script>
+<script>
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCQ4Mx2l60D0KBt8zS6TzroHaJ4SpIlZ7s",
+    authDomain: "zametki-79427.firebaseapp.com",
+    projectId: "zametki-79427",
+    storageBucket: "zametki-79427.firebasestorage.app",
+    messagingSenderId: "630129759584",
+    appId: "1:630129759584:web:b339276bd11ff0ac6a3a05",
+    measurementId: "G-8C8X4GPM59"
+  };
+  const HER_UID = "BYmhRqqXQQPKPTOnrjzEFTfNL3D3";
+  const HIS_UID = "IG3jAerjnHZekX8gEn51AQq6Oli1";
+  const PAIR_UIDS = new Set([HER_UID,HIS_UID]);
+  const PET_PATH = "pets/zvezdochka-hedgehog";
+
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+  const authBox = document.getElementById('auth');
+  const authState = document.getElementById('auth-state');
+  const cloud = document.getElementById('cloud');
+  const email = document.getElementById('email');
+  const password = document.getElementById('password');
+  const login = document.getElementById('login');
+  let currentUser = null;
+  let authKnown = false;
+  let pendingLoad = false;
+
+  function sendToUnity(method, payload='') {
+    if (!window.unityInstance) return false;
+    try { window.unityInstance.SendMessage('GazikCloud', method, String(payload ?? '')); return true; }
+    catch(e){ console.warn(e); return false; }
+  }
+
+  async function loadPet() {
+    pendingLoad = false;
+    if (!authKnown) { pendingLoad = true; return; }
+    if (!currentUser || !PAIR_UIDS.has(currentUser.uid)) {
+      cloud.textContent = 'облако: нужен вход';
+      authBox.classList.add('show');
+      sendToUnity('OnFirebaseError','AUTH_REQUIRED');
+      return;
+    }
+    try {
+      cloud.textContent = currentUser.uid === HER_UID ? 'облако: синхронизация…' : 'облако: просмотр';
+      const snap = await db.doc(PET_PATH).get();
+      const data = snap.exists ? snap.data() : {};
+      sendToUnity('OnFirebaseLoaded', JSON.stringify(data));
+      cloud.textContent = currentUser.uid === HER_UID ? '● прогресс синхронизирован' : '● режим просмотра';
+    } catch(e) {
+      console.error(e);
+      cloud.textContent = 'облако: ошибка загрузки';
+      sendToUnity('OnFirebaseError', e && e.message ? e.message : String(e));
+    }
+  }
+
+  async function savePet(json) {
+    if (!authKnown) return;
+    if (!currentUser || currentUser.uid !== HER_UID) {
+      // Второй разрешённый аккаунт сохраняет только локальную PlayerPrefs-копию Unity.
+      sendToUnity('OnFirebaseSaved','read-only');
+      return;
+    }
+    try {
+      const data = JSON.parse(json || '{}');
+      await db.doc(PET_PATH).set(data,{merge:true});
+      cloud.textContent = '● прогресс сохранён';
+      sendToUnity('OnFirebaseSaved','ok');
+    } catch(e) {
+      console.error(e);
+      cloud.textContent = 'облако: ошибка сохранения';
+      sendToUnity('OnFirebaseError', e && e.message ? e.message : String(e));
+    }
+  }
+
+  window.GazikFirebaseBridge = { load: loadPet, save: savePet };
+
+  auth.onAuthStateChanged(user => {
+    authKnown = true;
+    currentUser = user || null;
+    if (user && PAIR_UIDS.has(user.uid)) {
+      authBox.classList.remove('show');
+      cloud.textContent = user.uid === HER_UID ? 'облако: аккаунт Звёздочки' : 'облако: режим просмотра';
+      if (pendingLoad || window.unityInstance) loadPet();
+    } else {
+      cloud.textContent = 'облако: нужен вход';
+      authBox.classList.add('show');
+    }
+  });
+
+  login.addEventListener('click', async () => {
+    const e = email.value.trim();
+    const p = password.value;
+    if (!e || !p) { authState.textContent = 'Заполни e-mail и пароль.'; return; }
+    login.disabled = true; authState.textContent = 'Входим…';
+    try {
+      const cred = await auth.signInWithEmailAndPassword(e,p);
+      if (!PAIR_UIDS.has(cred.user.uid)) authState.textContent = 'У этого аккаунта нет доступа к Газику.';
+      else { password.value=''; authState.textContent=''; authBox.classList.remove('show'); loadPet(); }
+    } catch(err) {
+      console.error(err); authState.textContent = 'Не получилось войти. Проверь e-mail и пароль.';
+    } finally { login.disabled=false; }
+  });
+
+  document.getElementById('back').addEventListener('click',()=>{
+    if (history.length > 1) history.back(); else location.href='../';
+  });
+</script>
+
+<script>
+  const canvas = document.getElementById('unity-canvas');
+  const loading = document.getElementById('loading');
+  const progress = document.getElementById('progress');
+  const status = document.getElementById('status');
+  const buildUrl = 'Build';
+  const loaderUrl = buildUrl + '/WebBuild.loader.js';
+  const config = {
+    arguments: [],
+    dataUrl: buildUrl + '/WebBuild.data',
+    frameworkUrl: buildUrl + '/WebBuild.framework.js',
+    codeUrl: buildUrl + '/WebBuild.wasm',
+    streamingAssetsUrl: 'StreamingAssets',
+    devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
+    autoSyncPersistentDataPath: true,
+    companyName: 'Gazik',
+    productName: 'Ёжик Газик',
+    productVersion: '0.1.0'
+  };
+
+  function fitCanvas(){ canvas.style.width='100%'; canvas.style.height='100%'; }
+  addEventListener('resize',fitCanvas); fitCanvas();
+
+  const script = document.createElement('script');
+  script.src = loaderUrl;
+  script.onload = () => {
+    createUnityInstance(canvas, config, p => {
+      progress.style.width = Math.round(p*100) + '%';
+      status.textContent = p < .9 ? 'загружаем игру…' : 'почти готово…';
+    }).then(instance => {
+      window.unityInstance = instance;
+      loading.classList.add('hide');
+      status.textContent = 'готово';
+      if (window.GazikFirebaseBridge) window.GazikFirebaseBridge.load();
+    }).catch(message => {
+      status.textContent = 'Ошибка запуска: ' + message;
+      console.error(message);
+    });
+  };
+  document.body.appendChild(script);
+</script>
+</body>
+</html>
