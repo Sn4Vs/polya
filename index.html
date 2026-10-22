@@ -2067,6 +2067,7 @@
     }
   }
 </style>
+<link rel="stylesheet" href="knowledge-quiz.css?v=1">
 </head>
 <body>
   <!-- ФОНОВАЯ МУЗЫКА: положите файл music.mp3 рядом с index.html -->
@@ -2108,6 +2109,7 @@
       <button class="garden-btn" id="gardenBtn" aria-label="Собрать букет">букет 🌷</button>
       <button class="jackpot-btn" id="jackpotBtn" aria-label="Поймать джекпот">джекпот 🎰</button>
       <button class="pigquiz-btn" id="pigQuizOpen" aria-label="Тест на знание меня">тестик 🐷</button>
+      <button class="knowquiz-open" id="knowledgeQuizOpen" type="button" aria-label="Насколько ты меня знаешь?" aria-busy="true" disabled>насколько ты меня знаешь? 💌</button>
     </div>
     <a class="miss-btn" id="missBtn" href="tel:89042360018" aria-label="Соскучилась — позвонить">
       соскучилась <span class="miss-emoji">❤️</span>
@@ -4485,6 +4487,8 @@
   Firestore хранит и синхронизирует задачи; IndexedDB сохраняет локальный кэш
   и ожидающие изменения между перезагрузками на поддерживаемых браузерах.
 */
+import { createKnowledgeQuiz } from "./knowledge-quiz.js?v=1";
+import { QUIZ_ID, isKnowledgeQuizNote } from "./knowledge-quiz-core.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {
   getAuth, setPersistence, browserLocalPersistence,
@@ -4493,7 +4497,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, addDoc, updateDoc, deleteDoc,
-  onSnapshot, serverTimestamp, getDocs, writeBatch
+  onSnapshot, serverTimestamp, getDocs, writeBatch, runTransaction
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const FIREBASE_CONFIG = {
@@ -4558,6 +4562,14 @@ try {
   }
 }
 
+const knowledgeQuiz = createKnowledgeQuiz({
+  auth, db, collection, doc, onSnapshot, onAuthStateChanged, runTransaction, serverTimestamp,
+  respondentUid: "BYmhRqqXQQPKPTOnrjzEFTfNL3D3",
+  authorUid: "IG3jAerjnHZekX8gEn51AQq6Oli1",
+  requestLogin: openNotebook,
+  finishLogin: closeNotebook
+});
+
 let notes = [];
 let notesCol = null;
 let cloudReady = false;
@@ -4576,8 +4588,10 @@ function plural(n){
 }
 
 function updateCounter(){
-  const done = notes.filter(n => n.done).length;
-  counter.textContent = notes.length ? `${notes.length} ${plural(notes.length)} · выполнено ${done}` : '0 задач';
+  const tasks = notes.filter(n => n.id !== QUIZ_ID);
+  const done = tasks.filter(n => n.done).length;
+  counter.textContent = tasks.length ? `${tasks.length} ${plural(tasks.length)} · выполнено ${done}` : '0 задач';
+  if(notes.some(n => n.id === QUIZ_ID)) counter.textContent += ' · ответы теста 💌';
 }
 
 function render(){
@@ -4589,6 +4603,20 @@ function render(){
   }
 
   notes.forEach(note => {
+    if(note.id === QUIZ_ID){
+      const item = document.createElement('div');
+      item.className = 'star-note-item kq-note-card';
+      const text = document.createElement('div');
+      text.className = 'star-note-text';
+      text.textContent = 'Насколько ты меня знаешь? 💌';
+      const hint = document.createElement('small');
+      hint.textContent = 'Сохранённое письмо · 15 ответов · только для чтения';
+      text.appendChild(hint);
+      const view = document.createElement('button');
+      view.type = 'button'; view.textContent = 'Посмотреть ответы';
+      view.addEventListener('click', () => { closeNotebook(); knowledgeQuiz.open(); });
+      item.append(text, view); list.appendChild(item); return;
+    }
     const item = document.createElement('div');
     item.className = 'star-note-item' + (note.done ? ' done' : '');
     item.dataset.id = note.id;
@@ -4822,7 +4850,7 @@ async function startCloud(){
   await migrateLegacyLocalNotes();
 
   unsubscribeNotes = onSnapshot(notesCol, {includeMetadataChanges:true}, snap => {
-    notes = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    notes = snap.docs.filter(d => !isKnowledgeQuizNote(d.id) || d.id === QUIZ_ID).map(d => ({id:d.id, ...d.data()}));
     notes.sort((a,b) => {
       const av = a.createdAt?.seconds || 0;
       const bv = b.createdAt?.seconds || 0;

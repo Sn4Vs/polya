@@ -1,0 +1,7 @@
+{
+  "name": "for-zvezdochka-site",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test tests/knowledge-quiz.test.mjs" },
+  "devDependencies": { "jsdom": "26.1.0" }
+}
