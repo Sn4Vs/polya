@@ -1,9 +1,9 @@
 {
     "passed": true,
-    "utc": "2026-10-22T21:47:26.3122242Z",
+    "utc": "2026-10-22T22:04:30.3528540Z",
     "unity": "6000.3.26f1",
     "error": "",
-    "screenshot": "TestResults/Unity-game-20261022-214814273.png",
+    "screenshot": "TestResults/Unity-game-20261022-220518329.png",
     "graphicsAvailable": true,
     "checks": [
         "Game, rules, room, actor and HUD boot",

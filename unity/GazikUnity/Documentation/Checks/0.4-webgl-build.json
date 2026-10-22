@@ -1,10 +1,10 @@
 {
   "version": "0.4.0",
   "unity": "6000.3.26f1",
-  "utc": "2026-10-22T21:53:23.7616468Z",
+  "utc": "2026-10-22T22:08:38.5205826Z",
   "result": "Succeeded",
   "exitCode": 0,
-  "buildReportedBytes": 35886068,
+  "buildReportedBytes": 35886072,
   "template": "GazikMobile",
   "defaultSize": [
     1080,
@@ -17,7 +17,7 @@
     {
       "path": "Build/WebGL.data",
       "bytes": 5558773,
-      "sha256": "5b20f14c5659a36b98ff6227eac8435ad407c88ea51bf95bc4097c7eb667fba9"
+      "sha256": "4eec1faf811ddf8a74854f74a35a3649b0d8f473941f886b6652733301ce30de"
     },
     {
       "path": "Build/WebGL.framework.js",
@@ -26,13 +26,13 @@
     },
     {
       "path": "Build/WebGL.loader.js",
-      "bytes": 26976,
-      "sha256": "b453a8ab249dbea54cc0cfa6fd73867b88ef9db54dfb6b608e9827f40373fb8a"
+      "bytes": 26983,
+      "sha256": "5f01dbd890073b15b892ca97c026b51fddaecc614bcaf6e230d5d95949b8743e"
     },
     {
       "path": "Build/WebGL.wasm",
-      "bytes": 29861445,
-      "sha256": "3d3c1618e174fe1be82248ec83a4b8deb40960e7a302aa826e870cf743881027"
+      "bytes": 29861442,
+      "sha256": "2e880b33e995662c540d470d29d331e1f82e767013241ab4fea5aa18d313bd9b"
     },
     {
       "path": "cloud.js",

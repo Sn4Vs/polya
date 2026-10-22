@@ -78,7 +78,7 @@ namespace Gazik
                 Shapes.Ball("Heart paw pad",arm,new Vector3(0,-.34f,-.18f),new Vector3(.061f,.055f,.009f),pawRose);
                 for(int i=0;i<3;i++)Shapes.Ball("Little toe",arm,new Vector3((i-1)*.065f,-.41f,-.13f),new Vector3(.045f,.055f,.045f),pink);
                 if(side<0)RightArm=arm;else LeftArm=arm;
-                var foot=Shapes.Node("Foot pivot",transform,new Vector3(side*.31f,.12f,-.10f));Shapes.Ball("Hind foot",foot,Vector3.zero,new Vector3(.21f,.13f,.265f),fur);
+                var foot=Shapes.Node("Foot pivot",Body,new Vector3(side*.31f,-.66f,-.16f));Shapes.Ball("Hind foot",foot,Vector3.zero,new Vector3(.21f,.13f,.265f),fur);
                 for(int i=0;i<3;i++)Shapes.Ball("Hind toe",foot,new Vector3((i-1)*.077f,-.03f,-.23f),new Vector3(.055f,.047f,.08f),pink);
                 if(side>0)LeftFoot=foot;else RightFoot=foot;
             }
@@ -143,7 +143,7 @@ namespace Gazik
             float stride=Action=="play"?Mathf.Sin(p*32)*16*wave:sleeping&&sleepBlend<.3f?Mathf.Sin(time*12)*14*(1-sleepBlend/.3f):0;
             if(Walking)stride=Mathf.Sin(time*11)*24;
             LeftFoot.localRotation=Quaternion.Euler(stride-sleepBlend*35,0,0);RightFoot.localRotation=Quaternion.Euler(-stride-sleepBlend*35,0,0);
-            LeftFoot.localPosition=new Vector3(.31f,.12f+sleepBlend*.55f,-.10f+sleepBlend*.20f);RightFoot.localPosition=new Vector3(-.31f,.12f+sleepBlend*.55f,-.10f+sleepBlend*.20f);
+            LeftFoot.localPosition=new Vector3(.31f,-.66f+sleepBlend*.55f,-.16f+sleepBlend*.20f);RightFoot.localPosition=new Vector3(-.31f,-.66f+sleepBlend*.55f,-.16f+sleepBlend*.20f);
             LeftFoot.localScale=RightFoot.localScale=Vector3.one*(1-sleepBlend*.25f);
             transform.localScale=Vector3.one*Mathf.Lerp(transform.localScale.x,stageScale,Time.deltaTime*3);
             float breathe=Mathf.Sin(time*(sleeping?1.3f:2.1f))*.009f;
