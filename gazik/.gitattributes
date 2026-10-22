@@ -1,0 +1,4 @@
+# Preserve the exact Unity build bytes recorded in the release manifest.
+Build/* -text
+cloud.js -text
+index.html -text
